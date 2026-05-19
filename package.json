@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "node -e \"console.log('Static site ready for Netlify')\"",
+    "build": "node scripts/build-public.js",
     "start": "node server.mjs"
   },
   "engines": {
