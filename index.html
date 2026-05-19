@@ -22,10 +22,10 @@
         </div>
 
         <nav>
+          <a href="#study-sprint">StudySprint</a>
           <a href="#assignment-studio">Assignment Studio</a>
           <a href="#hsc-chat">HSC Chat</a>
           <a href="#past-papers">Past Papers</a>
-          <a href="#more-tools">More Tools</a>
         </nav>
 
         <section class="signal-card" aria-label="AI study status">
@@ -39,9 +39,9 @@
         <header class="hero" id="overview">
           <div>
             <p class="eyebrow">HSC Helper</p>
-            <h1>Your AI command centre for the HSC.</h1>
+            <h1>Revision plans and assignment action plans for the HSC.</h1>
             <p class="hero-copy">
-              Plan assignments, ask source-aware questions, practise past papers, and stay organised in one premium workspace.
+              Build focused 3-day or 7-day study sprints, turn tasks into next actions, practise past papers, and get HSC-style coaching in one workspace.
             </p>
           </div>
           <div class="product-visual" aria-label="Today performance summary">
@@ -67,6 +67,67 @@
             </div>
           </div>
         </header>
+
+        <section class="study-sprint panel" id="study-sprint">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Revision workflow</p>
+              <h2>StudySprint Planner</h2>
+            </div>
+            <span class="mode-pill">Frontend mock plan</span>
+          </div>
+
+          <div class="sprint-layout">
+            <form class="sprint-form" id="studySprintForm">
+              <div class="sprint-fields">
+                <label>
+                  Year
+                  <select id="sprintYearInput">
+                    <option value="Year 11">Year 11 Preliminary</option>
+                    <option value="Year 12" selected>Year 12 HSC</option>
+                  </select>
+                </label>
+                <label>
+                  Subject
+                  <select id="sprintSubjectInput"></select>
+                </label>
+                <label>
+                  Exam date
+                  <input id="sprintExamDateInput" type="date" />
+                </label>
+                <label>
+                  Plan length
+                  <select id="sprintLengthInput">
+                    <option value="3">3-day sprint</option>
+                    <option value="7" selected>7-day sprint</option>
+                  </select>
+                </label>
+                <label>
+                  Current confidence
+                  <select id="sprintConfidenceInput">
+                    <option value="low">Low - I need the basics</option>
+                    <option value="medium" selected>Medium - I know some content</option>
+                    <option value="high">High - I need exam polish</option>
+                  </select>
+                </label>
+              </div>
+
+              <label class="sprint-topics">
+                Topics to revise
+                <textarea id="sprintTopicsInput" placeholder="Example: Module B essay thesis, Keats quotes, unseen short answer, trial paper timing"></textarea>
+              </label>
+
+              <button type="submit">Generate StudySprint</button>
+            </form>
+
+            <article class="sprint-output" aria-live="polite">
+              <span id="sprintOutputLabel">Ready when you are</span>
+              <div id="sprintOutput">
+                <p>Add your subject, exam date, topics, and confidence level. StudySprint will turn them into a clear revision plan with today&apos;s 30-minute quick start.</p>
+              </div>
+            </article>
+          </div>
+        </section>
 
         <section class="studio-panel panel" id="assignment-studio">
           <div class="panel-heading">
@@ -187,6 +248,7 @@
               <button class="tool-button" type="button" data-ai-tool="criteriaCheck">Criteria Check</button>
               <button class="tool-button" type="button" data-ai-tool="syllabusLinks">Syllabus Links</button>
               <button class="tool-button" type="button" data-ai-tool="essayPlan">Essay Plan</button>
+              <button class="tool-button" type="button" data-ai-tool="essayFeedback">Essay Feedback</button>
               <button class="tool-button" type="button" data-ai-tool="sourceCheck">Source Check</button>
               <button class="tool-button" type="button" data-ai-tool="draftFeedback">Draft Feedback</button>
               <button class="tool-button" type="button" data-ai-tool="humanize">Humanize</button>

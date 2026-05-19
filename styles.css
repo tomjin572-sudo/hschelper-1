@@ -504,12 +504,136 @@ h2 {
   margin-bottom: 22px;
 }
 
+.study-sprint,
 .studio-panel,
 .chat-panel,
 .ai-tools,
 .past-papers,
 .tool-directory {
   margin-bottom: 20px;
+}
+
+.study-sprint {
+  border-color: rgba(103, 232, 249, 0.24);
+}
+
+.study-sprint::after {
+  position: absolute;
+  right: -80px;
+  top: -110px;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: rgba(71, 230, 164, 0.12);
+  filter: blur(50px);
+  pointer-events: none;
+  content: "";
+}
+
+.sprint-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.sprint-form,
+.sprint-output {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.055);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+}
+
+.sprint-form {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.sprint-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sprint-topics textarea {
+  min-height: 136px;
+}
+
+.sprint-output {
+  display: grid;
+  gap: 16px;
+  min-height: 440px;
+  padding: 20px;
+}
+
+.sprint-output > span {
+  color: var(--cyan);
+  font-size: 0.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.sprint-output h3 {
+  margin: 0 0 8px;
+  font-size: 0.98rem;
+}
+
+.sprint-output p,
+.sprint-output li,
+.sprint-output span {
+  color: var(--muted);
+  line-height: 1.56;
+}
+
+.sprint-output ul,
+.sprint-output ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.sprint-output section {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 14px;
+}
+
+.sprint-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sprint-summary strong,
+.sprint-summary span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  border-radius: 999px;
+  padding: 0 13px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sprint-summary strong {
+  color: #06101f;
+  background: linear-gradient(135deg, var(--cyan), var(--green));
+}
+
+.sprint-days li {
+  padding-left: 4px;
+}
+
+.sprint-days strong,
+.sprint-days span {
+  display: block;
+}
+
+.sprint-days strong {
+  margin-bottom: 3px;
+  color: var(--text);
 }
 
 .studio-layout {
@@ -1170,6 +1294,7 @@ h2 {
   }
 
   .studio-layout,
+  .sprint-layout,
   .studio-workspace,
   .chat-layout,
   .ai-workspace {
@@ -1182,6 +1307,10 @@ h2 {
 
   .syllabus-picker {
     grid-template-columns: 1fr;
+  }
+
+  .sprint-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .tool-grid {
@@ -1237,6 +1366,7 @@ h2 {
   .metrics,
   .directory-grid,
   .paper-grid,
+  .sprint-fields,
   .chat-form,
   .studio-steps,
   .task-form,

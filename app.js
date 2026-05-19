@@ -203,6 +203,15 @@ const elements = {
   mentorAdvice: document.querySelector("#mentorAdvice"),
   mentorStatus: document.querySelector("#mentorStatus"),
   generateAdviceButton: document.querySelector("#generateAdviceButton"),
+  studySprintForm: document.querySelector("#studySprintForm"),
+  sprintYearInput: document.querySelector("#sprintYearInput"),
+  sprintSubjectInput: document.querySelector("#sprintSubjectInput"),
+  sprintExamDateInput: document.querySelector("#sprintExamDateInput"),
+  sprintLengthInput: document.querySelector("#sprintLengthInput"),
+  sprintConfidenceInput: document.querySelector("#sprintConfidenceInput"),
+  sprintTopicsInput: document.querySelector("#sprintTopicsInput"),
+  sprintOutputLabel: document.querySelector("#sprintOutputLabel"),
+  sprintOutput: document.querySelector("#sprintOutput"),
   yearInput: document.querySelector("#yearInput"),
   subjectInput: document.querySelector("#subjectInput"),
   customSubjectInput: document.querySelector("#customSubjectInput"),
@@ -226,8 +235,14 @@ const elements = {
 };
 
 populateSubjects();
+populateStudySprintSubjects();
 renderPaperDirectory();
 renderToolDirectory();
+
+elements.studySprintForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  generateStudySprintPlan();
+});
 
 elements.studioSteps.forEach((button) => {
   button.addEventListener("click", () => {
@@ -576,6 +591,12 @@ function runAiTool(tool) {
         ? `${context}\nThesis or main claim: answer the task in one sentence.\nParagraph 1: strongest argument + evidence.\nParagraph 2: second argument + evidence.\nParagraph 3: complexity, limitation, counterpoint, or deeper analysis.\nConclusion: return to the task language and final judgement.\nPrompt: ${shortInput}`
         : `${context}\nPaste the question and I will build an essay, report, or extended-response structure.`
     },
+    essayFeedback: {
+      label: "HSC Essay Feedback",
+      output: input
+        ? buildEssayFeedback(context, cleanInput)
+        : `${context}\nPaste your essay, introduction, or body paragraph and I will give HSC-style feedback on thesis, structure, evidence, analysis, expression, and next edits.`
+    },
     sourceCheck: {
       label: "Source Check",
       output: input
@@ -606,11 +627,205 @@ function runAiTool(tool) {
   elements.aiToolOutput.textContent = toolCopy[tool].output;
 }
 
+function buildEssayFeedback(context, text) {
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
+  const hasQuestionLanguage = /\b(analyse|evaluate|explain|assess|compare|discuss|justify|to what extent|how|why)\b/i.test(text);
+  const hasEvidence = /"|'|\bquote\b|\bcase study\b|\bsource\b|\bdata\b|\bstatistic\b|\bexample\b|\btechnique\b/i.test(text);
+  const hasLinking = /\btherefore|thus|this shows|this demonstrates|as a result|significance|impact|effect\b/i.test(text);
+  const hasParagraphing = text.split(/\n\s*\n/).filter(Boolean).length > 1;
+
+  return `${context}
+HSC essay feedback:
+
+Quick read:
+- Approx. length: ${wordCount} words.
+- Question focus: ${hasQuestionLanguage ? "Some task/key-verb language is visible." : "Make the question and key verb more obvious in the thesis and topic sentences."}
+- Evidence: ${hasEvidence ? "There are signs of evidence/examples." : "Add specific quotes, techniques, case studies, statistics, or class examples."}
+- Analysis: ${hasLinking ? "There are some linking/analysis signals." : "Add more explanation of why the evidence proves your argument."}
+- Structure: ${hasParagraphing ? "Paragraphing is visible." : "Use clear paragraphs: intro, body paragraphs, conclusion."}
+
+High-band improvement plan:
+1. Thesis: answer the question directly in one sentence and include a clear judgement.
+2. Topic sentences: make each paragraph prove one part of the thesis.
+3. Evidence: use precise evidence, not general description.
+4. Analysis: after every quote/example, explain the effect, significance, or implication.
+5. Syllabus link: include 1-2 subject-specific terms from your NESA topic/module.
+6. Final polish: remove vague words like "things", "good", "bad", "shows a lot", and replace them with exact academic language.
+
+Next edit:
+Rewrite your weakest body paragraph using this pattern:
+Claim -> Evidence -> Technique/detail -> Analysis -> Link back to the question.`;
+}
+
 function populateSubjects() {
   elements.subjectInput.innerHTML = STAGE_6_SUBJECTS
     .map((subject) => `<option value="${escapeHtml(subject)}">${escapeHtml(subject)}</option>`)
     .join("");
   elements.subjectInput.value = "English Advanced";
+}
+
+function populateStudySprintSubjects() {
+  elements.sprintSubjectInput.innerHTML = STAGE_6_SUBJECTS
+    .map((subject) => `<option value="${escapeHtml(subject)}">${escapeHtml(subject)}</option>`)
+    .join("");
+  elements.sprintSubjectInput.value = "English Advanced";
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 7);
+  elements.sprintExamDateInput.value = tomorrow.toISOString().slice(0, 10);
+}
+
+function generateStudySprintPlan() {
+  const year = elements.sprintYearInput.value;
+  const subject = elements.sprintSubjectInput.value;
+  const examDate = elements.sprintExamDateInput.value;
+  const length = Number(elements.sprintLengthInput.value);
+  const confidence = elements.sprintConfidenceInput.value;
+  const topics = splitTopics(elements.sprintTopicsInput.value);
+  const focusTopics = topics.length ? topics : defaultTopicsForSubject(subject);
+  const todayTask = buildQuickStartTask(subject, focusTopics, confidence);
+  const planDays = buildSprintDays(length, subject, focusTopics, confidence);
+  const daysUntilExam = getDaysUntil(examDate);
+
+  elements.sprintOutputLabel.textContent = `${year} ${subject} - ${length}-day sprint`;
+  elements.sprintOutput.innerHTML = `
+    <div class="sprint-summary">
+      <strong>${daysUntilExam >= 0 ? `${daysUntilExam} day${daysUntilExam === 1 ? "" : "s"} until exam` : "Exam date is in the past"}</strong>
+      <span>${confidenceLabel(confidence)} confidence</span>
+    </div>
+
+    <section>
+      <h3>Today&apos;s 30-minute quick start</h3>
+      <p>${escapeHtml(todayTask)}</p>
+    </section>
+
+    <section>
+      <h3>Key topics to focus on</h3>
+      <ul>${focusTopics.slice(0, 5).map((topic) => `<li>${escapeHtml(topic)}</li>`).join("")}</ul>
+    </section>
+
+    <section>
+      <h3>${length}-day study plan</h3>
+      <ol class="sprint-days">
+        ${planDays.map((day) => `
+          <li>
+            <strong>Day ${day.day}: ${escapeHtml(day.title)}</strong>
+            <span>${escapeHtml(day.task)}</span>
+          </li>
+        `).join("")}
+      </ol>
+    </section>
+
+    <section>
+      <h3>Simple explanation</h3>
+      <p>${escapeHtml(buildSprintExplanation(length, confidence))}</p>
+    </section>
+
+    <section>
+      <h3>Past paper practice</h3>
+      <p>${escapeHtml(buildPastPaperSuggestion(subject, confidence))}</p>
+    </section>
+  `;
+}
+
+function splitTopics(value) {
+  return value
+    .split(/\n|,/)
+    .map((topic) => topic.trim())
+    .filter(Boolean);
+}
+
+function defaultTopicsForSubject(subject) {
+  if (subject.includes("English")) {
+    return ["Thesis writing", "Quote selection", "Technique analysis", "Module links", "Timed paragraph practice"];
+  }
+  if (subject.includes("Mathematics")) {
+    return ["Formula recall", "Worked examples", "Common errors", "Calculator fluency", "Timed exam questions"];
+  }
+  if (["Biology", "Chemistry", "Physics", "Investigating Science"].some((science) => subject.includes(science))) {
+    return ["Core concepts", "Practical investigations", "Data analysis", "Scientific terminology", "Past-paper short answers"];
+  }
+  if (["Ancient History", "Modern History", "Legal Studies", "Business Studies", "Economics", "Geography"].some((hsie) => subject.includes(hsie))) {
+    return ["Key syllabus terms", "Case studies", "Evidence bank", "Short-answer structure", "Extended response plan"];
+  }
+  return ["Syllabus dot points", "Class notes", "Evidence/examples", "Weak areas", "Past-paper questions"];
+}
+
+function buildQuickStartTask(subject, topics, confidence) {
+  const firstTopic = topics[0] || "your weakest topic";
+  if (confidence === "low") {
+    return `Spend 10 minutes rewriting the basics for ${firstTopic}, 10 minutes making 5 recall questions, then 10 minutes answering one easy ${subject} question without notes.`;
+  }
+  if (confidence === "high") {
+    return `Choose one timed past-paper question on ${firstTopic}. Spend 20 minutes answering it, then 10 minutes marking it against the criteria or sample answer.`;
+  }
+  return `Review ${firstTopic} for 10 minutes, write a one-page summary for 10 minutes, then complete one exam-style question for 10 minutes.`;
+}
+
+function buildSprintDays(length, subject, topics, confidence) {
+  const cycle = [
+    ["Map weak areas", "Create a checklist from your syllabus, class notes and last feedback."],
+    ["Relearn core content", "Make short notes for the hardest topic, then test yourself without looking."],
+    ["Practise exam response", "Attempt one timed question and mark it with a different colour."],
+    ["Build evidence bank", "Collect quotes, formulas, case studies, examples or statistics for the main topics."],
+    ["Fix mistakes", "Redo the questions you got wrong and write the reason for each mistake."],
+    ["Timed set", "Complete a mini past-paper set under timed conditions."],
+    ["Final polish", "Review summaries, memorise key evidence and plan your exam timing."]
+  ];
+
+  return Array.from({ length }, (_, index) => {
+    const topic = topics[index % topics.length] || subject;
+    const item = cycle[index % cycle.length];
+    const confidenceTail =
+      confidence === "low"
+        ? " Keep it simple and aim for accuracy first."
+        : confidence === "high"
+          ? " Push for speed, precision and marking-criteria language."
+          : " Balance content review with exam practice.";
+
+    return {
+      day: index + 1,
+      title: item[0],
+      task: `${item[1]} Focus topic: ${topic}.${confidenceTail}`
+    };
+  });
+}
+
+function buildSprintExplanation(length, confidence) {
+  const base = `This plan uses a short ${length}-day loop: understand the content, practise under exam conditions, then fix mistakes.`;
+  if (confidence === "low") {
+    return `${base} Because your confidence is low, the plan starts with basics and recall before timed work.`;
+  }
+  if (confidence === "high") {
+    return `${base} Because your confidence is high, the plan puts more pressure on timing, precision and high-band wording.`;
+  }
+  return `${base} Because your confidence is medium, the plan mixes revision and exam practice each day.`;
+}
+
+function buildPastPaperSuggestion(subject, confidence) {
+  const questionType = confidence === "low" ? "one short, accessible question" : confidence === "high" ? "a timed extended-response or full section" : "one medium-length question";
+  if (subject.includes("English")) {
+    return `Use a NESA English paper or trial-style question. Start with ${questionType}, then annotate where your thesis, evidence and analysis could be sharper.`;
+  }
+  if (subject.includes("Mathematics")) {
+    return `Use a NESA Mathematics paper. Complete ${questionType}, mark every lost mark, and write the exact skill you need to revise.`;
+  }
+  if (["Biology", "Chemistry", "Physics", "Investigating Science"].some((science) => subject.includes(science))) {
+    return `Use a NESA Science paper. Complete ${questionType}, then check if your answer uses correct terminology, units, data and reasoning.`;
+  }
+  return `Use the NESA past paper section for ${subject}. Complete ${questionType}, then turn mistakes into tomorrow's first revision task.`;
+}
+
+function getDaysUntil(dateValue) {
+  if (!dateValue) return 0;
+  const today = new Date();
+  const target = new Date(`${dateValue}T00:00:00`);
+  today.setHours(0, 0, 0, 0);
+  return Math.ceil((target - today) / 86_400_000);
+}
+
+function confidenceLabel(value) {
+  return value === "low" ? "Low" : value === "high" ? "High" : "Medium";
 }
 
 function renderToolDirectory() {
