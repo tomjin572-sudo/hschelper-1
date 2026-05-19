@@ -96,10 +96,11 @@
                   <input id="sprintExamDateInput" type="date" />
                 </label>
                 <label>
-                  Plan length
+                  Planner mode
                   <select id="sprintLengthInput">
-                    <option value="3">3-day sprint</option>
-                    <option value="7" selected>7-day sprint</option>
+                    <option value="3">3-day study sprint</option>
+                    <option value="7" selected>7-day study sprint</option>
+                    <option value="last-night">Last night before exam</option>
                   </select>
                 </label>
                 <label>
@@ -117,7 +118,7 @@
                 <textarea id="sprintTopicsInput" placeholder="Example: Module B essay thesis, Keats quotes, unseen short answer, trial paper timing"></textarea>
               </label>
 
-              <button type="submit">Generate StudySprint</button>
+              <button type="submit">Generate with ChatGPT</button>
             </form>
 
             <article class="sprint-output" aria-live="polite">

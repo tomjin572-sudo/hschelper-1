@@ -675,24 +675,71 @@ function populateStudySprintSubjects() {
   elements.sprintExamDateInput.value = tomorrow.toISOString().slice(0, 10);
 }
 
-function generateStudySprintPlan() {
+async function generateStudySprintPlan() {
   const year = elements.sprintYearInput.value;
   const subject = elements.sprintSubjectInput.value;
   const examDate = elements.sprintExamDateInput.value;
-  const length = Number(elements.sprintLengthInput.value);
+  const planMode = elements.sprintLengthInput.value;
+  const length = planMode === "last-night" ? 1 : Number(planMode);
   const confidence = elements.sprintConfidenceInput.value;
   const topics = splitTopics(elements.sprintTopicsInput.value);
   const focusTopics = topics.length ? topics : defaultTopicsForSubject(subject);
-  const todayTask = buildQuickStartTask(subject, focusTopics, confidence);
-  const planDays = buildSprintDays(length, subject, focusTopics, confidence);
   const daysUntilExam = getDaysUntil(examDate);
 
-  elements.sprintOutputLabel.textContent = `${year} ${subject} - ${length}-day sprint`;
+  elements.sprintOutputLabel.textContent = "ChatGPT is building your plan...";
+  elements.sprintOutput.innerHTML = `<p>Creating a ${planMode === "last-night" ? "last-night exam planner" : `${length}-day StudySprint`} for ${escapeHtml(subject)}.</p>`;
+
+  try {
+    const answer = await getPlannerChatGptAnswer({
+      year,
+      subject,
+      examDate,
+      planMode,
+      length,
+      confidence,
+      topics: focusTopics,
+      daysUntilExam
+    });
+    renderStudySprintAiPlan({ year, subject, planMode, length, confidence, daysUntilExam, answer });
+  } catch (error) {
+    renderStudySprintMockPlan({ year, subject, planMode, length, confidence, focusTopics, daysUntilExam, note: error.message });
+  }
+}
+
+function renderStudySprintAiPlan({ year, subject, planMode, length, confidence, daysUntilExam, answer }) {
+  elements.sprintOutputLabel.textContent =
+    planMode === "last-night" ? `${year} ${subject} - last night planner` : `${year} ${subject} - ${length}-day AI sprint`;
   elements.sprintOutput.innerHTML = `
     <div class="sprint-summary">
       <strong>${daysUntilExam >= 0 ? `${daysUntilExam} day${daysUntilExam === 1 ? "" : "s"} until exam` : "Exam date is in the past"}</strong>
       <span>${confidenceLabel(confidence)} confidence</span>
+      <span>ChatGPT generated</span>
     </div>
+    <section>
+      <h3>${planMode === "last-night" ? "Last night exam plan" : "StudySprint plan"}</h3>
+      <p>${escapeHtml(answer)}</p>
+    </section>
+  `;
+}
+
+function renderStudySprintMockPlan({ year, subject, planMode, length, confidence, focusTopics, daysUntilExam, note }) {
+  if (planMode === "last-night") {
+    renderLastNightPlan({ year, subject, confidence, focusTopics, daysUntilExam, note });
+    return;
+  }
+
+  const todayTask = buildQuickStartTask(subject, focusTopics, confidence);
+  const planDays = buildSprintDays(length, subject, focusTopics, confidence);
+
+  elements.sprintOutputLabel.textContent = `${year} ${subject} - ${length}-day fallback sprint`;
+  elements.sprintOutput.innerHTML = `
+    <div class="sprint-summary">
+      <strong>${daysUntilExam >= 0 ? `${daysUntilExam} day${daysUntilExam === 1 ? "" : "s"} until exam` : "Exam date is in the past"}</strong>
+      <span>${confidenceLabel(confidence)} confidence</span>
+      <span>Local fallback</span>
+    </div>
+
+    ${note ? `<section><h3>ChatGPT note</h3><p>${escapeHtml(note)}</p></section>` : ""}
 
     <section>
       <h3>Today&apos;s 30-minute quick start</h3>
@@ -726,6 +773,63 @@ function generateStudySprintPlan() {
       <p>${escapeHtml(buildPastPaperSuggestion(subject, confidence))}</p>
     </section>
   `;
+}
+
+function renderLastNightPlan({ year, subject, confidence, focusTopics, daysUntilExam, note }) {
+  const hardestTopic = focusTopics[0] || "your hardest topic";
+
+  elements.sprintOutputLabel.textContent = `${year} ${subject} - last night fallback plan`;
+  elements.sprintOutput.innerHTML = `
+    <div class="sprint-summary">
+      <strong>${daysUntilExam >= 0 ? `${daysUntilExam} day${daysUntilExam === 1 ? "" : "s"} until exam` : "Exam date is in the past"}</strong>
+      <span>${confidenceLabel(confidence)} confidence</span>
+      <span>Local fallback</span>
+    </div>
+
+    ${note ? `<section><h3>ChatGPT note</h3><p>${escapeHtml(note)}</p></section>` : ""}
+
+    <section>
+      <h3>Tonight&apos;s priority</h3>
+      <p>Do not try to relearn everything. Stabilise ${escapeHtml(hardestTopic)}, practise one exam-style question, pack your materials, and protect sleep.</p>
+    </section>
+
+    <section>
+      <h3>Last night schedule</h3>
+      <ol class="sprint-days">
+        <li><strong>25 min: Core recall</strong><span>Write the key formulas, quotes, case studies, definitions or syllabus terms from memory.</span></li>
+        <li><strong>35 min: Targeted practice</strong><span>Complete one past-paper question on ${escapeHtml(hardestTopic)} and mark it immediately.</span></li>
+        <li><strong>20 min: Mistake fix</strong><span>Rewrite only the parts you got wrong. Keep a short “do not repeat” list.</span></li>
+        <li><strong>10 min: Exam setup</strong><span>Pack equipment, check exam time, set alarms, and choose your first question strategy.</span></li>
+        <li><strong>Sleep rule</strong><span>Stop heavy study. A rested brain will beat one more panicked hour.</span></li>
+      </ol>
+    </section>
+
+    <section>
+      <h3>Past paper practice</h3>
+      <p>${escapeHtml(buildPastPaperSuggestion(subject, confidence))}</p>
+    </section>
+  `;
+}
+
+async function getPlannerChatGptAnswer({ year, subject, examDate, planMode, length, confidence, topics, daysUntilExam }) {
+  const planLabel = planMode === "last-night" ? "last night before exam planner" : `${length}-day revision sprint`;
+  const question = `Create an HSC-focused ${planLabel} for a ${year} student.
+Subject: ${subject}
+Exam date: ${examDate || "not provided"}
+Days until exam: ${daysUntilExam}
+Topics to revise: ${topics.join(", ")}
+Current confidence: ${confidence}
+
+Include:
+- A clear plan
+- Today's 30-minute quick-start task
+- Key topics to focus on
+- A simple explanation section
+- Past paper practice suggestion
+
+For last-night mode, prioritise calm, high-impact revision, exam setup, and sleep.`;
+
+  return getChatGptAnswer(question);
 }
 
 function splitTopics(value) {
