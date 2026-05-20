@@ -588,6 +588,10 @@ h2 {
   line-height: 1.56;
 }
 
+.sprint-output .ai-plan-text {
+  white-space: pre-line;
+}
+
 .sprint-output ul,
 .sprint-output ol {
   display: grid;
