@@ -717,7 +717,7 @@ function renderStudySprintAiPlan({ year, subject, planMode, length, confidence, 
     </div>
     <section>
       <h3>${planMode === "last-night" ? "Last night exam plan" : "StudySprint plan"}</h3>
-      <p>${escapeHtml(answer)}</p>
+      <p class="ai-plan-text">${escapeHtml(answer)}</p>
     </section>
   `;
 }
@@ -812,22 +812,31 @@ function renderLastNightPlan({ year, subject, confidence, focusTopics, daysUntil
 }
 
 async function getPlannerChatGptAnswer({ year, subject, examDate, planMode, length, confidence, topics, daysUntilExam }) {
-  const planLabel = planMode === "last-night" ? "last night before exam planner" : `${length}-day revision sprint`;
-  const question = `Create an HSC-focused ${planLabel} for a ${year} student.
+  const planLabel = planMode === "last-night" ? "last night before exam planner" : `${length}-day weekly study plan`;
+  const question = `Act as an elite AI HSC study planner for Australian high school students. Create a simple, realistic ${planLabel} for a ${year} student.
 Subject: ${subject}
 Exam date: ${examDate || "not provided"}
 Days until exam: ${daysUntilExam}
 Topics to revise: ${topics.join(", ")}
 Current confidence: ${confidence}
 
-Include:
-- A clear plan
-- Today's 30-minute quick-start task
-- Key topics to focus on
-- A simple explanation section
-- Past paper practice suggestion
+The plan must:
+- Prioritise weaker topics first
+- Balance workload realistically
+- Prevent burnout
+- Use specific actions, not vague advice
+- Break work into manageable sessions
+- Include breaks and focus advice
+- Feel motivating but simple
 
-For last-night mode, prioritise calm, high-impact revision, exam setup, and sleep.`;
+Use this exact output format:
+Weekly Overview
+Daily Study Tasks
+Priority Subjects
+Revision Tips
+Focus Advice
+
+For last-night mode, make it calm, high-impact, and include sleep, exam setup, and one short past-paper task.`;
 
   return getChatGptAnswer(question);
 }
