@@ -12,6 +12,8 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    const body = req.body || {};
+    const prompt = await buildPrompt(body);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 25000);
 
@@ -24,7 +26,7 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || "gpt-4o-mini",
-        input: buildPrompt(req.body || {}),
+        input: prompt,
         max_output_tokens: 900
       })
     });
@@ -54,15 +56,60 @@ module.exports = async function handler(req, res) {
   }
 };
 
-function buildPrompt(body) {
+const SYSTEM_PROMPT = `You are an elite HSC performance coach for Australian high school students.
+
+You do NOT generate generic study plans.
+
+You create highly realistic, psychologically effective, and personalized HSC study systems designed to:
+- improve consistency
+- reduce procrastination
+- prioritize weak areas
+- balance workload
+- prevent burnout
+- maximize exam performance
+
+Your study plans should feel like they were created by a top HSC mentor, not a generic AI assistant.
+
+Always:
+- prioritize the student's weakest areas
+- create realistic workloads
+- break tasks into specific actionable sessions
+- give productivity advice
+- adapt to stress and motivation levels
+- focus on high-impact study
+
+Avoid:
+- generic advice
+- vague tasks
+- unrealistic schedules
+- robotic wording
+
+Output structure:
+1. This Week's Main Focus
+2. Highest Priority Subject
+3. Daily Study Sessions
+4. Weak Area Attack Plan
+5. Burnout Prevention
+6. Productivity Strategy
+7. End-of-Week Goal
+
+The tone should feel:
+- intelligent
+- motivating
+- structured
+- realistic
+- premium`;
+
+async function buildPrompt(body) {
+  const syllabusText = await fetchSyllabusText(body.syllabusUrl);
+
   return [
     {
       role: "system",
       content: [
         {
           type: "input_text",
-          text:
-            "You are HSC Helper, an elite AI HSC study planner for Australian high school students. Create simple, realistic and motivating plans for NSW Year 11 and Year 12 exams, assignments and revision. Prioritise weaker subjects and topics, balance workload, prevent burnout, include breaks, and recommend specific actions instead of vague advice. For study plans, use this format: Weekly Overview, Daily Study Tasks, Priority Subjects, Revision Tips, Focus Advice. Keep responses modern, supportive, structured and easy to follow. For essay feedback, comment on thesis, question focus, topic sentences, evidence, analysis, syllabus/course terms, structure, expression, and the next 3 edits. Do not write a full final assessment for the student; coach them to improve it in their own words and follow school academic integrity rules."
+          text: SYSTEM_PROMPT
         }
       ]
     },
@@ -74,10 +121,9 @@ function buildPrompt(body) {
           text: `Context:
 Year: ${body.year || "Year 12"}
 Subject: ${body.subject || "NSW Stage 6"}
-Canvas lesson data: ${body.canvasData || "Not provided"}
-Assignment task: ${body.assignmentTask || "Not provided"}
-Rubric / criteria: ${body.rubric || "Not provided"}
-Draft: ${body.draft || "Not provided"}
+Official NESA syllabus URL: ${body.syllabusUrl || "Not provided"}
+Official NESA syllabus text fetched by backend:
+${syllabusText || "Could not fetch syllabus text. Use the supplied URL as source context and tell the student to verify exact dot points on NESA."}
 
 Question:
 ${body.question || ""}`
@@ -85,6 +131,36 @@ ${body.question || ""}`
       ]
     }
   ];
+}
+
+async function fetchSyllabusText(url) {
+  if (!url || !/^https:\/\/(www\.)?nsw\.gov\.au\//.test(url)) {
+    return "";
+  }
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "user-agent": "HSC Helper study planner"
+      }
+    });
+    if (!response.ok) return "";
+
+    const html = await response.text();
+    return html
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&#39;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 7000);
+  } catch {
+    return "";
+  }
 }
 
 function cleanApiError(errorText) {
