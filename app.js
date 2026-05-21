@@ -105,13 +105,22 @@ Use the official NESA syllabus content fetched by the backend from this URL:
 ${details.syllabusUrl}
 
 Output:
-Weekly Overview
-Daily Study Tasks
-Priority Subjects
-Revision Tips
-Focus Advice
+1. This Week's Main Focus
+2. Highest Priority Subject
+3. Daily Study Sessions
+4. Weak Area Attack Plan
+5. Burnout Prevention
+6. Productivity Strategy
+7. End-of-Week Goal
 
-Keep it simple, realistic, motivating, and specific. Prioritise weaker topics and closer exams. Include breaks, avoid burnout, and include one past-paper practice suggestion.`;
+Rules:
+- Make strong strategic decisions instead of balancing everything equally
+- Prioritise weak topics and closer exams
+- Use active recall, timed exam-style practice, self-marking, error logs, and teacher feedback
+- Avoid passive advice like "watch videos" or "review notes"
+- Make every session specific, time-boxed, and output-based
+- Include breaks, procrastination management, and burnout prevention
+- Use HSC-specific terminology and one past-paper practice suggestion`;
 
   const response = await fetch("/api/chat", {
     method: "POST",
