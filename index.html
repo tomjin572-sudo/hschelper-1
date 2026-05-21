@@ -17,249 +17,73 @@
           </span>
           <div>
             <strong>HSC Helper</strong>
-            <span>NSW study tools</span>
+            <span>Simple NSW exam planner</span>
           </div>
         </div>
 
         <nav>
-          <a href="#study-sprint">StudySprint</a>
-          <a href="#assignment-studio">Assignment Studio</a>
-          <a href="#hsc-chat">HSC Chat</a>
+          <a href="#study-sprint">Planner</a>
           <a href="#past-papers">Past Papers</a>
         </nav>
-
-        <section class="signal-card" aria-label="AI study status">
-          <span class="signal-pulse"></span>
-          <p>AI mentor online</p>
-          <strong id="mentorStatus">Ready to prioritize your next study block.</strong>
-        </section>
       </header>
 
       <main>
-        <header class="hero" id="overview">
+        <header class="hero simple-hero" id="overview">
           <div>
-            <p class="eyebrow">HSC Helper</p>
-            <h1>Revision plans and assignment action plans for the HSC.</h1>
+            <p class="eyebrow">AI HSC Study Planner</p>
+            <h1>Turn exam stress into a clear study plan.</h1>
             <p class="hero-copy">
-              Build focused 3-day or 7-day study sprints, turn tasks into next actions, practise past papers, and get HSC-style coaching in one workspace.
+              Add your subjects, dates, weak topics and available study time. Get a simple ChatGPT plan built around NESA syllabus context and official past-paper practice.
             </p>
-          </div>
-          <div class="product-visual" aria-label="Today performance summary">
-            <div class="glass-orb"></div>
-            <div class="device-scene">
-              <div class="floating-card score-card">
-                <span>Flow Score</span>
-                <strong id="focusScore">86</strong>
-              </div>
-              <div class="floating-card timer-card">
-                <span>Focus</span>
-                <strong>25m</strong>
-              </div>
-              <div class="device-panel">
-                <div class="device-island"></div>
-                <span>Today</span>
-                <div class="device-line wide"></div>
-                <div class="device-line"></div>
-                <div class="device-rail">
-                  <span></span>
-                </div>
-              </div>
-            </div>
+            <a class="hero-cta" href="#study-sprint">Create my plan</a>
           </div>
         </header>
 
         <section class="study-sprint panel" id="study-sprint">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">Revision workflow</p>
+              <p class="eyebrow">One-step setup</p>
               <h2>StudySprint Planner</h2>
             </div>
-            <span class="mode-pill">Frontend mock plan</span>
+            <span class="mode-pill">ChatGPT + NESA context</span>
           </div>
 
           <div class="sprint-layout">
             <form class="sprint-form" id="studySprintForm">
-              <div class="sprint-fields">
-                <label>
-                  Year
-                  <select id="sprintYearInput">
-                    <option value="Year 11">Year 11 Preliminary</option>
-                    <option value="Year 12" selected>Year 12 HSC</option>
-                  </select>
-                </label>
-                <label>
-                  Subject
-                  <select id="sprintSubjectInput"></select>
-                </label>
-                <label>
-                  Exam date
-                  <input id="sprintExamDateInput" type="date" />
-                </label>
-                <label>
-                  Planner mode
-                  <select id="sprintLengthInput">
-                    <option value="3">3-day study sprint</option>
-                    <option value="7" selected>7-day study sprint</option>
-                    <option value="last-night">Last night before exam</option>
-                  </select>
-                </label>
-                <label>
-                  Current confidence
-                  <select id="sprintConfidenceInput">
-                    <option value="low">Low - I need the basics</option>
-                    <option value="medium" selected>Medium - I know some content</option>
-                    <option value="high">High - I need exam polish</option>
-                  </select>
-                </label>
-              </div>
+              <p class="form-intro">Tell the planner what is coming up. Keep it messy if you want.</p>
 
-              <label class="sprint-topics">
-                Topics to revise
-                <textarea id="sprintTopicsInput" placeholder="Example: Module B essay thesis, Keats quotes, unseen short answer, trial paper timing"></textarea>
+              <label>
+                Subjects
+                <textarea id="subjectsInput" class="compact-textarea" placeholder="English Advanced, Mathematics Advanced, Biology"></textarea>
               </label>
 
-              <button type="submit">Generate with ChatGPT</button>
+              <label>
+                Exam dates
+                <textarea id="examDatesInput" class="compact-textarea" placeholder="English: 18 Oct&#10;Maths: 22 Oct&#10;Biology: 28 Oct"></textarea>
+              </label>
+
+              <label class="sprint-topics">
+                Weak topics
+                <textarea id="weakTopicsInput" placeholder="Module B thesis, calculus applications, data analysis, short-answer timing"></textarea>
+              </label>
+
+              <label>
+                Available study time
+                <input id="studyTimeInput" type="text" placeholder="Example: 1 hour after school, 3 hours on weekends" />
+              </label>
+
+              <button class="primary-cta" type="submit">Create my study plan</button>
             </form>
 
             <article class="sprint-output" aria-live="polite">
-              <span id="sprintOutputLabel">Ready when you are</span>
+              <span id="sprintOutputLabel">Your plan will appear here</span>
               <div id="sprintOutput">
-                <p>Add your subject, exam date, topics, and confidence level. StudySprint will turn them into a clear revision plan with today&apos;s 30-minute quick start.</p>
+                <div class="empty-plan">
+                  <strong>Built for clarity.</strong>
+                  <p>The planner turns four inputs into priorities, daily tasks, revision tips and past-paper practice.</p>
+                </div>
               </div>
             </article>
-          </div>
-        </section>
-
-        <section class="studio-panel panel" id="assignment-studio">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">Workflow</p>
-              <h2>Assignment Studio</h2>
-            </div>
-          </div>
-
-          <div class="studio-layout">
-            <div class="studio-steps" role="tablist" aria-label="Assignment workflow steps">
-              <button class="studio-step active" type="button" data-studio-step="intake">1. Upload task</button>
-              <button class="studio-step" type="button" data-studio-step="rubric">2. Read rubric</button>
-              <button class="studio-step" type="button" data-studio-step="structure">3. Structure</button>
-              <button class="studio-step" type="button" data-studio-step="checklist">4. Checklist</button>
-              <button class="studio-step" type="button" data-studio-step="paragraphs">5. Paragraph coach</button>
-              <button class="studio-step" type="button" data-studio-step="final">6. Final check</button>
-            </div>
-
-            <div class="studio-workspace">
-              <label>
-                Assignment question / notification
-                <textarea id="studioTaskInput" placeholder="Paste the assignment notification, task question, due date, word count and subject here."></textarea>
-              </label>
-              <label>
-                Rubric / marking criteria
-                <textarea id="studioRubricInput" placeholder="Paste marking criteria, outcomes, teacher instructions or scaffold here."></textarea>
-              </label>
-              <label>
-                Draft paragraph or final response
-                <textarea id="studioDraftInput" placeholder="Paste a paragraph, intro, body section or final draft here when you want feedback."></textarea>
-              </label>
-              <div class="studio-output" aria-live="polite">
-                <span id="studioOutputLabel">Upload task</span>
-                <p id="studioOutput">Paste your assignment notification first. The studio will move step-by-step from task understanding to final submission checks.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="chat-panel panel" id="hsc-chat">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">Source-grounded helper</p>
-              <h2>HSC Chat</h2>
-            </div>
-          </div>
-
-          <div class="chat-layout">
-            <div class="source-dock">
-              <label>
-                Canvas lesson data
-                <textarea id="canvasDataInput" placeholder="Paste lesson notes, Canvas pages, teacher slides, task notifications, or class summaries here."></textarea>
-              </label>
-              <div class="source-pills">
-                <span>NESA syllabus context</span>
-                <span>Past exam links</span>
-                <span>Your pasted lessons</span>
-              </div>
-            </div>
-
-            <div class="chat-box">
-              <div class="chat-messages" id="chatMessages" aria-live="polite">
-                <article class="chat-message assistant">
-                  <strong>HSC Helper</strong>
-                  <p>Ask about an assignment, syllabus dot point, exam-style response, or pasted Canvas lesson. I will use your selected subject and the sources you add.</p>
-                </article>
-              </div>
-              <form class="chat-form" id="chatForm">
-                <input id="chatInput" type="text" placeholder="Ask: What should I write for this HSC question?" autocomplete="off" required />
-                <button type="submit">Ask</button>
-              </form>
-              <div class="quick-questions" aria-label="Quick HSC chat questions">
-                <button type="button" data-chat-prompt="Make this into an assignment plan">Assignment plan</button>
-                <button type="button" data-chat-prompt="Explain the syllabus links for this task">Syllabus links</button>
-                <button type="button" data-chat-prompt="Create a past paper study plan">Past paper plan</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="ai-tools panel" id="ai-tools">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">NSW Stage 6</p>
-              <h2>Assignment Helper</h2>
-            </div>
-          </div>
-
-          <div class="ai-workspace">
-            <div class="syllabus-picker">
-              <label>
-                Year
-                <select id="yearInput">
-                  <option value="Year 11">Year 11 Preliminary</option>
-                  <option value="Year 12" selected>Year 12 HSC</option>
-                </select>
-              </label>
-              <label>
-                NESA subject
-                <select id="subjectInput"></select>
-              </label>
-              <label>
-                Custom subject or module
-                <input id="customSubjectInput" type="text" placeholder="e.g. English Module C, Biology Module 5" />
-              </label>
-            </div>
-
-            <label class="ai-prompt">
-              Paste the notification, question, marking criteria, or draft
-              <textarea id="aiPromptInput" placeholder="Example: HSC English Advanced Module B essay. Analyse how textual integrity is created through language, form and context. Due Friday."></textarea>
-            </label>
-
-            <div class="tool-grid" role="group" aria-label="AI tool choices">
-              <button class="tool-button active" type="button" data-ai-tool="taskBreakdown">Task Breakdown</button>
-              <button class="tool-button" type="button" data-ai-tool="structureGenerator">Structure Generator</button>
-              <button class="tool-button" type="button" data-ai-tool="researchHelper">Research Helper</button>
-              <button class="tool-button" type="button" data-ai-tool="criteriaCheck">Criteria Check</button>
-              <button class="tool-button" type="button" data-ai-tool="syllabusLinks">Syllabus Links</button>
-              <button class="tool-button" type="button" data-ai-tool="essayPlan">Essay Plan</button>
-              <button class="tool-button" type="button" data-ai-tool="essayFeedback">Essay Feedback</button>
-              <button class="tool-button" type="button" data-ai-tool="sourceCheck">Source Check</button>
-              <button class="tool-button" type="button" data-ai-tool="draftFeedback">Draft Feedback</button>
-              <button class="tool-button" type="button" data-ai-tool="humanize">Humanize</button>
-              <button class="tool-button" type="button" data-ai-tool="studyQuiz">Study Quiz</button>
-            </div>
-
-            <div class="ai-result" aria-live="polite">
-              <span id="aiToolLabel">Task Breakdown</span>
-              <p id="aiToolOutput">Choose your NSW Stage 6 subject, paste the task, and HSC Helper will help you plan the assignment against the syllabus and marking criteria.</p>
-            </div>
           </div>
         </section>
 
@@ -267,156 +91,14 @@
           <div class="panel-heading">
             <div>
               <p class="eyebrow">Official NESA</p>
-              <h2>Past HSC exam papers</h2>
+              <h2>Past HSC Exam Papers</h2>
             </div>
           </div>
           <p class="section-copy">
-            Open the official NSW Government/NESA paper packs by learning area. They include past papers,
-            marking guidelines and HSC marking feedback where available.
+            Official NSW Government/NESA exam packs by learning area. Use these for timed practice, marking guidelines and feedback.
           </p>
           <div class="paper-grid" id="paperDirectory"></div>
         </section>
-
-        <div id="more-tools"></div>
-
-        <section class="tool-directory panel" id="tool-directory">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">AI Toolkit</p>
-              <h2>Useful links for students</h2>
-            </div>
-          </div>
-          <div class="directory-grid" id="toolDirectory"></div>
-          <div class="builder-stack">
-            <strong>Build or make-money stack</strong>
-            <p>
-              Cursor + OpenAI Codex for building, Canva AI for client content, Notion AI for templates,
-              Gamma for pitch decks, and Perplexity for niche and competitor research.
-            </p>
-          </div>
-        </section>
-
-        <section class="metrics" aria-label="Dashboard metrics">
-          <article>
-            <span>Open Tasks</span>
-            <strong id="openTaskCount">0</strong>
-            <small>queued for today</small>
-          </article>
-          <article>
-            <span>Focus Minutes</span>
-            <strong id="focusMinutes">0</strong>
-            <small>completed this session</small>
-          </article>
-          <article>
-            <span>Goal Progress</span>
-            <strong id="goalAverage">0%</strong>
-            <small>average completion</small>
-          </article>
-          <article>
-            <span>Next Priority</span>
-            <strong id="priorityLabel">Add task</strong>
-            <small>AI-sorted queue</small>
-          </article>
-        </section>
-
-        <div class="dashboard-grid">
-          <section class="panel task-panel" id="tasks">
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">Smart Queue</p>
-                <h2>Tasks</h2>
-              </div>
-              <button class="ghost-button" id="sortTasksButton" type="button">AI Sort</button>
-            </div>
-
-            <form class="task-form" id="taskForm">
-              <label>
-                Task
-                <input id="taskInput" type="text" placeholder="Finish calculus problem set" autocomplete="off" required />
-              </label>
-              <label>
-                Priority
-                <select id="priorityInput">
-                  <option value="high">High</option>
-                  <option value="medium" selected>Medium</option>
-                  <option value="low">Low</option>
-                </select>
-              </label>
-              <label>
-                Course
-                <input id="courseInput" type="text" placeholder="Physics" autocomplete="off" />
-              </label>
-              <button type="submit">Add</button>
-            </form>
-
-            <ul class="task-list" id="taskList" aria-live="polite"></ul>
-          </section>
-
-          <section class="panel focus-panel" id="focus">
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">Deep Work</p>
-                <h2>Focus Timer</h2>
-              </div>
-              <span class="mode-pill" id="timerMode">Focus</span>
-            </div>
-
-            <div class="timer-face">
-              <svg viewBox="0 0 220 220" role="img" aria-label="Focus timer progress">
-                <circle class="timer-track" cx="110" cy="110" r="94"></circle>
-                <circle class="timer-progress" id="timerProgress" cx="110" cy="110" r="94"></circle>
-              </svg>
-              <div class="timer-time" id="timerTime">25:00</div>
-            </div>
-
-            <div class="timer-controls">
-              <button id="startPauseButton" type="button">Start</button>
-              <button class="ghost-button" id="resetTimerButton" type="button">Reset</button>
-              <button class="ghost-button" id="switchModeButton" type="button">Break</button>
-            </div>
-          </section>
-
-          <section class="panel goals-panel" id="goals">
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">Weekly Arc</p>
-                <h2>Goal Tracking</h2>
-              </div>
-            </div>
-
-            <form class="goal-form" id="goalForm">
-              <label>
-                Goal
-                <input id="goalInput" type="text" placeholder="Read 4 research papers" autocomplete="off" required />
-              </label>
-              <label>
-                Progress
-                <input id="goalProgressInput" type="number" min="0" max="100" value="25" />
-              </label>
-              <button type="submit">Add</button>
-            </form>
-
-            <div class="goal-list" id="goalList" aria-live="polite"></div>
-          </section>
-
-          <section class="panel mentor-panel">
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">AI Mentor</p>
-                <h2>Next Move</h2>
-              </div>
-            </div>
-            <div class="mentor-orbit">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-            <p id="mentorAdvice">
-              Add a task and a weekly goal. I will surface a sharper next action once your queue has signal.
-            </p>
-            <button id="generateAdviceButton" type="button">Generate Study Plan</button>
-          </section>
-        </div>
       </main>
     </div>
 
