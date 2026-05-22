@@ -78,7 +78,9 @@ Resource rules:
 - Prefer NESA past paper pages, marking guidelines, syllabus pages, teacher feedback, class worksheets, textbook exercises, or student notes.
 - Use supplied official NESA URLs when relevant.
 - Do not invent exact NESA paper years or question numbers unless they were supplied.
-- If exact NESA paper details are unknown, use a real resource page and make the question type exact, for example "NESA HSC exam resources - Mathematics category" plus "Section II algebra/functions short-answer questions".
+- If an official subject exam-pack URL is supplied, use it as the resourceUrl for past-paper tasks because it contains the paper PDF, marking guidelines, and feedback.
+- If exact NESA paper details are unknown, use the supplied subject exam-pack page and make the question type exact, for example "2024 Mathematics Advanced HSC exam pack" plus "Section II algebra/functions short-answer questions".
+- Never imply the CTA opens one exact question unless the link is a direct paper PDF or the exact question was supplied by the student.
 - If the best resource is class material, name it clearly: "your teacher worksheet", "your marked draft feedback", "your assessment notification", or "your textbook exercise set".
 - Difficulty must be Easy, Medium, or Hard.
 - Estimated time must be realistic, usually 15-45 minutes.
@@ -148,6 +150,7 @@ async function buildPrompt(body) {
 Year: ${body.year || "Year 12"}
 Subject: ${body.subject || "NSW Stage 6"}
 Official NESA syllabus URL: ${body.syllabusUrl || "Not provided"}
+Official NESA subject exam-pack URL: ${body.pastPaperUrl || "Not provided"}
 Official NESA syllabus text fetched by backend:
 ${syllabusText || "Could not fetch syllabus text. Use the supplied URL as source context and tell the student to verify exact dot points on NESA."}
 
