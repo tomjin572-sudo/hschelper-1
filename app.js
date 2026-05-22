@@ -55,6 +55,8 @@ const PAPER_LINKS = [
   ["VET", "Vocational Education and Training HSC exam packs.", "https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-resources?category=Vocational%20Education%20and%20Training&resource_types=HSC%2520exam%2520pack%2CArchive%2520HSC%2520exam%2520pack"]
 ];
 
+const NESA_PAST_PAPER_URL = "https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers";
+
 const form = document.querySelector("#studySprintForm");
 const submitButton = form.querySelector("button[type='submit']");
 const outputLabel = document.querySelector("#sprintOutputLabel");
@@ -109,26 +111,20 @@ Available study time: ${details.studyTime}
 
 Use the official NESA syllabus content fetched by the backend from this URL:
 ${details.syllabusUrl}
+Use this official NESA past paper directory where useful:
+${NESA_PAST_PAPER_URL}
 
 Output:
-Coach Call plus 2-4 execution action cards.
+Valid JSON only, with coachCall and 2-3 execution cards.
 The first card must be called Tonight's Highest ROI Task.
-Each card must include:
-- Topic
-- Highest ROI Task
-- Exact Practice Action
-- Resource with source name, link if available, question type, difficulty, and estimated time
-- How To Approach This
-- Most Common Mistake
-- Estimated ROI
-- Button
+Each card must include title, topic, highestRoiTask, doThisNow, questionType, resourceName, resourceUrl, timeRequired, difficulty, focusPoint, howToApproach, mostCommonMistake, whatNotToFocusOn, estimatedMarksImpact, and buttonText.
 
 Rules:
 - Make strong strategic decisions instead of balancing everything equally
 - Prioritise weak topics, closest exams, and tasks that create marks fastest
 - Use active recall, timed exam-style practice, self-marking, error logs, and teacher feedback
 - Avoid passive advice like "watch videos" or "review notes"
-- Make every task a specific action card with time, difficulty, mistake, ROI, and button text
+- Make every task a specific action card with time, difficulty, mistake, marks impact, and button text
 - Tell the student exactly what to do next
 - Keep the response short, sharp, realistic, and execution-focused`;
 
@@ -160,12 +156,90 @@ Rules:
 }
 
 function renderAiPlan(details, answer) {
+  const plan = parseExecutionPlan(answer);
+  if (plan) {
+    renderExecutionPlan(details, plan);
+    return;
+  }
+
   outputLabel.textContent = "Your HSC study plan";
   output.innerHTML = `
     ${summary(details, "ChatGPT + NESA")}
     <section><h3>Your exam plan</h3><p class="ai-plan-text">${escapeHtml(answer)}</p></section>
     ${sourceLink(details.syllabusUrl)}
   `;
+}
+
+function renderExecutionPlan(details, plan) {
+  outputLabel.textContent = "Execution plan ready";
+  output.innerHTML = `
+    ${summary(details, "AI execution system")}
+    <div class="coach-call">${escapeHtml(plan.coachCall || "Start with the highest ROI task first.")}</div>
+    <div class="action-card-stack">
+      ${plan.cards.map(renderActionCard).join("")}
+    </div>
+    ${sourceLink(details.syllabusUrl)}
+  `;
+}
+
+function renderActionCard(card) {
+  const resourceUrl = safeUrl(card.resourceUrl);
+  const buttonHref = resourceUrl || "#paperDirectory";
+  const steps = Array.isArray(card.howToApproach) ? card.howToApproach.slice(0, 3) : [];
+
+  return `
+    <article class="execution-card">
+      <div class="execution-card-top">
+        <span>${escapeHtml(card.title || "Highest ROI Task")}</span>
+        <em>${escapeHtml(card.timeRequired || "25 minutes")} - ${escapeHtml(card.difficulty || "Medium")}</em>
+      </div>
+      <h3>${escapeHtml(card.topic || "Priority practice")}</h3>
+      <p class="do-now">${escapeHtml(card.doThisNow || card.highestRoiTask || "Start one timed exam-style question.")}</p>
+      <div class="card-grid">
+        <div><strong>Highest ROI Task</strong><span>${escapeHtml(card.highestRoiTask || "")}</span></div>
+        <div><strong>Question Type</strong><span>${escapeHtml(card.questionType || "Exam-style question")}</span></div>
+        <div><strong>Focus Point</strong><span>${escapeHtml(card.focusPoint || "Show working clearly")}</span></div>
+        <div><strong>Resource</strong><span>${resourceLink(card.resourceName, resourceUrl)}</span></div>
+      </div>
+      ${steps.length ? `<ol class="approach-list">${steps.map((step) => `<li>${escapeHtml(step)}</li>`).join("")}</ol>` : ""}
+      <div class="risk-row">
+        <p><strong>Most Common Mistake</strong>${escapeHtml(card.mostCommonMistake || "Rushing without checking marking criteria.")}</p>
+        <p><strong>What NOT To Focus On</strong>${escapeHtml(card.whatNotToFocusOn || "Passive rereading.")}</p>
+        <p><strong>Estimated Marks Impact</strong>${escapeHtml(card.estimatedMarksImpact || "High exam probability and fast feedback.")}</p>
+      </div>
+      <a class="action-button" href="${escapeHtml(buttonHref)}" ${resourceUrl ? 'target="_blank" rel="noreferrer"' : ""}>${escapeHtml(card.buttonText || "Start Practice")}</a>
+    </article>
+  `;
+}
+
+function parseExecutionPlan(answer) {
+  try {
+    const cleaned = String(answer)
+      .trim()
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/```$/i, "")
+      .trim();
+    const parsed = JSON.parse(cleaned);
+    if (!parsed || !Array.isArray(parsed.cards) || !parsed.cards.length) return null;
+    return {
+      coachCall: parsed.coachCall || "",
+      cards: parsed.cards.slice(0, 3)
+    };
+  } catch {
+    return null;
+  }
+}
+
+function resourceLink(name, url) {
+  const label = escapeHtml(name || "NESA past papers");
+  if (!url) return label;
+  return `<a href="${escapeHtml(url)}" target="_blank" rel="noreferrer">${label}</a>`;
+}
+
+function safeUrl(url) {
+  const valueToCheck = String(url || "").trim();
+  return /^https?:\/\//i.test(valueToCheck) ? valueToCheck : "";
 }
 
 function renderFallbackPlan(details, note) {
