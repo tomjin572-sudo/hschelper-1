@@ -15,7 +15,7 @@ module.exports = async function handler(req, res) {
     const body = req.body || {};
     const prompt = await buildPrompt(body);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000);
+    const timeout = setTimeout(() => controller.abort(), 18000);
 
     const apiResponse = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
@@ -27,7 +27,8 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || "gpt-4o-mini",
         input: prompt,
-        max_output_tokens: 1200
+        max_output_tokens: 850,
+        temperature: 0.45
       })
     });
 
@@ -46,7 +47,7 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     if (error.name === "AbortError") {
       return res.status(504).json({
-        error: "The OpenAI request timed out. Try again, or set OPENAI_MODEL to a faster model."
+        error: "The study plan took too long to generate. Try again with fewer subjects or weaker topics."
       });
     }
 
@@ -170,11 +171,15 @@ async function fetchSyllabusText(url) {
   }
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2500);
     const response = await fetch(url, {
+      signal: controller.signal,
       headers: {
         "user-agent": "HSC Helper study planner"
       }
     });
+    clearTimeout(timeout);
     if (!response.ok) return "";
 
     const html = await response.text();
@@ -188,7 +193,7 @@ async function fetchSyllabusText(url) {
       .replace(/&quot;/g, '"')
       .replace(/\s+/g, " ")
       .trim()
-      .slice(0, 7000);
+      .slice(0, 3200);
   } catch {
     return "";
   }
