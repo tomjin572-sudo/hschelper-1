@@ -111,22 +111,26 @@ Use the official NESA syllabus content fetched by the backend from this URL:
 ${details.syllabusUrl}
 
 Output:
-1. This Week's Main Focus
-2. Highest Priority Subject
-3. Daily Study Sessions
-4. Weak Area Attack Plan
-5. Burnout Prevention
-6. Productivity Strategy
-7. End-of-Week Goal
+Coach Call plus 2-4 execution action cards.
+The first card must be called Tonight's Highest ROI Task.
+Each card must include:
+- Topic
+- Highest ROI Task
+- Exact Practice Action
+- Resource with source name, link if available, question type, difficulty, and estimated time
+- How To Approach This
+- Most Common Mistake
+- Estimated ROI
+- Button
 
 Rules:
 - Make strong strategic decisions instead of balancing everything equally
-- Prioritise weak topics and closer exams
+- Prioritise weak topics, closest exams, and tasks that create marks fastest
 - Use active recall, timed exam-style practice, self-marking, error logs, and teacher feedback
 - Avoid passive advice like "watch videos" or "review notes"
-- Make every session specific, time-boxed, and output-based
-- Include breaks, procrastination management, and burnout prevention
-- Use HSC-specific terminology and one past-paper practice suggestion`;
+- Make every task a specific action card with time, difficulty, mistake, ROI, and button text
+- Tell the student exactly what to do next
+- Keep the response short, sharp, realistic, and execution-focused`;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 24000);
