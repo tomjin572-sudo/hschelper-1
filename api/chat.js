@@ -15,7 +15,7 @@ module.exports = async function handler(req, res) {
     const body = req.body || {};
     const prompt = await buildPrompt(body);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 18000);
+    const timeout = setTimeout(() => controller.abort(), 24000);
 
     const apiResponse = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || "gpt-4o-mini",
         input: prompt,
-        max_output_tokens: 650,
+        max_output_tokens: 550,
         temperature: 0.45
       })
     });
@@ -176,7 +176,7 @@ async function fetchSyllabusText(url) {
       .replace(/&quot;/g, '"')
       .replace(/\s+/g, " ")
       .trim()
-      .slice(0, 3200);
+      .slice(0, 1800);
   } catch {
     return "";
   }
