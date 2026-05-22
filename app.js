@@ -56,9 +56,12 @@ const PAPER_LINKS = [
 ];
 
 const form = document.querySelector("#studySprintForm");
+const submitButton = form.querySelector("button[type='submit']");
 const outputLabel = document.querySelector("#sprintOutputLabel");
 const output = document.querySelector("#sprintOutput");
 const paperDirectory = document.querySelector("#paperDirectory");
+
+let loadingStatusTimer = null;
 
 renderPaperLinks();
 form.addEventListener("submit", generatePlan);
@@ -78,19 +81,22 @@ async function generatePlan(event) {
   details.topics = details.topics.length ? details.topics : defaultTopics(details.primarySubject);
   details.studyTime = details.studyTime || "1 hour after school, 2 hours on weekends";
 
-  outputLabel.textContent = "Creating your study plan...";
+  startLoadingState();
   output.innerHTML = `
     <div class="empty-plan loading-plan">
-      <strong>Reading your priorities.</strong>
-      <p>ChatGPT is using the selected NESA syllabus context to build a calm, realistic plan.</p>
+      <span class="loader-dot" aria-hidden="true"></span>
+      <strong>Building your personalized HSC study plan...</strong>
+      <p id="loadingStatus">Prioritising weak topics, exam timing and realistic workload.</p>
     </div>
   `;
 
   try {
     const answer = await askChatGpt(details);
+    stopLoadingState();
     renderAiPlan(details, answer);
   } catch (error) {
-    renderFallbackPlan(details, error.message);
+    stopLoadingState();
+    renderFriendlyError(details, error.message);
   }
 }
 
@@ -122,8 +128,12 @@ Rules:
 - Include breaks, procrastination management, and burnout prevention
 - Use HSC-specific terminology and one past-paper practice suggestion`;
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 24000);
+
   const response = await fetch("/api/chat", {
     method: "POST",
+    signal: controller.signal,
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
       question,
@@ -131,10 +141,17 @@ Rules:
       subject: details.primarySubject,
       syllabusUrl: details.syllabusUrl
     })
+  }).catch((error) => {
+    if (error.name === "AbortError") {
+      throw new Error("The plan is taking longer than expected. Try fewer subjects or weak topics.");
+    }
+    throw new Error("The study coach could not be reached. Check your connection and try again.");
   });
+  clearTimeout(timeout);
+
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || `ChatGPT failed with status ${response.status}.`);
-  if (!data.answer) throw new Error("ChatGPT did not return an answer.");
+  if (!response.ok) throw new Error(data.error || "The study coach could not generate a plan right now.");
+  if (!data.answer) throw new Error("The study coach returned an empty plan. Try again with clearer weak topics.");
   return data.answer;
 }
 
@@ -160,6 +177,50 @@ function renderFallbackPlan(details, note) {
     <section><h3>Past paper practice</h3><p>Open the official NESA past paper page, complete one question on your weakest topic, then mark it straight away.</p></section>
     ${sourceLink(details.syllabusUrl)}
   `;
+}
+
+function renderFriendlyError(details, note) {
+  const days = studyDays(details);
+  outputLabel.textContent = "Plan fallback ready";
+  output.innerHTML = `
+    ${summary(details, "Offline fallback")}
+    <section>
+      <h3>Quick recovery plan</h3>
+      <p>${escapeHtml(note)}</p>
+      <p>You can still start with this smaller plan while the AI coach is busy.</p>
+    </section>
+    <section><h3>Next best study sessions</h3>
+      <ol>${days.map((item) => `<li><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.task)}</span></li>`).join("")}</ol>
+    </section>
+    <section><h3>Try again faster</h3><p>Use 1-2 subjects and 2-4 weak topics for the fastest response.</p></section>
+  `;
+}
+
+function startLoadingState() {
+  const messages = [
+    "Building your personalized HSC study plan...",
+    "Prioritising weak areas and closest exam dates...",
+    "Turning your weak topics into timed study sessions...",
+    "Adding active recall, past-paper practice and burnout protection..."
+  ];
+  let index = 0;
+  outputLabel.textContent = messages[index];
+  submitButton.disabled = true;
+  submitButton.textContent = "Building plan...";
+  clearInterval(loadingStatusTimer);
+  loadingStatusTimer = setInterval(() => {
+    index = (index + 1) % messages.length;
+    outputLabel.textContent = messages[index];
+    const status = document.querySelector("#loadingStatus");
+    if (status) status.textContent = messages[index];
+  }, 2400);
+}
+
+function stopLoadingState() {
+  clearInterval(loadingStatusTimer);
+  loadingStatusTimer = null;
+  submitButton.disabled = false;
+  submitButton.textContent = "Create my study plan";
 }
 
 function summary(details, mode) {
