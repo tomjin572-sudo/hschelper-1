@@ -1,0 +1,303 @@
+.progress-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 20px;
+  animation: fadeUp 720ms ease both;
+}
+
+.progress-strip div {
+  min-height: 104px;
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+}
+
+.progress-strip strong,
+.progress-strip span {
+  display: block;
+}
+
+.progress-strip strong {
+  margin-bottom: 6px;
+  font-size: clamp(1.8rem, 4vw, 2.45rem);
+  line-height: 1;
+}
+
+.progress-strip span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: -6px;
+}
+
+.input-chip {
+  min-height: 34px;
+  padding: 0 12px;
+  color: rgba(247, 249, 255, 0.84);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+  font-size: 0.76rem;
+}
+
+.input-chip:hover {
+  background: rgba(103, 232, 249, 0.14);
+}
+
+button.action-button {
+  min-height: 46px;
+}
+
+button.ghost-close {
+  min-height: 42px;
+  padding: 0 16px;
+  color: rgba(247, 249, 255, 0.82);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  min-height: 18px;
+  accent-color: var(--cyan);
+}
+
+.focus-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: radial-gradient(circle at 18% 16%, rgba(103, 232, 249, 0.16), transparent 28rem), rgba(3, 6, 14, 0.88);
+  opacity: 0;
+  pointer-events: none;
+  backdrop-filter: blur(24px);
+  transition: opacity 220ms ease;
+}
+
+.focus-overlay[aria-hidden="false"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body.focus-active {
+  overflow: hidden;
+}
+
+.focus-shell {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(260px, 0.72fr);
+  gap: 18px;
+  width: min(1080px, 100%);
+  max-height: min(860px, calc(100vh - 36px));
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 34px;
+  padding: clamp(20px, 3vw, 34px);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.115), rgba(255, 255, 255, 0.045)), #090d18;
+  box-shadow: 0 42px 120px rgba(0, 0, 0, 0.62);
+  animation: focusIn 260ms ease both;
+}
+
+.ghost-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+}
+
+.focus-task {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding-right: 28px;
+}
+
+.focus-task h2 {
+  font-size: clamp(1.9rem, 5vw, 4rem);
+  line-height: 0.98;
+}
+
+.focus-task p {
+  color: var(--muted);
+  font-size: 1.06rem;
+  line-height: 1.55;
+}
+
+.focus-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.focus-meta span,
+.focus-meta a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  border-radius: 999px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(247, 249, 255, 0.84);
+  font-size: 0.78rem;
+  font-weight: 820;
+  text-decoration: none;
+}
+
+.focus-meta a {
+  color: #06101f;
+  background: linear-gradient(135deg, var(--cyan), var(--green));
+}
+
+.timer-panel {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 18px;
+  min-height: 330px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.progress-ring {
+  position: relative;
+  display: grid;
+  width: min(260px, 70vw);
+  aspect-ratio: 1;
+  place-items: center;
+}
+
+.progress-ring svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+
+.progress-ring circle {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 10;
+}
+
+#timerProgressCircle {
+  stroke: var(--cyan);
+  stroke-dasharray: 326.73;
+  stroke-dashoffset: 326.73;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 320ms linear;
+}
+
+.progress-ring strong {
+  font-size: clamp(3.5rem, 9vw, 5.8rem);
+  line-height: 1;
+}
+
+.timer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.practice-workflow,
+.completion-screen {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 12px;
+}
+
+.practice-workflow[hidden],
+.completion-screen[hidden],
+.focus-meta a[hidden] {
+  display: none;
+}
+
+.practice-workflow article,
+.answer-box,
+.task-check,
+.completion-screen {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.practice-workflow strong,
+.completion-grid span {
+  color: rgba(247, 249, 255, 0.86);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.practice-workflow p,
+.practice-workflow li,
+.completion-screen p {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.answer-box textarea {
+  min-height: 120px;
+  margin-top: 10px;
+}
+
+.task-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-transform: none;
+  font-size: 0.95rem;
+  letter-spacing: 0;
+}
+
+.completion-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 8px 0;
+}
+
+.completion-grid div {
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.completion-grid strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 1.35rem;
+}
+
+@keyframes focusIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@media (max-width: 980px) {
+  .progress-strip,
+  .focus-shell,
+  .completion-grid {
+    grid-template-columns: 1fr;
+  }
+}
