@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "node -e \"const fs=require('fs');fs.rmSync('public',{recursive:true,force:true});fs.mkdirSync('public');for(const f of ['index.html','styles.css','workflow.css','app.js','workflow.js','reliability.js','_redirects'])fs.copyFileSync(f,'public/'+f);console.log('Static site ready in public/')\"",
+    "build": "node -e \"const fs=require('fs');fs.rmSync('public',{recursive:true,force:true});fs.mkdirSync('public');for(const f of ['index.html','styles.css','workflow.css','app.js','workflow.js','reliability.js','feedback-fix.js','_redirects'])fs.copyFileSync(f,'public/'+f);console.log('Static site ready in public/')\"",
     "start": "node server.mjs"
   },
   "engines": {
