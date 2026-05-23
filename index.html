@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HSC Helper</title>
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./workflow.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -17,7 +18,7 @@
           </span>
           <div>
             <strong>HSC Helper</strong>
-            <span>Simple NSW exam planner</span>
+            <span>AI study execution system</span>
           </div>
         </div>
 
@@ -30,14 +31,21 @@
       <main>
         <header class="hero simple-hero" id="overview">
           <div>
-            <p class="eyebrow">AI HSC Study Planner</p>
-            <h1>Turn exam stress into a clear study plan.</h1>
+            <p class="eyebrow">AI HSC Study Execution</p>
+            <h1>Plan less. Start faster.</h1>
             <p class="hero-copy">
-              Add your subjects, dates, weak topics and available study time. Get a simple ChatGPT plan built around NESA syllabus context and official past-paper practice.
+              Add your subjects, dates, weak topics and study time. Get action cards, then launch straight into a timed focus session.
             </p>
             <a class="hero-cta" href="#study-sprint">Create my plan</a>
           </div>
         </header>
+
+        <section class="progress-strip" aria-label="Study progress">
+          <div><strong id="completedTasksStat">0</strong><span>Completed tasks</span></div>
+          <div><strong id="studyStreakStat">0</strong><span>Day streak</span></div>
+          <div><strong id="focusedMinutesStat">0</strong><span>Focused minutes</span></div>
+          <div><strong id="weakTopicsStat">0</strong><span>Weak topics attacked</span></div>
+        </section>
 
         <section class="study-sprint panel" id="study-sprint">
           <div class="panel-heading">
@@ -50,22 +58,32 @@
 
           <div class="sprint-layout">
             <form class="sprint-form" id="studySprintForm">
-              <p class="form-intro">Tell the planner what is coming up. Keep it messy if you want.</p>
+              <p class="form-intro">Four quick inputs. The AI turns them into practice cards you can start immediately.</p>
 
               <label>
                 Subjects
-                <textarea id="subjectsInput" class="compact-textarea" placeholder="English Advanced, Mathematics Advanced, Biology"></textarea>
+                <input id="subjectsInput" type="text" placeholder="English Advanced, Mathematics Advanced, Biology" />
               </label>
+              <div class="chip-row" aria-label="Popular subjects">
+                <button type="button" class="input-chip" data-target="#subjectsInput" data-value="English Advanced">English Advanced</button>
+                <button type="button" class="input-chip" data-target="#subjectsInput" data-value="Mathematics Advanced">Maths Advanced</button>
+                <button type="button" class="input-chip" data-target="#subjectsInput" data-value="Biology">Biology</button>
+              </div>
 
               <label>
                 Exam dates
-                <textarea id="examDatesInput" class="compact-textarea" placeholder="English: 18 Oct&#10;Maths: 22 Oct&#10;Biology: 28 Oct"></textarea>
+                <input id="examDatesInput" type="text" placeholder="English: 18 Oct, Maths: 22 Oct, Biology: 28 Oct" />
               </label>
 
-              <label class="sprint-topics">
+              <label>
                 Weak topics
-                <textarea id="weakTopicsInput" placeholder="Module B thesis, calculus applications, data analysis, short-answer timing"></textarea>
+                <input id="weakTopicsInput" type="text" placeholder="Module B thesis, calculus applications, short-answer timing" />
               </label>
+              <div class="chip-row" aria-label="Common weak topics">
+                <button type="button" class="input-chip" data-target="#weakTopicsInput" data-value="timed paragraph practice">Timed paragraph</button>
+                <button type="button" class="input-chip" data-target="#weakTopicsInput" data-value="exam-style short answers">Short answers</button>
+                <button type="button" class="input-chip" data-target="#weakTopicsInput" data-value="marking criteria">Marking criteria</button>
+              </div>
 
               <label>
                 Available study time
@@ -79,8 +97,8 @@
               <span id="sprintOutputLabel">Your plan will appear here</span>
               <div id="sprintOutput">
                 <div class="empty-plan">
-                  <strong>Built for clarity.</strong>
-                  <p>The planner turns four inputs into priorities, daily tasks, revision tips and past-paper practice.</p>
+                  <strong>Built for action.</strong>
+                  <p>The planner turns your inputs into high-ROI study cards, timed practice and progress tracking.</p>
                 </div>
               </div>
             </article>
@@ -102,6 +120,72 @@
       </main>
     </div>
 
+    <section class="focus-overlay" id="focusOverlay" aria-hidden="true">
+      <div class="focus-shell" role="dialog" aria-modal="true" aria-labelledby="focusTaskTitle">
+        <button class="ghost-close" id="closeFocusButton" type="button">Exit</button>
+        <div class="focus-task">
+          <p class="eyebrow">Focus session</p>
+          <h2 id="focusTaskTitle">Start practice</h2>
+          <p id="focusTaskText"></p>
+          <div class="focus-meta">
+            <span id="focusQuestionType"></span>
+            <span id="focusResourceName"></span>
+            <a id="focusResourceLink" href="#" target="_blank" rel="noreferrer">Open resource</a>
+          </div>
+        </div>
+
+        <div class="timer-panel">
+          <div class="progress-ring" aria-hidden="true">
+            <svg viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52"></circle>
+              <circle id="timerProgressCircle" cx="60" cy="60" r="52"></circle>
+            </svg>
+            <strong id="timerDisplay">25:00</strong>
+          </div>
+          <div class="timer-actions">
+            <button id="pauseTimerButton" type="button">Pause</button>
+            <button id="completeSessionButton" type="button">Mark Complete</button>
+          </div>
+        </div>
+
+        <div class="practice-workflow" id="practiceWorkflow">
+          <article>
+            <strong>Do this now</strong>
+            <p id="focusDoNow"></p>
+          </article>
+          <article>
+            <strong>How to approach</strong>
+            <ol id="focusApproachList"></ol>
+          </article>
+          <article>
+            <strong>Common mistake</strong>
+            <p id="focusMistake"></p>
+          </article>
+          <label class="answer-box">
+            Your working / answer notes
+            <textarea id="sessionNotes" placeholder="Write your answer, working, error log, or paragraph here..."></textarea>
+          </label>
+          <label class="task-check">
+            <input id="taskCheck" type="checkbox" />
+            I completed the practice task and checked it against the resource.
+          </label>
+        </div>
+
+        <div class="completion-screen" id="completionScreen" hidden>
+          <p class="eyebrow">Session completed</p>
+          <h2>Momentum banked.</h2>
+          <p id="completionFeedback"></p>
+          <div class="completion-grid">
+            <div><strong id="completionMinutes">25</strong><span>Focused minutes</span></div>
+            <div><strong id="completionImpact">High</strong><span>Marks impact</span></div>
+            <div><strong id="completionNext">Next card</strong><span>Recommended next</span></div>
+          </div>
+          <button id="continueButton" type="button">Continue</button>
+        </div>
+      </div>
+    </section>
+
     <script src="./app.js"></script>
+    <script src="./workflow.js"></script>
   </body>
 </html>
