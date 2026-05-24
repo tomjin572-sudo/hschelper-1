@@ -47,7 +47,7 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     if (error.name === "AbortError") {
       return res.status(504).json({
-        error: "The study plan took too long to generate. Try again with fewer subjects or weaker topics."
+      error: "The study plan took too long to generate. Try again with fewer subjects or weaker topics."
       });
     }
 
@@ -68,11 +68,27 @@ Core rules:
 - Make hard priority calls. Do not balance every subject equally.
 - Keep the output short. No generic motivation. No long explanations.
 - Each card must push the student into one startable study session, not a weekly plan.
+- Each subject must feel like a different learning system, not the same generic study workflow.
+- Maths cards must prioritise timed problem solving, method marks, repetition, mistake tracking, adaptive difficulty and speed.
+- English cards must prioritise thesis, paragraph structure, quote/evidence integration, analysis depth, essay scaffolding and writing feedback.
+- Economics cards must prioritise cause-effect chains, terminology, statistics, real-world application, policy analysis and extended-response judgement.
+- Biology/Science cards must prioritise process understanding, active recall, scientific terminology, short-answer precision, diagrams and sequence accuracy.
+- General cards must still follow a learn-practice-feedback-repair loop.
 - The first sentence of doThisNow must start with a strong verb such as Complete, Write, Solve, Mark, Redo, Memorise, or Draft.
 - Include a number or time limit in the exact task when possible: 5 questions, 1 paragraph, 12 marks, 25 minutes, 3 dot points, or 2 feedback fixes.
 - Do not say "review notes", "watch videos", "go over content", "study the topic", "revise quadratics", or "read the textbook" unless it is followed by a forced recall, timed question, marking, or correction action.
 - For maths/science, prefer timed past-paper or worksheet questions, then marking and an error log.
 - For English/HSIE, prefer timed thesis, paragraph, source analysis, essay scaffold, evidence bank, or marking-criteria check.
+
+Subject intelligence:
+- Infer the subject from the user's selected subject, weak topic and question.
+- Use the correct HSC marking psychology for that subject.
+- Do not give every subject the same advice with a different label.
+- Mention the specific execution style in the card: problem lab, writing studio, economic chain builder, process recall lab, or HSC execution coach.
+- If the subject is Maths, questions should sound like calculations or graph/application tasks.
+- If the subject is English, tasks should sound like writing, thesis, paragraph, quote or analysis tasks.
+- If the subject is Economics, tasks should sound like chains, policy, statistics, examples or extended responses.
+- If the subject is Biology/Science, tasks should sound like processes, diagrams, recall, terminology or short-answer drills.
 
 Resource rules:
 - Prefer NESA past paper pages, marking guidelines, syllabus pages, teacher feedback, class worksheets, textbook exercises, or student notes.
