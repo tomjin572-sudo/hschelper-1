@@ -24,6 +24,7 @@
   interceptStudyCoachRequests();
   watchLearningSessions();
   injectLearningFlowStyles();
+  document.addEventListener("click", handleGlobalFlowClick, true);
 
   function injectStudentStateInput() {
     const form = document.querySelector("#studySprintForm");
@@ -103,6 +104,7 @@
     const nav = document.createElement("div");
     nav.className = "learning-flow-nav";
     nav.innerHTML = `
+      <div class="flow-current" id="flowCurrentStep">Step 1: Mini Lesson</div>
       <div class="flow-step-tabs">
         ${FLOW_STEPS.map((step, index) => `<button type="button" data-flow-step="${index}">${step.label}</button>`).join("")}
       </div>
@@ -120,7 +122,15 @@
     applyLearningStep();
   }
 
+  function handleGlobalFlowClick(event) {
+    if (!event.target.closest(".learning-flow-nav [data-flow-step], .learning-flow-nav [data-flow-prev], .learning-flow-nav [data-flow-next]")) return;
+    handleFlowNav(event);
+  }
+
   function handleFlowNav(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation?.();
     const direct = event.target.closest("[data-flow-step]");
     if (direct) activeStep = Number(direct.dataset.flowStep);
     if (event.target.closest("[data-flow-prev]")) activeStep = Math.max(0, activeStep - 1);
@@ -139,6 +149,8 @@
     pack.querySelectorAll("[data-flow-step]").forEach((button, index) => {
       button.classList.toggle("is-active", index === activeStep);
     });
+    const current = document.querySelector("#flowCurrentStep");
+    if (current) current.textContent = stepTitle(step);
 
     pack.querySelectorAll(".study-tabs section").forEach((section) => {
       const title = section.querySelector("strong")?.textContent?.toLowerCase() || "";
@@ -159,6 +171,7 @@
     const next = pack.querySelector("[data-flow-next]");
     if (next) next.textContent = step === "next" ? "Ready" : nextLabel(step);
     document.querySelector("#questionEngineBrief") && (document.querySelector("#questionEngineBrief").textContent = engineBrief(step));
+    scrollActiveLearningStepIntoView(step);
   }
 
   function addResourceBankNote(engine) {
@@ -240,6 +253,27 @@
     }[step] || "Continue";
   }
 
+  function stepTitle(step) {
+    return {
+      learn: "Step 1: Mini Lesson",
+      example: "Step 2: Worked Example",
+      practice: "Step 3: Your Turn",
+      feedback: "Step 4: AI Feedback",
+      fix: "Step 5: Fix Drill",
+      next: "Step 6: Next Targeted Step"
+    }[step] || "Learning Flow";
+  }
+
+  function scrollActiveLearningStepIntoView(step) {
+    const target =
+      step === "practice" ? document.querySelector(".question-engine") :
+      step === "fix" ? document.querySelector("#adaptiveFixDrill") :
+      document.querySelector(".study-tabs section:not(.flow-hidden)") || document.querySelector(".study-pack");
+    window.setTimeout(() => {
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  }
+
   function engineBrief(step) {
     return {
       learn: "Read the mini lesson first. The questions stay hidden so you are not overloaded.",
@@ -270,6 +304,7 @@
       .state-chip{border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:9px 12px;background:rgba(255,255,255,.06);color:var(--muted);font-weight:800;cursor:pointer}
       .state-chip.is-active{border-color:rgba(139,211,255,.7);background:linear-gradient(135deg,rgba(139,211,255,.28),rgba(124,140,255,.18));color:#fff}
       .learning-flow-nav{display:grid;gap:10px;margin-bottom:4px}
+      .flow-current{display:flex;align-items:center;min-height:38px;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:0 12px;background:rgba(255,255,255,.055);color:#fff;font-weight:950}
       .flow-step-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
       .flow-step-tabs button{min-height:34px;border:1px solid rgba(255,255,255,.08);border-radius:999px;background:rgba(255,255,255,.05);color:var(--muted);font-weight:900;font-size:.72rem}
       .flow-step-tabs button.is-active{background:linear-gradient(135deg,var(--subject-a,#8bd3ff),var(--subject-b,#7c8cff));color:#06101f}
