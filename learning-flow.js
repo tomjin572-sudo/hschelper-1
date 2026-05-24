@@ -86,12 +86,12 @@
       const pack = document.querySelector(".study-pack");
       const overlay = document.querySelector("#focusOverlay");
       if (!pack || overlay?.getAttribute("aria-hidden") !== "false") return;
-      const key = pack.textContent.slice(0, 180);
-      if (key === lastPackKey && document.querySelector(".learning-flow-nav")) return;
+      if (document.querySelector(".learning-flow-nav")) return;
+      const key = pack.className;
       lastPackKey = key;
       activeStep = 0;
       upgradePackToLearningFlow();
-    }).observe(document.body, { childList: true, subtree: true, attributes: true });
+    }).observe(document.body, { childList: true, subtree: true });
   }
 
   function upgradePackToLearningFlow() {
