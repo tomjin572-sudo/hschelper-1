@@ -129,3 +129,103 @@
     return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 })();
+
+(() => {
+  const STEP_ORDER = ["learn", "example", "practice", "feedback", "fix", "next"];
+  const STEP_TITLES = {
+    learn: "Step 1: Mini Lesson",
+    example: "Step 2: Worked Example",
+    practice: "Step 3: Your Turn",
+    feedback: "Step 4: AI Feedback",
+    fix: "Step 5: Fix Drill",
+    next: "Step 6: Next Targeted Step"
+  };
+  const STEP_BUTTONS = {
+    learn: "Show Example",
+    example: "Start Practice",
+    practice: "Check Feedback",
+    feedback: "Fix Weakness",
+    fix: "Next Step",
+    next: "Ready"
+  };
+  let desiredStep = 0;
+
+  document.addEventListener("click", (event) => {
+    const control = event.target.closest(".learning-flow-nav [data-flow-step], .learning-flow-nav [data-flow-prev], .learning-flow-nav [data-flow-next]");
+    if (!control) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation?.();
+
+    if (control.matches("[data-flow-step]")) desiredStep = Number(control.dataset.flowStep || 0);
+    if (control.matches("[data-flow-prev]")) desiredStep = Math.max(0, desiredStep - 1);
+    if (control.matches("[data-flow-next]")) desiredStep = Math.min(STEP_ORDER.length - 1, desiredStep + 1);
+
+    applyPremiumFlowStep();
+    window.setTimeout(applyPremiumFlowStep, 80);
+    window.setTimeout(applyPremiumFlowStep, 220);
+  }, true);
+
+  new MutationObserver(() => {
+    cleanBadStudyText();
+    if (document.querySelector(".learning-flow-nav")) window.setTimeout(applyPremiumFlowStep, 40);
+  }).observe(document.body, { childList: true, subtree: true, characterData: true });
+
+  function applyPremiumFlowStep() {
+    const pack = document.querySelector(".study-pack");
+    const engine = document.querySelector(".question-engine");
+    if (!pack) return;
+
+    const step = STEP_ORDER[desiredStep] || "learn";
+    pack.dataset.activeFlow = step;
+
+    pack.querySelectorAll("[data-flow-step]").forEach((button, index) => {
+      button.classList.toggle("is-active", index === desiredStep);
+    });
+
+    const current = document.querySelector("#flowCurrentStep");
+    if (current) current.textContent = STEP_TITLES[step];
+
+    const next = pack.querySelector("[data-flow-next]");
+    if (next) next.textContent = STEP_BUTTONS[step];
+
+    pack.querySelectorAll(".study-tabs section").forEach((section) => {
+      const title = section.querySelector("strong")?.textContent?.toLowerCase() || "";
+      const visible =
+        (step === "learn" && title.includes("learn")) ||
+        (step === "example" && (title.includes("worked") || title.includes("approach") || title.includes("concept"))) ||
+        (step === "feedback" && title.includes("feedback")) ||
+        (step === "fix" && title.includes("weakness")) ||
+        (step === "next" && title.includes("next"));
+      section.classList.toggle("flow-hidden", !visible);
+    });
+
+    document.querySelectorAll("#practiceWorkflow > article:not(.study-pack):not(.question-engine):not(#adaptiveFixDrill)").forEach((card) => {
+      card.classList.toggle("flow-hidden", step !== "practice");
+    });
+
+    engine?.classList.toggle("flow-hidden", step !== "practice");
+    document.querySelector("#adaptiveFixDrill")?.classList.toggle("flow-hidden", step !== "fix");
+    document.querySelector("#sessionNotes")?.closest(".answer-box")?.classList.toggle("flow-hidden", step !== "practice");
+    document.querySelector(".task-check")?.classList.toggle("flow-hidden", step !== "practice");
+
+    const visible = step === "practice"
+      ? engine
+      : step === "fix"
+        ? document.querySelector("#adaptiveFixDrill")
+        : pack.querySelector(".study-tabs section:not(.flow-hidden)");
+    visible?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function cleanBadStudyText() {
+    document.querySelectorAll(".study-pack p, #focusTaskText, #focusTaskTitle").forEach((node) => {
+      const text = node.textContent || "";
+      if (!/\bturn\b/i.test(text)) return;
+      const cleaned = text
+        .replace(/\b(Turn)(\s+Turn\b){2,}/gi, "Priority topic")
+        .replace(/Priority topic needs a simple execution loop:/i, "This session uses a simple execution loop:")
+        .replace(/Turn Priority topic into/i, "Run");
+      if (cleaned !== text) node.textContent = cleaned;
+    });
+  }
+})();
