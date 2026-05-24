@@ -436,4 +436,15 @@ Do not return JSON.`
     `;
     document.head.appendChild(style);
   }
+
+  function loadLearningFlowLayer() {
+    if (window.__hscLearningFlowLoader || document.querySelector('script[src="./learning-flow.js"]')) return;
+    window.__hscLearningFlowLoader = true;
+    const script = document.createElement("script");
+    script.src = "./learning-flow.js";
+    script.defer = true;
+    document.body.appendChild(script);
+  }
+
+  loadLearningFlowLayer();
 })();
