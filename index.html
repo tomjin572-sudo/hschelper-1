@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HSC Helper</title>
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./evening-plan.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -57,7 +58,7 @@
 
           <div class="sprint-layout">
             <form class="sprint-form" id="studySprintForm">
-              <p class="form-intro">Four quick inputs. The AI turns them into practice cards you can start immediately.</p>
+              <p class="form-intro">Four quick inputs. The AI turns your revision time into a tonight flow plus practice cards you can start immediately.</p>
 
               <label>
                 Subjects
@@ -85,8 +86,8 @@
               </div>
 
               <label>
-                Available study time
-                <input id="studyTimeInput" type="text" placeholder="Example: 1 hour after school, 3 hours on weekends" />
+                How much revision time do you have today?
+                <input id="studyTimeInput" type="text" placeholder="Example: 90 minutes tonight, 2 hours after dinner, 45 minutes before bed" />
               </label>
 
               <button class="primary-cta" type="submit">Create my study plan</button>
@@ -196,6 +197,7 @@
 
     <script src="./reliability.js"></script>
     <script src="./feedback-fix.js"></script>
+    <script src="./evening-plan.js"></script>
     <script src="./app.js"></script>
     <script src="./workflow.js"></script>
     <script src="./study-pack.js"></script>
