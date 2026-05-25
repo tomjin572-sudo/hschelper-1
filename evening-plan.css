@@ -1,0 +1,154 @@
+.evening-plan {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(103, 232, 249, 0.16);
+  border-radius: 24px;
+  padding: 18px;
+  background:
+    linear-gradient(135deg, rgba(103, 232, 249, 0.1), rgba(163, 230, 179, 0.05)),
+    rgba(255, 255, 255, 0.045);
+}
+
+.evening-plan-head,
+.start-now-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.evening-plan-head h3,
+.start-now-heading strong {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
+.evening-plan-head p,
+.start-now-heading span,
+.evening-plan-note {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.evening-plan-head > span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  border-radius: 999px;
+  padding: 0 12px;
+  color: #06131f;
+  background: linear-gradient(135deg, var(--green), var(--cyan));
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.evening-timeline {
+  display: grid;
+  gap: 10px;
+}
+
+.timeline-block {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.28fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  padding: 13px;
+  background: rgba(9, 14, 24, 0.38);
+}
+
+.timeline-block.is-practice {
+  border-color: rgba(103, 232, 249, 0.24);
+  background: linear-gradient(135deg, rgba(103, 232, 249, 0.12), rgba(102, 168, 255, 0.06));
+}
+
+.timeline-top {
+  display: grid;
+  gap: 6px;
+}
+
+.timeline-top span,
+.timeline-top em {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.76rem;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.timeline-top span {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.timeline-top em {
+  color: #06131f;
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+}
+
+.timeline-body {
+  display: grid;
+  gap: 5px;
+}
+
+.timeline-body strong {
+  color: var(--text);
+  font-size: 0.98rem;
+}
+
+.timeline-body p {
+  margin: 0;
+  color: rgba(247, 249, 255, 0.78);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.timeline-body small {
+  color: rgba(247, 249, 255, 0.52);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.timeline-button {
+  min-height: 40px;
+  border: none;
+  border-radius: 999px;
+  padding: 0 15px;
+  color: #07111e;
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+  font-weight: 900;
+  box-shadow: 0 16px 34px rgba(102, 168, 255, 0.16);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.timeline-button:hover {
+  transform: translateY(-1px);
+}
+
+.start-now-heading {
+  margin-top: 4px;
+}
+
+@media (max-width: 880px) {
+  .timeline-block {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .timeline-top {
+    display: flex;
+    align-items: center;
+  }
+
+  .timeline-button {
+    width: 100%;
+  }
+}
