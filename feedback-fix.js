@@ -74,6 +74,8 @@
       cleanBadText();
       tuneForStudentState();
       upgradePracticeExperience();
+      addMarksAndSubjectCoaching();
+      upgradeCompletionSummary();
       restoreSavedAnswers();
       if (document.querySelector(".learning-flow-nav")) applyStep();
     }, 80);
@@ -155,6 +157,49 @@
       textarea.addEventListener("input", () => saveAnswer(textarea));
       restoreOneAnswer(textarea);
     });
+  }
+
+  function addMarksAndSubjectCoaching() {
+    document.querySelectorAll(".question-card").forEach((card) => {
+      if (!card.querySelector(".mark-badge")) {
+        const badge = document.createElement("strong");
+        badge.className = "mark-badge";
+        badge.textContent = marksForQuestion(card);
+        card.querySelector(".question-topline")?.appendChild(badge);
+      }
+    });
+
+    const isEcon = /economics|labou?r market|unemployment|inflation|monetary|fiscal|wage|aggregate demand/i.test(document.body.textContent);
+    const engine = document.querySelector(".question-engine");
+    if (isEcon && engine && !engine.querySelector(".econ-stat-note")) {
+      const note = document.createElement("div");
+      note.className = "econ-stat-note";
+      note.innerHTML = [
+        "<strong>Economics evidence layer</strong>",
+        "<span>Use one current-data placeholder if you do not know the exact number: [unemployment rate], [participation rate], [inflation rate], [cash rate], [minimum wage], or [GDP growth]. Explain the chain first, then add data.</span>"
+      ].join("");
+      engine.querySelector(".practice-bank-note")?.after(note);
+    }
+  }
+
+  function marksForQuestion(card) {
+    const text = card.textContent || "";
+    if (/challenge|extended response|essay|12-mark|analyse/i.test(text)) return "8-12 marks";
+    if (/6-mark|paragraph|policy|explain how|scaffold/i.test(text)) return "6 marks";
+    if (/4-mark|explain|outline|create a 4-link/i.test(text)) return "4 marks";
+    return "2 marks";
+  }
+
+  function upgradeCompletionSummary() {
+    const screen = document.querySelector("#completionScreen:not([hidden])");
+    const feedback = document.querySelector("#completionFeedback");
+    if (!screen || !feedback || screen.dataset.examSummaryReady) return;
+    screen.dataset.examSummaryReady = "true";
+    const weakness = latestWeakness();
+    const econ = /economics|labou?r market|unemployment|inflation|monetary|fiscal|wage/i.test(document.body.textContent);
+    feedback.textContent = econ
+      ? `Tonight: redo one labour/economics chain, memorise one policy transmission, and write one timed 6-mark paragraph. Biggest fix: ${weakness.mistake || "explain the mechanism, not just the outcome"}.`
+      : `Tonight: redo the weakest question, write the correction rule, and complete one timed response. Biggest fix: ${weakness.mistake || "make the marking point obvious"}.`;
   }
 
   function answerKey(textarea) {
@@ -261,6 +306,7 @@ What went wrong
 Why marks were lost
 Fix this now
 Next targeted task
+For Economics, mention economic chain, terminology, data/example use, policy impact and judgement where relevant.
 Do not return JSON.`;
   }
 
@@ -279,10 +325,24 @@ Do not return JSON.`;
     return [
       "Verdict: Good start, but it needs a cleaner mark-winning step.",
       `What went wrong: ${mistake}.`,
-      `Why marks were lost: the marker cannot clearly see ${focus}.`,
-      `Fix this now: ${maths ? "show the method line-by-line and state the final answer clearly" : `add one sentence that directly proves ${focus}`}.`,
+      `Why marks were lost: ${economicsReason(question, focus)}`,
+      `Fix this now: ${maths ? "show the method line-by-line and state the final answer clearly" : economicsFix(question, focus)}.`,
       "Next targeted task: redo a smaller version of this question in 5 minutes."
     ].join("\n");
+  }
+
+  function economicsReason(question, focus) {
+    if (/economics|labou?r market|unemployment|inflation|monetary|fiscal|wage|aggregate/i.test(question)) {
+      return "the economic chain is not visible enough: cause -> mechanism -> effect -> judgement.";
+    }
+    return `the marker cannot clearly see ${focus}.`;
+  }
+
+  function economicsFix(question, focus) {
+    if (/economics|labou?r market|unemployment|inflation|monetary|fiscal|wage|aggregate/i.test(question)) {
+      return "write one explicit chain, add one data/example placeholder, then finish with a judgement";
+    }
+    return `add one sentence that directly proves ${focus}`;
   }
 
   function line(text, label) {
@@ -322,9 +382,13 @@ Do not return JSON.`;
     .state-tuning{display:inline-flex;margin-top:10px;border-radius:999px;padding:6px 9px;background:rgba(255,255,255,.07);color:rgba(247,249,255,.82);font-weight:850}
     .fix-drill-card{border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px;margin:8px 0 12px;background:rgba(255,255,255,.06);color:rgba(247,249,255,.92);font-weight:850;line-height:1.42}
     .practice-bank-note{display:grid;gap:3px;margin:10px 0;padding:11px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.045)}
+    .econ-stat-note{display:grid;gap:3px;margin:10px 0;padding:11px 12px;border-radius:14px;border:1px solid rgba(143,240,197,.18);background:rgba(143,240,197,.07)}
+    .econ-stat-note strong{font-size:.78rem;text-transform:uppercase;color:rgba(247,249,255,.9)}
+    .econ-stat-note span{color:rgba(229,234,247,.75);font-size:.9rem;line-height:1.42}
     .practice-bank-note strong{font-size:.78rem;text-transform:uppercase;color:rgba(247,249,255,.9)}
     .practice-bank-note span{color:rgba(229,234,247,.72);font-size:.9rem;line-height:1.42}
     .answer-saved{display:block;margin-top:6px;color:rgba(143,240,197,.9);font-weight:850}
+    .mark-badge{margin-left:auto;border-radius:999px;padding:5px 8px;background:rgba(255,255,255,.08);color:rgba(247,249,255,.9);font-size:.72rem;font-weight:950}
   `;
   document.head.appendChild(style);
 })();
