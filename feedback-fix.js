@@ -73,6 +73,8 @@
       observerQueued = false;
       cleanBadText();
       tuneForStudentState();
+      upgradePracticeExperience();
+      restoreSavedAnswers();
       if (document.querySelector(".learning-flow-nav")) applyStep();
     }, 80);
   }).observe(document.body, { childList: true, subtree: true });
@@ -133,6 +135,59 @@
     } else if (state.includes("writing")) {
       doNow.textContent = "Write in structure: claim, evidence, explanation, link.";
     }
+  }
+
+  function upgradePracticeExperience() {
+    const engine = document.querySelector(".question-engine");
+    if (engine && !engine.querySelector(".practice-bank-note")) {
+      const note = document.createElement("div");
+      note.className = "practice-bank-note";
+      note.innerHTML = [
+        "<strong>AI-generated HSC practice</strong>",
+        "<span>Use these when exact official NESA questions are not available. For official papers, use the NESA links in Past Papers.</span>"
+      ].join("");
+      engine.querySelector(".question-engine-head")?.after(note);
+    }
+
+    document.querySelectorAll("textarea[data-pack-answer], textarea[data-question-answer]").forEach((textarea) => {
+      if (textarea.dataset.autosaveReady) return;
+      textarea.dataset.autosaveReady = "true";
+      textarea.addEventListener("input", () => saveAnswer(textarea));
+      restoreOneAnswer(textarea);
+    });
+  }
+
+  function answerKey(textarea) {
+    const card = textarea.closest(".question-card");
+    const question = card?.querySelector(".question-text")?.textContent?.trim() || "";
+    const index = textarea.dataset.packAnswer || textarea.dataset.questionAnswer || "0";
+    return `hsc-answer:${index}:${question.slice(0, 70)}`;
+  }
+
+  function saveAnswer(textarea) {
+    try {
+      localStorage.setItem(answerKey(textarea), textarea.value);
+      const card = textarea.closest(".question-card");
+      let saved = card?.querySelector(".answer-saved");
+      if (!saved && card) {
+        saved = document.createElement("small");
+        saved.className = "answer-saved";
+        textarea.closest("label")?.appendChild(saved);
+      }
+      if (saved) saved.textContent = textarea.value.trim() ? "Saved" : "";
+    } catch {}
+  }
+
+  function restoreSavedAnswers() {
+    document.querySelectorAll("textarea[data-pack-answer], textarea[data-question-answer]").forEach(restoreOneAnswer);
+  }
+
+  function restoreOneAnswer(textarea) {
+    if (textarea.value) return;
+    try {
+      const saved = localStorage.getItem(answerKey(textarea));
+      if (saved) textarea.value = saved;
+    } catch {}
   }
 
   function updateFixDrill() {
@@ -266,6 +321,10 @@ Do not return JSON.`;
   style.textContent = `
     .state-tuning{display:inline-flex;margin-top:10px;border-radius:999px;padding:6px 9px;background:rgba(255,255,255,.07);color:rgba(247,249,255,.82);font-weight:850}
     .fix-drill-card{border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px;margin:8px 0 12px;background:rgba(255,255,255,.06);color:rgba(247,249,255,.92);font-weight:850;line-height:1.42}
+    .practice-bank-note{display:grid;gap:3px;margin:10px 0;padding:11px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.045)}
+    .practice-bank-note strong{font-size:.78rem;text-transform:uppercase;color:rgba(247,249,255,.9)}
+    .practice-bank-note span{color:rgba(229,234,247,.72);font-size:.9rem;line-height:1.42}
+    .answer-saved{display:block;margin-top:6px;color:rgba(143,240,197,.9);font-weight:850}
   `;
   document.head.appendChild(style);
 })();
