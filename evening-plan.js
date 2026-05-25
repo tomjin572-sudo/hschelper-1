@@ -49,17 +49,13 @@ Evening revision flow requirement:
     const details = getPlannerDetails();
     const cardCount = Math.max(1, output.querySelectorAll(".execution-card").length || 1);
     const blocks = buildEveningPlan(details, cardCount);
+    const cardElements = Array.from(stack.querySelectorAll(".execution-card"));
     const section = document.createElement("section");
     section.className = "evening-plan";
-    section.innerHTML = renderEveningPlan(blocks, details);
+    section.innerHTML = renderEveningPlan(blocks, details, cardElements);
     stack.parentNode.insertBefore(section, stack);
-
-    if (!output.querySelector(".start-now-heading")) {
-      const heading = document.createElement("div");
-      heading.className = "start-now-heading";
-      heading.innerHTML = "<strong>Start Now Cards</strong><span>Use these when a timeline block says Start Practice.</span>";
-      stack.parentNode.insertBefore(heading, stack);
-    }
+    stack.hidden = true;
+    stack.classList.add("action-card-source");
   }
 
   function getPlannerDetails() {
@@ -213,36 +209,43 @@ Evening revision flow requirement:
     return `${hour12}:${String(minute).padStart(2, "0")}`;
   }
 
-  function renderEveningPlan(blocks, details) {
+  function renderEveningPlan(blocks, details, cardElements) {
     const total = blocks.reduce((sum, item) => sum + item.minutes, 0);
     return `
       <div class="evening-plan-head">
         <div>
           <h3>Tonight's Revision Flow</h3>
-          <p>Built around the time you said you have.</p>
+          <p>Each time block has the exact action underneath. Practice blocks include a big card you can open.</p>
         </div>
         <span>${total} min</span>
       </div>
       <div class="evening-timeline" aria-label="Tonight revision timeline">
-        ${blocks.map((item, index) => renderEveningBlock(item, index)).join("")}
+        ${blocks.map((item, index) => renderEveningBlock(item, index, cardElements)).join("")}
       </div>
-      <p class="evening-plan-note">Based on: ${escapeHtml(details.studyTime || "tonight")}. Practice blocks open the focused question session.</p>
+      <p class="evening-plan-note">Based on: ${escapeHtml(details.studyTime || "tonight")}. Follow the blocks from top to bottom.</p>
     `;
   }
 
-  function renderEveningBlock(item, index) {
+  function renderEveningBlock(item, index, cardElements) {
+    const card = item.opensPractice ? cardElements[Number(item.cardIndex) || 0] || cardElements[0] : null;
     return `
       <article class="timeline-block ${item.opensPractice ? "is-practice" : ""}">
-        <div class="timeline-top">
-          <span>${escapeHtml(item.time)}</span>
-          <em>${escapeHtml(item.duration)}</em>
+        <div class="timeline-header">
+          <div class="timeline-top">
+            <span>${escapeHtml(item.time)}</span>
+            <em>${escapeHtml(item.duration)}</em>
+          </div>
+          <div class="timeline-body">
+            <strong>${index + 1}. ${escapeHtml(item.title)}</strong>
+            <p>${escapeHtml(item.action)}</p>
+            <small>${escapeHtml(item.subject)} - ${escapeHtml(item.topic)} - ${escapeHtml(item.purpose)}</small>
+          </div>
         </div>
-        <div class="timeline-body">
-          <strong>${index + 1}. ${escapeHtml(item.title)}</strong>
-          <p>${escapeHtml(item.action)}</p>
-          <small>${escapeHtml(item.subject)} - ${escapeHtml(item.topic)} - ${escapeHtml(item.purpose)}</small>
-        </div>
-        ${item.opensPractice ? `<button class="timeline-button start-session" type="button" data-card-index="${Number(item.cardIndex) || 0}">Start Practice</button>` : ""}
+        ${
+          card
+            ? `<div class="timeline-card-slot">${card.outerHTML}</div>`
+            : `<div class="timeline-task-card"><strong>Do this block</strong><p>${escapeHtml(item.action)}</p></div>`
+        }
       </article>
     `;
   }
