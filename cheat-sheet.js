@@ -27,7 +27,7 @@
         </div>
         <span class="mode-pill">Exam survival mode</span>
       </div>
-      <p class="section-copy">A compact last-night revision sheet: what to revise, what to ignore, common traps, and the practice to start inside HSC Helper.</p>
+      <p class="section-copy">A compact cheat sheet and exam plan together: what to revise, what to ignore, tonight's order, tomorrow morning reset, and the practice to start inside HSC Helper.</p>
       <div class="cheat-builder">
         <form class="cheat-form" id="cheatSheetForm">
           <label>Subject<input id="cheatSubjectInput" type="text" placeholder="Economics, Maths Advanced, English Advanced, Biology" /></label>
@@ -36,6 +36,7 @@
           <label>Weakest areas<input id="cheatWeakAreasInput" type="text" placeholder="Cause/effect chains, diagrams, definitions, calculations" /></label>
           <label>Available study time tonight<input id="cheatStudyTimeInput" type="text" placeholder="45 minutes, 90 minutes, 2 hours" /></label>
           <label class="cheat-notes">Optional class content<textarea id="cheatNotesInput" placeholder="Paste assessment notice, syllabus points, teacher notes, or class reminders here..."></textarea></label>
+          <button class="secondary-cheat-action" type="button" data-use-planner>Use My Planner Details</button>
           <button class="primary-cta" type="submit">Generate Tomorrow Cheat Sheet</button>
         </form>
         <article class="cheat-output-wrap" aria-live="polite">
@@ -43,7 +44,7 @@
           <div id="cheatSheetOutput">
             <div class="empty-plan">
               <strong>Built for the night before.</strong>
-              <p>Enter the exam details and HSC Helper will turn them into a focused revision order, must-know content, and a practice session.</p>
+              <p>Enter the exam details and HSC Helper will turn them into one combined cheat sheet, study plan, and practice session.</p>
             </div>
           </div>
         </article>
@@ -83,14 +84,14 @@
     const output = document.querySelector("#cheatSheetOutput");
     const status = document.querySelector("#cheatSheetStatus");
 
-    if (status) status.textContent = `${profile.name} cheat sheet for ${examDate}`;
+    if (status) status.textContent = `${profile.name} cheat sheet + plan for ${examDate}`;
     if (!output) return;
 
     output.innerHTML = `
       <article class="cheat-sheet-result">
         <div class="cheat-print-head">
           <div>
-            <p class="eyebrow">Tomorrow Cheat Sheet</p>
+            <p class="eyebrow">Tomorrow Cheat Sheet + Plan</p>
             <h3>${esc(profile.name)}: ${esc(topics)}</h3>
             <p>Exam: ${esc(examDate)} | Tonight: ${esc(time)}</p>
           </div>
@@ -105,7 +106,7 @@
         ${list("High-Probability Questions", questions)}
         ${list("Common Mistakes", profile.mistakes(weak))}
         ${card("How To Answer", profile.answer(topics))}
-        ${list("Tonight's Revision Order", revisionOrder(time))}
+        ${planBlock(profile, topics, weak, time)}
         <section class="cheat-card practice-now">
           <strong>Practice Inside HSC Helper</strong>
           <div class="cheat-practice-grid">
@@ -121,6 +122,11 @@
   }
 
   function handleClick(event) {
+    const usePlanner = event.target.closest("[data-use-planner]");
+    if (usePlanner) {
+      fillFromPlanner();
+      return;
+    }
     const copy = event.target.closest("[data-copy-sheet]");
     if (copy) {
       downloadPdfSheet();
@@ -133,6 +139,21 @@
     }
     const start = event.target.closest("[data-start-sheet], [data-cheat-practice]");
     if (start) startRevision(start.dataset.cheatPractice || "");
+  }
+
+  function fillFromPlanner() {
+    const subjects = val("#subjectsInput");
+    const examDates = val("#examDatesInput");
+    const weakTopics = val("#weakTopicsInput");
+    const studyTime = val("#studyTimeInput");
+
+    if (subjects) setInput("#cheatSubjectInput", subjects.split(",")[0].trim());
+    if (examDates) setInput("#cheatExamDateInput", examDates);
+    if (weakTopics) {
+      setInput("#cheatTopicsInput", weakTopics);
+      setInput("#cheatWeakAreasInput", weakTopics);
+    }
+    if (studyTime) setInput("#cheatStudyTimeInput", studyTime);
   }
 
   function startRevision(customTask) {
@@ -290,6 +311,41 @@
     return ["20 min: must-know content from memory.", "40 min: targeted practice set.", "25 min: mark and repair weak areas.", "25 min: timed exam-style response.", "10 min: final recall check and stop."];
   }
 
+  function planBlock(profile, topics, weak, time) {
+    const order = revisionOrder(time);
+    return `
+      <section class="cheat-card combined-plan">
+        <strong>Combined Exam Plan</strong>
+        <div class="plan-grid">
+          <div>
+            <b>Tonight</b>
+            <ol>${order.map((item) => `<li>${esc(item)}</li>`).join("")}</ol>
+          </div>
+          <div>
+            <b>Highest ROI Practice</b>
+            <p>${esc(profile.start(topics, weak))}</p>
+          </div>
+          <div>
+            <b>Tomorrow Morning</b>
+            <ol>
+              <li>10 min: recall must-know content without notes.</li>
+              <li>5 min: review the most common mistake.</li>
+              <li>2 min: choose your first question strategy.</li>
+            </ol>
+          </div>
+          <div>
+            <b>In The Exam</b>
+            <ol>
+              <li>Start with the question type you can score fastest.</li>
+              <li>Make the marking point obvious in the first sentence or first working line.</li>
+              <li>Leave 2 minutes to check the exact weak area: ${esc(weak)}.</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
   function card(title, body) {
     return `<section class="cheat-card"><strong>${esc(title)}</strong><p>${esc(body)}</p></section>`;
   }
@@ -401,6 +457,31 @@
               color: #344054;
               font-size: 13.5px;
             }
+            .combined-plan {
+              background: #f8fbff;
+              border-color: #bfdbfe;
+            }
+            .plan-grid {
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 10px;
+            }
+            .plan-grid div {
+              border: 1px solid #d9e2ec;
+              border-radius: 12px;
+              padding: 10px;
+              background: #ffffff;
+            }
+            .plan-grid b {
+              display: block;
+              margin-bottom: 5px;
+              color: #1d4ed8;
+              font-size: 12px;
+            }
+            .plan-grid ol {
+              margin: 0;
+              padding-left: 18px;
+            }
             .practice-now {
               background: #eef8ff;
               border-color: #b9e6fe;
@@ -456,6 +537,11 @@
     return document.querySelector(selector)?.value?.trim() || "";
   }
 
+  function setInput(selector, value) {
+    const input = document.querySelector(selector);
+    if (input) input.value = value || "";
+  }
+
   function setText(selector, value) {
     const node = document.querySelector(selector);
     if (node) node.textContent = value || "";
@@ -484,14 +570,20 @@
       .cheat-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
       .cheat-actions button,.cheat-practice-grid button{min-height:44px;padding:0 15px;font-size:.84rem;box-shadow:none}
       .cheat-actions button[data-copy-text]{background:rgba(255,255,255,.09);color:rgba(247,249,255,.88)}
+      .secondary-cheat-action{min-height:44px;background:rgba(255,255,255,.09);color:rgba(247,249,255,.88);box-shadow:none}
       .cheat-card{border:1px solid rgba(255,255,255,.09);border-radius:22px;padding:15px;background:rgba(255,255,255,.058)}
       .cheat-card strong{display:block;margin-bottom:8px;text-transform:uppercase;font-size:.78rem;color:rgba(247,249,255,.9)}
       .cheat-card p,.cheat-card li{color:rgba(229,234,247,.82);line-height:1.5}
       .cheat-card p{margin:0}
       .cheat-card ul{margin:0;padding-left:20px}
       .practice-now{background:rgba(103,232,249,.08);border-color:rgba(103,232,249,.18)}
+      .combined-plan{background:rgba(102,168,255,.08);border-color:rgba(102,168,255,.18)}
+      .plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+      .plan-grid div{border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px;background:rgba(255,255,255,.045)}
+      .plan-grid b{display:block;margin-bottom:6px;color:rgba(247,249,255,.94)}
+      .plan-grid ol{margin:0;padding-left:18px}
       .cheat-practice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-      @media (max-width:820px){.cheat-builder{grid-template-columns:1fr}.cheat-print-head{display:grid}.cheat-actions{justify-content:flex-start}.cheat-practice-grid{grid-template-columns:1fr}}
+      @media (max-width:820px){.cheat-builder{grid-template-columns:1fr}.cheat-print-head{display:grid}.cheat-actions{justify-content:flex-start}.cheat-practice-grid,.plan-grid{grid-template-columns:1fr}}
       @media print{body *{visibility:hidden}.cheat-sheet-result,.cheat-sheet-result *{visibility:visible}.cheat-sheet-result{position:absolute;inset:0;color:#101828;background:#fff}.cheat-actions{display:none}.cheat-card,.cheat-print-head{border:1px solid #d0d5dd;background:#fff;color:#101828;box-shadow:none}.cheat-card p,.cheat-card li,.cheat-print-head p{color:#344054}}
     `;
     document.head.appendChild(style);
