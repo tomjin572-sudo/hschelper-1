@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HSC Helper</title>
     <link rel="stylesheet" href="./styles.css" />
-    <link rel="stylesheet" href="./workflow.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -18,7 +17,7 @@
           </span>
           <div>
             <strong>HSC Helper</strong>
-            <span>AI study execution system</span>
+            <span>AI question execution system</span>
           </div>
         </div>
 
@@ -31,10 +30,10 @@
       <main>
         <header class="hero simple-hero" id="overview">
           <div>
-            <p class="eyebrow">AI HSC Study Execution</p>
-            <h1>Plan less. Start faster.</h1>
+            <p class="eyebrow">AI HSC Question Execution</p>
+            <h1>Stop planning. Start solving.</h1>
             <p class="hero-copy">
-              Add your subjects, dates, weak topics and study time. Get action cards, then launch straight into a timed focus session.
+              Add your subjects, dates, weak topics and study time. Get high-ROI tasks, real HSC-style questions and a timed focus session.
             </p>
             <a class="hero-cta" href="#study-sprint">Create my plan</a>
           </div>
@@ -98,7 +97,7 @@
               <div id="sprintOutput">
                 <div class="empty-plan">
                   <strong>Built for action.</strong>
-                  <p>The planner turns your inputs into high-ROI study cards, timed practice and progress tracking.</p>
+                  <p>The planner turns four inputs into practice cards with questions, timer, answer space and feedback.</p>
                 </div>
               </div>
             </article>
@@ -153,6 +152,16 @@
             <strong>Do this now</strong>
             <p id="focusDoNow"></p>
           </article>
+          <article class="question-engine">
+            <div class="question-engine-head">
+              <div>
+                <strong>Question Engine</strong>
+                <p id="questionEngineBrief">Solve the questions below inside the timer.</p>
+              </div>
+              <span id="questionProgress">0/0 complete</span>
+            </div>
+            <div class="question-stack" id="questionStack"></div>
+          </article>
           <article>
             <strong>How to approach</strong>
             <ol id="focusApproachList"></ol>
@@ -190,5 +199,6 @@
     <script src="./app.js"></script>
     <script src="./workflow.js"></script>
     <script src="./study-pack.js"></script>
+    <script src="./cheat-sheet.js"></script>
   </body>
 </html>
