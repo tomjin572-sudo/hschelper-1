@@ -17,6 +17,7 @@
     next: "Ready"
   };
   let active = 0;
+  let observerQueued = false;
 
   const originalFetch = window.fetch.bind(window);
   window.fetch = async (input, init = {}) => {
@@ -66,11 +67,15 @@
   }, true);
 
   new MutationObserver(() => {
-    cleanBadText();
-    tuneForStudentState();
-    if (document.querySelector(".learning-flow-nav")) setTimeout(applyStep, 40);
-    updateFixDrill();
-  }).observe(document.body, { childList: true, subtree: true, characterData: true });
+    if (observerQueued) return;
+    observerQueued = true;
+    setTimeout(() => {
+      observerQueued = false;
+      cleanBadText();
+      tuneForStudentState();
+      if (document.querySelector(".learning-flow-nav")) applyStep();
+    }, 80);
+  }).observe(document.body, { childList: true, subtree: true });
 
   function applyStep() {
     const pack = document.querySelector(".study-pack");
@@ -84,9 +89,9 @@
     });
 
     const current = document.querySelector("#flowCurrentStep");
-    if (current) current.textContent = TITLES[step];
+    if (current && current.textContent !== TITLES[step]) current.textContent = TITLES[step];
     const next = pack.querySelector("[data-flow-next]");
-    if (next) next.textContent = NEXT[step];
+    if (next && next.textContent !== NEXT[step]) next.textContent = NEXT[step];
 
     pack.querySelectorAll(".study-tabs section").forEach((section) => {
       const title = section.querySelector("strong")?.textContent?.toLowerCase() || "";
@@ -136,7 +141,8 @@
     const weakness = latestWeakness();
     const p = fix.querySelector("p");
     if (p && weakness.mistake) {
-      p.textContent = `Repair this mark-losing issue: ${weakness.mistake}. Do one smaller version before moving on.`;
+      const text = `Repair this mark-losing issue: ${weakness.mistake}. Do one smaller version before moving on.`;
+      if (p.textContent !== text) p.textContent = text;
     }
     let card = fix.querySelector("#fixDrillQuestion");
     if (!card) {
@@ -145,7 +151,8 @@
       card.className = "fix-drill-card";
       fix.querySelector("label")?.before(card);
     }
-    card.textContent = targetedFixQuestion(weakness);
+    const text = targetedFixQuestion(weakness);
+    if (card.textContent !== text) card.textContent = text;
   }
 
   function storeWeakness(card) {
