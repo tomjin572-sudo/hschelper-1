@@ -95,7 +95,8 @@
             <p>Exam: ${esc(examDate)} | Tonight: ${esc(time)}</p>
           </div>
           <div class="cheat-actions">
-            <button type="button" data-copy-sheet>Download / Copy Cheat Sheet</button>
+            <button type="button" data-copy-sheet>Download PDF</button>
+            <button type="button" data-copy-text>Copy Text</button>
             <button type="button" data-start-sheet>Start Revision From This Sheet</button>
           </div>
         </div>
@@ -122,7 +123,12 @@
   function handleClick(event) {
     const copy = event.target.closest("[data-copy-sheet]");
     if (copy) {
-      copySheet();
+      downloadPdfSheet();
+      return;
+    }
+    const copyText = event.target.closest("[data-copy-text]");
+    if (copyText) {
+      copySheetText();
       return;
     }
     const start = event.target.closest("[data-start-sheet], [data-cheat-practice]");
@@ -296,18 +302,154 @@
     return `<button type="button" data-cheat-practice="${esc(task)}">${esc(label)}</button>`;
   }
 
-  function copySheet() {
+  function copySheetText() {
     const result = document.querySelector(".cheat-sheet-result");
     if (!result) return;
     const text = result.innerText.trim();
     navigator.clipboard?.writeText(text).catch(() => {});
-    const blob = new Blob([text], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = "tomorrow-cheat-sheet.txt";
-    anchor.click();
-    URL.revokeObjectURL(url);
+  }
+
+  function downloadPdfSheet() {
+    const result = document.querySelector(".cheat-sheet-result");
+    if (!result) return;
+    const title = result.querySelector("h3")?.textContent || "Tomorrow Cheat Sheet";
+    const printWindow = window.open("", "_blank", "width=900,height=1200");
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
+    printWindow.document.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <title>${esc(title)}</title>
+          <style>
+            @page { size: A4; margin: 14mm; }
+            * { box-sizing: border-box; }
+            body {
+              margin: 0;
+              background: #f4f7fb;
+              color: #101828;
+              font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+              line-height: 1.45;
+            }
+            .pdf-shell {
+              width: min(800px, 100%);
+              margin: 0 auto;
+              padding: 24px;
+              background: #ffffff;
+            }
+            .cheat-print-head {
+              display: block;
+              border: 1px solid #d0d5dd;
+              border-radius: 18px;
+              padding: 22px;
+              margin-bottom: 14px;
+              background: linear-gradient(135deg, #eef7ff, #f7fbff);
+            }
+            .eyebrow {
+              margin: 0 0 6px;
+              color: #2563eb;
+              font-size: 11px;
+              font-weight: 900;
+              letter-spacing: .08em;
+              text-transform: uppercase;
+            }
+            h3 {
+              margin: 0;
+              font-size: 28px;
+              line-height: 1.08;
+              letter-spacing: 0;
+            }
+            .cheat-print-head p {
+              margin: 8px 0 0;
+              color: #475467;
+              font-weight: 700;
+            }
+            .cheat-actions { display: none; }
+            .cheat-card {
+              break-inside: avoid;
+              border: 1px solid #d9e2ec;
+              border-radius: 16px;
+              padding: 14px 16px;
+              margin: 10px 0;
+              background: #ffffff;
+            }
+            .cheat-card strong {
+              display: block;
+              margin-bottom: 7px;
+              color: #111827;
+              font-size: 12px;
+              font-weight: 900;
+              text-transform: uppercase;
+              letter-spacing: .06em;
+            }
+            .cheat-card p {
+              margin: 0;
+              color: #344054;
+              font-size: 13.5px;
+            }
+            .cheat-card ul {
+              margin: 0;
+              padding-left: 18px;
+            }
+            .cheat-card li {
+              margin: 3px 0;
+              color: #344054;
+              font-size: 13.5px;
+            }
+            .practice-now {
+              background: #eef8ff;
+              border-color: #b9e6fe;
+            }
+            .cheat-practice-grid {
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 8px;
+            }
+            .cheat-practice-grid button {
+              min-height: 0;
+              border: 1px solid #bfdbfe;
+              border-radius: 999px;
+              padding: 8px 10px;
+              background: #ffffff;
+              color: #1d4ed8;
+              font: inherit;
+              font-size: 12px;
+              font-weight: 850;
+              text-align: left;
+            }
+            .pdf-footer {
+              margin-top: 16px;
+              padding-top: 10px;
+              border-top: 1px solid #e4e7ec;
+              color: #667085;
+              font-size: 11px;
+              font-weight: 700;
+            }
+            @media print {
+              body { background: #ffffff; }
+              .pdf-shell { width: 100%; padding: 0; }
+            }
+          </style>
+        </head>
+        <body>
+          <main class="pdf-shell">
+            ${result.outerHTML}
+            <div class="pdf-footer">Generated by HSC Helper - Use this as a focused revision sheet, then complete the practice inside the app.</div>
+          </main>
+          <script>
+            window.addEventListener("load", () => {
+              setTimeout(() => window.print(), 250);
+            });
+          <\/script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   }
 
   function val(selector) {
@@ -341,6 +483,7 @@
       .cheat-print-head p{margin:6px 0 0;color:rgba(229,234,247,.76)}
       .cheat-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
       .cheat-actions button,.cheat-practice-grid button{min-height:44px;padding:0 15px;font-size:.84rem;box-shadow:none}
+      .cheat-actions button[data-copy-text]{background:rgba(255,255,255,.09);color:rgba(247,249,255,.88)}
       .cheat-card{border:1px solid rgba(255,255,255,.09);border-radius:22px;padding:15px;background:rgba(255,255,255,.058)}
       .cheat-card strong{display:block;margin-bottom:8px;text-transform:uppercase;font-size:.78rem;color:rgba(247,249,255,.9)}
       .cheat-card p,.cheat-card li{color:rgba(229,234,247,.82);line-height:1.5}
