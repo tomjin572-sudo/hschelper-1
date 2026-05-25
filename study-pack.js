@@ -26,7 +26,8 @@
     if (activePackKey === key && document.querySelector(".study-pack")) return;
     activePackKey = key;
 
-    const pack = buildSubjectSystem({ title, task, type, resource });
+    const studentState = currentStudentState();
+    const pack = adaptPackForStudentState(buildSubjectSystem({ title, task, type, resource }), studentState);
     document.querySelector("#focusTaskTitle").textContent = pack.sessionTitle;
     document.querySelector("#focusTaskText").textContent = pack.sessionTask;
     document.querySelector("#focusQuestionType").textContent = pack.questionType;
@@ -52,6 +53,7 @@
       <div class="subject-brief">
         <strong>${escapeHtml(pack.tutorLine)}</strong>
         <p>${escapeHtml(pack.psychology)}</p>
+        ${pack.studentState ? `<small class="state-tuning">Tuned for: ${escapeHtml(pack.studentState)}</small>` : ""}
       </div>
       <div class="study-tabs">
         <section class="study-learn">
@@ -150,11 +152,13 @@ Question: ${question.question}
 Focus point: ${question.focus}
 Common mistake to check: ${question.mistake}
 Subject feedback criteria: ${pack.feedbackCriteria.join("; ")}
+Student state: ${pack.studentState || "not selected"}
 Student answer: ${answer || "No answer written"}
 
 Return clear feedback in four short sections:
 Verdict
 What is costing marks
+Why marks were lost
 Fix this now
 Next targeted task
 Do not return JSON.`
@@ -169,17 +173,107 @@ Do not return JSON.`
     button.disabled = false;
     button.textContent = pack.feedbackButton;
     button.closest(".question-card")?.classList.add("is-complete");
+    rememberPackMistake(pack, question, answer);
     updatePackProgress(document.querySelector("#questionStack"));
+  }
+
+  function currentStudentState() {
+    return document.querySelector("#studentStateInput")?.value || localStorage.getItem("hscStudentState") || "";
+  }
+
+  function adaptPackForStudentState(pack, state) {
+    if (!state) return pack;
+    const tuned = {
+      ...pack,
+      studentState: state,
+      questions: pack.questions.map((question) => ({ ...question }))
+    };
+
+    if (state.includes("procrastinating") || state.includes("where to start")) {
+      tuned.psychology = "This session is built for fast momentum: one tiny start, then one correction. No huge plan, no overthinking.";
+      tuned.doNow = "Start with the first warm-up only. Your job is to begin, not to finish everything perfectly.";
+      tuned.nextStep = "Complete one warm-up question, then stop and mark it. That is the win.";
+      tuned.questions = tuned.questions.map((question, index) => ({
+        ...question,
+        time: index < 2 ? "3 min" : question.time,
+        difficulty: index === 5 ? "Medium" : question.difficulty,
+        focus: index < 2 ? "Start fast and show one clear step" : question.focus
+      }));
+    }
+
+    if (state.includes("lose marks")) {
+      tuned.psychology = "You already have some content. This session is about mark conversion: clearer working, stronger links and fewer avoidable errors.";
+      tuned.doNow = "Answer normally, then underline the exact line that would earn the mark.";
+      tuned.nextStep = "Redo the weakest response with the marking point made obvious.";
+      tuned.questions = tuned.questions.map((question) => ({
+        ...question,
+        focus: `${question.focus}; make the marking point obvious`,
+        impact: `${question.impact}; improves mark conversion`
+      }));
+    }
+
+    if (state.includes("exam-style practice")) {
+      tuned.psychology = "This session is exam-mode: timed attempts, clear answer structure and quick marking decisions.";
+      tuned.doNow = "Use the timer. Attempt first, then check. Treat each question like marks are attached.";
+      tuned.nextStep = "Repeat the highest-value question under time without notes.";
+    }
+
+    if (state.includes("writing answers")) {
+      tuned.psychology = "This session prioritises answer construction: claim, evidence, explanation, link. Clear structure beats more content.";
+      tuned.doNow = "Write the answer in a marked structure, not loose notes.";
+      tuned.nextStep = "Rewrite the weakest sentence so it directly answers the question.";
+    }
+
+    if (state.includes("panicking")) {
+      tuned.psychology = "This session is deliberately calm and narrow. One concept, one attempt, one fix. That is enough to regain control.";
+      tuned.doNow = "Do the easiest warm-up first and breathe before checking. Do not jump to the challenge question.";
+      tuned.nextStep = "Finish with one corrected answer, not a perfect study plan.";
+      tuned.questions = tuned.questions.map((question, index) => ({
+        ...question,
+        time: index < 2 ? "4 min" : question.time,
+        difficulty: index === 5 ? "Medium-Hard" : question.difficulty
+      }));
+    }
+
+    return tuned;
+  }
+
+  function rememberPackMistake(pack, question, answer) {
+    const weakness = {
+      mistake: question.mistake,
+      focus: question.focus,
+      question: question.question,
+      subject: pack.subjectLabel,
+      studentState: pack.studentState || "",
+      answerLength: String(answer || "").trim().split(/\s+/).filter(Boolean).length,
+      at: Date.now()
+    };
+    try {
+      const history = JSON.parse(localStorage.getItem("hscWeaknesses") || "[]");
+      history.unshift(weakness);
+      localStorage.setItem("hscWeaknesses", JSON.stringify(history.slice(0, 30)));
+      window.dispatchEvent(new CustomEvent("hsc-weakness-updated", { detail: weakness }));
+    } catch {
+      localStorage.setItem("hscWeaknesses", JSON.stringify([weakness]));
+    }
   }
 
   function buildSubjectSystem(context) {
     const text = `${context.title} ${context.task} ${context.type} ${context.resource}`.toLowerCase();
     const topic = detectTopic(text, context);
-    if (/english|module|thesis|paragraph|essay|quote|textual|analysis|shakespeare|poem|poetry/.test(text)) return englishSystem(topic);
-    if (/economics|inflation|globalisation|monetary|fiscal|aggregate|exchange rate|unemployment|tariff|budget/.test(text)) return economicsSystem(topic);
+    if (isEconomicsContext(text)) return economicsSystem(topic);
     if (/biology|enzyme|homeostasis|cell|dna|genetic|ecosystem|evolution|science|chemistry|physics|acid|force|energy/.test(text)) return scienceSystem(topic);
     if (/quadratic|algebra|function|calculus|graph|math|equation|solve|differentiate|integrate|trig|probability/.test(text)) return mathematicsSystem(topic);
+    if (isEnglishContext(text)) return englishSystem(topic);
     return generalSystem(topic);
+  }
+
+  function isEconomicsContext(text) {
+    return /economics|inflation|globalisation|monetary|fiscal|aggregate|exchange rate|unemployment|tariff|budget|labour market|labor market|labour markets|labor markets|minimum wage|wage|employment|participation rate|underemployment|labour force|labor force|productivity|economic growth|current account|cash rate|rba|market failure/.test(text);
+  }
+
+  function isEnglishContext(text) {
+    return /english|module [abc]|module a|module b|module c|common module|thesis|quote|textual|shakespeare|poem|poetry|novel|film technique|composer|audience|comparative study/.test(text);
   }
 
   function mathematicsSystem(topic) {
@@ -249,6 +343,22 @@ Do not return JSON.`
   }
 
   function economicsSystem(topic) {
+    const isLabour = /labou?r market|employment|unemployment|wage|participation|labou?r force/i.test(topic);
+    const economicsQuestions = isLabour ? [
+      q("Warm-up", "Define the labour market and explain why labour demand is a derived demand.", "Easy", "4 min", "Precise definition plus mechanism", "Defining labour market as just jobs", "Easy short-answer marks", "Ignore long policy history", "Write definition plus one cause-effect sentence."),
+      q("Warm-up", "Create a 4-link chain showing how a fall in aggregate demand can increase cyclical unemployment.", "Easy", "5 min", "Cause-effect chain", "Jumping from weak demand straight to unemployment", "Core HSC economics logic", "Ignore statistics first", "Use arrows."),
+      q("Core", "Explain how a minimum wage above equilibrium can affect employment and income distribution.", "Medium", "8 min", "Diagram logic plus trade-off", "Only saying wages rise", "Common labour market application", "Ignore perfect diagram art", "Explain wage, quantity demanded, quantity supplied and trade-off."),
+      q("Core", "Write a 6-mark paragraph on one cause of unemployment in Australia and one policy response.", "Medium", "10 min", "Cause, policy and judgement", "Listing policies without explaining transmission", "Extended response marks", "Ignore memorised slabs", "Use one cause-effect-policy chain."),
+      q("Core", "Build a scaffold for a labour market essay: two causes, one diagram/example, one policy, one judgement.", "Medium", "10 min", "Economic essay structure", "Writing like an English essay with no economic chain", "High essay value", "Ignore fancy wording", "Use economic headings and arrows."),
+      q("Challenge", "Write a timed mini extended response: analyse how labour market changes can affect unemployment and economic growth.", "Hard", "12 min", "Analysis plus judgement", "No final judgement on impact", "High exam relevance", "Ignore perfect stats", "Write intro and one body paragraph.")
+    ] : [
+      q("Warm-up", `Define ${topic} in two precise economic sentences.`, "Easy", "4 min", "Terminology", "Vague everyday definition", "Easy short-answer marks", "Ignore long examples", "Write a definition plus one context sentence."),
+      q("Warm-up", `Create a 4-link cause-effect chain for ${topic}.`, "Easy", "4 min", "Mechanism clarity", "Skipping the middle link", "Improves explanation", "Ignore essay wording", "Use arrows."),
+      q("Core", "Answer a 4-mark explain question: outline one cause and one effect on the Australian economy.", "Medium", "8 min", "Cause plus effect", "Listing without explaining", "Common HSC style", "Ignore broad history", "Write 4-5 sharp sentences."),
+      q("Core", "Write a 6-mark paragraph using one statistic placeholder and one real-world example.", "Medium", "10 min", "Evidence supports argument", "No data/example", "Boosts credibility", "Ignore perfect stats", "Use [statistic] if you do not know the number."),
+      q("Core", "Build a 12-mark response scaffold with two arguments, one policy and one judgement.", "Medium", "10 min", "Judgement", "Balancing everything equally", "Essay structure", "Ignore full essay writing", "Use headings or dot points."),
+      q("Challenge", "Write a 10-minute mini extended response intro and first body paragraph.", "Hard", "10 min", "Argument under time", "No thesis direction", "Exam performance", "Ignore memorised wording", "Write the intro and first paragraph.")
+    ];
     return {
       id: "economics",
       mode: "Economic Chain Builder",
@@ -260,8 +370,8 @@ Do not return JSON.`
       questionType: "Economic chains, data prompts and extended responses",
       doNow: "Define the term, build the chain, then add one example or statistic placeholder.",
       commonMistake: "Listing impacts without explaining the transmission mechanism.",
-      miniTeaching: `${topic} answers need a chain: concept -> cause -> mechanism -> effect -> judgement. That chain is what makes the response sound economic.`,
-      workedExample: "Chain pattern: higher interest rates -> increased borrowing costs -> lower consumption/investment -> reduced aggregate demand -> lower inflationary pressure, with trade-offs.",
+      miniTeaching: isLabour ? "Labour market responses need economic chains, not English-style technique. Start with demand/supply for labour, explain the transmission to wages/employment, then judge the effect on unemployment, equity or growth." : `${topic} answers need a chain: concept -> cause -> mechanism -> effect -> judgement. That chain is what makes the response sound economic.`,
+      workedExample: isLabour ? "Worked chain: weaker aggregate demand -> firms sell less output -> demand for labour falls because labour is derived demand -> employment falls and cyclical unemployment rises -> government may use stimulus/training, but budget and inflation trade-offs matter." : "Chain pattern: higher interest rates -> increased borrowing costs -> lower consumption/investment -> reduced aggregate demand -> lower inflationary pressure, with trade-offs.",
       keyConcepts: ["Definitions must lead to analysis", "Statistics support, they do not replace explanation", "Judgement separates strong responses from descriptive ones"],
       executionSteps: ["Define the key term in one sentence", "Draw a 4-link cause-effect chain", "Add one Australian example or statistic placeholder", "Write the paragraph with a judgement"],
       feedbackFlow: "AI checks terminology, chain logic, example/data use, policy awareness and judgement.",
@@ -270,14 +380,7 @@ Do not return JSON.`
       nextStep: "Convert the chain into one 6-mark paragraph with a statistic placeholder.",
       answerLabel: "Your chain, scaffold or response",
       feedbackButton: "Check My Economic Logic",
-      questions: [
-        q("Warm-up", `Define ${topic} in two precise economic sentences.`, "Easy", "4 min", "Terminology", "Vague everyday definition", "Easy short-answer marks", "Ignore long examples", "Write a definition plus one context sentence."),
-        q("Warm-up", `Create a 4-link cause-effect chain for ${topic}.`, "Easy", "4 min", "Mechanism clarity", "Skipping the middle link", "Improves explanation", "Ignore essay wording", "Use arrows."),
-        q("Core", "Answer a 4-mark explain question: outline one cause and one effect on the Australian economy.", "Medium", "8 min", "Cause plus effect", "Listing without explaining", "Common HSC style", "Ignore broad history", "Write 4-5 sharp sentences."),
-        q("Core", "Write a 6-mark paragraph using one statistic placeholder and one real-world example.", "Medium", "10 min", "Evidence supports argument", "No data/example", "Boosts credibility", "Ignore perfect stats", "Use [statistic] if you do not know the number."),
-        q("Core", "Build a 12-mark response scaffold with two arguments, one policy and one judgement.", "Medium", "10 min", "Judgement", "Balancing everything equally", "Essay structure", "Ignore full essay writing", "Use headings or dot points."),
-        q("Challenge", "Write a 10-minute mini extended response intro and first body paragraph.", "Hard", "10 min", "Argument under time", "No thesis direction", "Exam performance", "Ignore memorised wording", "Write the intro and first paragraph.")
-      ]
+      questions: economicsQuestions
     };
   }
 
@@ -315,6 +418,7 @@ Do not return JSON.`
   }
 
   function generalSystem(topic) {
+    const focus = topic === "Priority Topic" ? "your weakest topic" : topic;
     return {
       id: "general",
       mode: "HSC Execution Coach",
@@ -322,12 +426,12 @@ Do not return JSON.`
       tutorLine: "Adaptive study execution coach",
       psychology: "The fastest improvement comes from recall, practice, feedback and one correction. Organisation is useful only if it leads to an attempt.",
       sessionTitle: "HSC Study Pack",
-      sessionTask: `Turn ${topic} into a learn-practice-feedback session.`,
+      sessionTask: `Run a focused learn-practice-feedback session for ${focus}.`,
       questionType: "HSC-style recall and response tasks",
       doNow: "Attempt the first task from memory before checking notes.",
       commonMistake: "Preparing for too long instead of producing an answer.",
-      miniTeaching: `${topic} needs a simple execution loop: learn the core idea, attempt exam-style practice, get feedback, repair one weakness.`,
-      workedExample: "Execution pattern: define the idea, answer one exam-style task, mark the weak point, then redo that part immediately.",
+      miniTeaching: `Start with one clean idea, then prove it through practice. A strong HSC session is not more reading: it is one attempt, one correction and one targeted redo.`,
+      workedExample: "Premium execution pattern: write the core idea in one sentence, attempt one exam-style task, identify the mark-losing point, then redo only that weak part immediately.",
       keyConcepts: ["Recall before checking", "Practice beats rereading", "Feedback must create a correction"],
       executionSteps: ["Write what you know", "Attempt a timed task", "Mark one weakness", "Redo the weak section"],
       feedbackFlow: "AI checks whether the answer directly targets the question and creates one next action.",
@@ -337,12 +441,12 @@ Do not return JSON.`
       answerLabel: "Your answer or working",
       feedbackButton: "Get Clear AI Feedback",
       questions: [
-        q("Warm-up", `Define ${topic} in two clear sentences.`, "Easy", "4 min", "Precise definition", "Being vague", "Fast recall", "Ignore formatting", "Write without notes first."),
-        q("Warm-up", `List three syllabus-style points connected to ${topic}.`, "Easy", "4 min", "Key points", "Writing full notes", "Builds recall", "Ignore decoration", "Use dot points."),
-        q("Core", `Answer one short HSC-style question on ${topic} using one example.`, "Medium", "8 min", "Example plus link", "Not answering the directive verb", "Short-answer marks", "Ignore extra context", "Write a direct response."),
-        q("Core", `Create a response scaffold for ${topic}: claim, evidence/example, explanation, link.`, "Medium", "8 min", "Structure", "No link back", "Response control", "Ignore full essay", "Use a scaffold."),
+        q("Warm-up", `Define ${focus} in two clear sentences.`, "Easy", "4 min", "Precise definition", "Being vague", "Fast recall", "Ignore formatting", "Write without notes first."),
+        q("Warm-up", `List three syllabus-style points connected to ${focus}.`, "Easy", "4 min", "Key points", "Writing full notes", "Builds recall", "Ignore decoration", "Use dot points."),
+        q("Core", `Answer one short HSC-style question on ${focus} using one example.`, "Medium", "8 min", "Example plus link", "Not answering the directive verb", "Short-answer marks", "Ignore extra context", "Write a direct response."),
+        q("Core", `Create a response scaffold for ${focus}: claim, evidence/example, explanation, link.`, "Medium", "8 min", "Structure", "No link back", "Response control", "Ignore full essay", "Use a scaffold."),
         q("Core", "Write an error log: one mistake, why it happened, and the correction rule.", "Medium", "5 min", "Correction", "Only naming the mistake", "Prevents repeat errors", "Ignore blame", "Write one rule."),
-        q("Challenge", `Write a timed 10-minute response on ${topic}, then mark the weakest sentence.`, "Hard", "10 min", "Timed execution", "Trying to be perfect", "Exam realism", "Ignore perfect wording", "Write and self-mark.")
+        q("Challenge", `Write a timed 10-minute response on ${focus}, then mark the weakest sentence.`, "Hard", "10 min", "Timed execution", "Trying to be perfect", "Exam realism", "Ignore perfect wording", "Write and self-mark.")
       ]
     };
   }
@@ -351,17 +455,32 @@ Do not return JSON.`
     const known = [
       "quadratic equations", "calculus", "functions", "algebraic techniques", "trigonometry", "probability",
       "module b", "textual analysis", "thesis", "essay writing", "quote integration",
-      "inflation", "monetary policy", "fiscal policy", "globalisation", "unemployment",
+      "labour markets", "labor markets", "labour market", "labor market", "inflation", "monetary policy", "fiscal policy", "globalisation", "unemployment",
       "homeostasis", "enzymes", "genetics", "ecosystems", "cell division", "evolution"
     ];
     const found = known.find((item) => text.includes(item));
     if (found) return toTitle(found);
     const raw = context.task || context.title || "Priority Topic";
-    return raw
+    return cleanTopic(raw);
+  }
+
+  function cleanTopic(raw) {
+    const cleaned = String(raw || "")
       .replace(/^(complete|write|solve|mark|redo|build|start|attempt)\s+/i, "")
+      .replace(/\b(\w+)(\s+\1\b){2,}/gi, "$1")
       .replace(/\s+/g, " ")
       .trim()
-      .slice(0, 58) || "Priority Topic";
+      .slice(0, 58);
+    if (!cleaned || /^turn$/i.test(cleaned) || /^(turn\s*){2,}$/i.test(cleaned)) return "Priority Topic";
+    if (isLowQualityTopic(cleaned)) return "Priority Topic";
+    return cleaned;
+  }
+
+  function isLowQualityTopic(value) {
+    const words = value.toLowerCase().split(/\s+/).filter(Boolean);
+    if (words.length >= 4 && new Set(words).size <= 2) return true;
+    if (/^(turn|continue|ready|next|learn|example|practice)$/i.test(value)) return true;
+    return false;
   }
 
   function q(stage, question, difficulty, time, focus, mistake, impact, ignore, placeholder) {
@@ -421,6 +540,7 @@ Do not return JSON.`
       .subject-brief{border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px;background:rgba(255,255,255,.055)}
       .subject-brief strong{display:block;color:rgba(247,249,255,.95);font-size:1rem;margin-bottom:5px}
       .subject-brief p{color:var(--muted);line-height:1.45}
+      .state-tuning{display:inline-flex;margin-top:10px;border-radius:999px;padding:6px 9px;background:rgba(255,255,255,.07);color:rgba(247,249,255,.82);font-weight:850}
       .study-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
       .study-tabs section{border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px;background:rgba(255,255,255,.052)}
       .study-tabs .study-learn,.study-tabs .study-next{grid-column:1/-1}
