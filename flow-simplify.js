@@ -112,6 +112,48 @@
     if (stack && stack.hidden && !visibleTimelineCard) {
       stack.hidden = false;
       stack.classList.remove("action-card-source");
+      return;
     }
+    if (stack || visibleTimelineCard || output.querySelector(".empty-plan")) return;
+    if ((output.textContent || "").trim()) return;
+
+    const topic = readValue("#weakTopicsInput") || "your weakest topic";
+    output.innerHTML = `
+      <div class="action-card-stack fallback-action-cards">
+        <article class="execution-card generated-card">
+          <div class="execution-card-top">
+            <span>Highest ROI Practice</span>
+            <em>25 minutes - Medium</em>
+          </div>
+          <h3>${escapeHtml(topic)}</h3>
+          <p class="do-now">Complete one timed HSC-style response, then mark one mistake and fix it.</p>
+          <div class="card-grid">
+            <div><strong>Highest ROI Task</strong><span>Produce an answer now instead of rereading notes.</span></div>
+            <div><strong>Question Type</strong><span>Timed exam-style practice</span></div>
+            <div><strong>Focus Point</strong><span>Definitions, cause-effect logic and one clear exam response.</span></div>
+            <div><strong>Resource</strong><span>Internal HSC-style practice</span></div>
+          </div>
+          <div class="risk-row">
+            <p><strong>Most Common Mistake</strong>Reading passively without writing an answer.</p>
+            <p><strong>What NOT To Focus On</strong>Making a perfect plan before starting.</p>
+            <p><strong>Estimated Marks Impact</strong>High because it creates immediate exam output.</p>
+          </div>
+          <button class="action-button" type="button">Start Practice</button>
+        </article>
+      </div>
+    `;
+  }
+
+  function readValue(selector) {
+    return document.querySelector(selector)?.value?.trim() || "";
+  }
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 })();
