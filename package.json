@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "node -e \"const fs=require('fs');fs.rmSync('public',{recursive:true,force:true});fs.mkdirSync('public');for(const f of ['index.html','styles.css','evening-plan.css','app.js','workflow.js','study-pack.js','learning-flow.js','feedback-fix.js','evening-plan.js','cards-fallback.js','reliability.js','cheat-sheet.js','_redirects'])if(fs.existsSync(f))fs.copyFileSync(f,'public/'+f);console.log('Static site ready in public/')\"",
+    "build": "node -e \"const fs=require('fs');fs.rmSync('public',{recursive:true,force:true});fs.mkdirSync('public');for(const f of ['index.html','styles.css','evening-plan.css','app.js','workflow.js','study-pack.js','learning-flow.js','feedback-fix.js','evening-plan.js','cards-fallback.js','reliability.js','cheat-sheet.js','flow-simplify.js','_redirects'])if(fs.existsSync(f))fs.copyFileSync(f,'public/'+f);console.log('Static site ready in public/')\"",
     "start": "node server.mjs"
   },
   "engines": {
