@@ -71,7 +71,7 @@ Core rules:
 - Each subject must feel like a different learning system, not the same generic study workflow.
 - Maths cards must prioritise timed problem solving, method marks, repetition, mistake tracking, adaptive difficulty and speed.
 - English cards must prioritise thesis, paragraph structure, quote/evidence integration, analysis depth, essay scaffolding and writing feedback.
-- Economics cards must prioritise cause-effect chains, terminology, statistics, real-world application, policy analysis and extended-response judgement.
+- Economics cards must prioritise definitions, cause-effect chains, diagrams, terminology, statistics, real-world application, policy trade-offs and short-answer exam responses.
 - Biology/Science cards must prioritise process understanding, active recall, scientific terminology, short-answer precision, diagrams and sequence accuracy.
 - General cards must still follow a learn-practice-feedback-repair loop.
 - The first sentence of doThisNow must start with a strong verb such as Complete, Write, Solve, Mark, Redo, Memorise, or Draft.
@@ -90,6 +90,48 @@ Subject intelligence:
 - If the subject is Economics, tasks should sound like chains, policy, statistics, examples or extended responses.
 - If the subject is Biology/Science, tasks should sound like processes, diagrams, recall, terminology or short-answer drills.
 
+Mathematics course intelligence:
+- Treat NSW Stage 6 Mathematics as course-specific. Do not generate generic "maths revision" cards when the selected subject or weak topic identifies Standard, Advanced, Extension 1 or Extension 2.
+- Use the official NESA syllabus URL and fetched syllabus text first. If exact dot points are unavailable, use this course map and tell the student to verify exact syllabus wording on NESA or with class materials.
+- 2026 transition note: new Mathematics 11-12 syllabuses begin for Year 11 in Term 1 2026, Year 12 in Term 4 2026, with first HSC exams for the new syllabuses in 2027. For current Year 12 HSC practice, prefer the supplied official exam-pack URL and do not invent paper question numbers.
+- Mathematics Standard Year 11: Algebra (formulae/equations, linear relationships), Measurement (applications, time), Financial Mathematics (money matters), Statistical Analysis (data, relative frequency, probability).
+- Mathematics Standard 1 Year 12: Algebra (types of relationships), Measurement (right-angled triangles, rates, scale drawings), Financial Mathematics (investment, depreciation, loans), Statistical Analysis (further statistics), Networks (networks and paths).
+- Mathematics Standard 2 Year 12: Algebra (types of relationships), Measurement (non-right-angled trigonometry, rates and ratios), Financial Mathematics (investments, loans, annuities), Statistical Analysis (bivariate data, normal distribution), Networks (network concepts, critical path analysis).
+- Mathematics Advanced Year 11: Functions, Trigonometric Functions, Introduction to Differentiation, Logarithms and Exponentials, Probability and Discrete Probability Distributions.
+- Mathematics Advanced Year 12: Graphing Techniques, Trigonometric Functions and Graphs, Differential Calculus, Second Derivative, Integral Calculus, Financial Mathematics, Descriptive Statistics, Bivariate Data Analysis and Random Variables.
+- Mathematics Extension 1 Year 11: Further Functions, Polynomials, Inverse Trigonometric Functions, Further Trigonometric Identities, Rates of Change, Combinatorics.
+- Mathematics Extension 1 Year 12: Proof by Mathematical Induction, Vectors, Trigonometric Equations, Further Calculus Skills, Applications of Calculus, Binomial Distribution.
+- Mathematics Extension 2 Year 12: Proof, Further Proof by Mathematical Induction, Vectors, Complex Numbers, Further Integration and Mechanics. Extension 2 assumes Advanced and Extension 1 knowledge and should feel more rigorous.
+- Maths cards must be execution tasks: solve, graph, differentiate, integrate, prove, model, interpret data, mark, then repair errors. Include method marks, common algebra/calculus mistakes, calculator or exact-value traps where relevant, and a short error-log action.
+- Standard cards should feel applied and exam-practical. Advanced cards should feel calculus/functions/statistics focused. Extension cards should require proof, multi-step reasoning, exact working and harder transfer.
+
+Economics and Business Studies course intelligence:
+- Treat Economics and Business Studies as different HSIE courses. Do not mix economics diagrams, macroeconomic policy or labour market theory into Business Studies unless the question explicitly asks for economic context.
+- Use the official NESA syllabus URL and fetched syllabus text first. If exact dot points are unavailable, use this course map and tell the student to verify exact syllabus wording on NESA or with class materials.
+- Economics Stage 6 Syllabus (2009) is the current course for existing HSC practice. New Economics 11-12 Syllabus (2025) is planned for Year 11 from Term 1 2027, Year 12 from Term 4 2027, with first HSC exam in 2028.
+- Economics Preliminary/Year 11 topics: Introduction to Economics; Consumers and Business; Markets; Labour Markets; Financial Markets; Government in the Economy.
+- Economics HSC/Year 12 topics: The Global Economy; Australia's Place in the Global Economy; Economic Issues; Economic Policies and Management.
+- Economics cards should feel analytical: define terms, use diagrams or data where relevant, build cause-effect chains, apply an Australian or global example, then answer a short-answer or extended-response task.
+- Business Studies Stage 6 Syllabus (2010) is the current course for Business Studies.
+- Business Studies Preliminary/Year 11 topics: Nature of Business; Business Management; Business Planning.
+- Business Studies HSC/Year 12 topics: Operations; Marketing; Finance; Human Resources.
+- Business Studies cards should feel business-case focused: identify the syllabus concept, apply it to a real or hypothetical business case, use strategies/processes/performance indicators, then answer the exam directive.
+- For Business Studies HSC tasks, include relevant case study application when possible. Operations tasks should use operations strategies and performance objectives; Marketing tasks should use target market, marketing mix and strategies; Finance tasks should use financial statements, ratios, cash flow or working capital; Human Resources tasks should use HR processes, strategies, indicators and stakeholder conflict.
+- Business Studies common mistakes should be subject-specific, such as describing a strategy without applying it to a business, listing syllabus terms without cause-effect, ignoring the directive verb, or giving no case study evidence.
+- Business and Economics Life Skills Stage 6 is a separate Life Skills pathway. Only use it if the selected subject explicitly says Life Skills; otherwise generate mainstream Stage 6/HSC execution cards.
+
+Economics labour market rules:
+- If the subject or weak topic mentions labour/labor markets, wages, employment, unemployment, underemployment, participation, productivity, minimum wage, skills mismatch or bargaining power, make the card a labour market execution card.
+- Start with definitions students can use in answers: labour demand, labour supply, wage rate, equilibrium wage, unemployment, underemployment and participation rate.
+- Explain labour demand as derived demand from the demand for goods and services, not as a generic desire to hire workers.
+- Include wage/employment diagram logic: identify the curve shift, describe the change in equilibrium wage and employment, then link the result to unemployment or shortages where relevant.
+- Include at least one productivity chain such as productivity -> lower unit labour cost or higher marginal revenue product -> higher labour demand -> wage/employment effect.
+- Include one unemployment or underemployment distinction, and one participation rate check where relevant.
+- For minimum wage tasks, show trade-offs: higher incomes/equity for low-paid workers, higher labour costs for firms, and possible lower employment if the wage floor is above equilibrium.
+- Use short-answer exam style: define key terms, draw or describe the diagram, explain the chain, then answer in 4-8 marks.
+- Common mistakes should be economics-specific, such as confusing labour shortages with unemployment, forgetting labour demand is derived demand, shifting the wrong curve, or writing generally about jobs without economic terms.
+- Do not turn Economics into English essay technique. Avoid thesis/body paragraph advice unless the card is explicitly an extended response.
+
 Resource rules:
 - Prefer NESA past paper pages, marking guidelines, syllabus pages, teacher feedback, class worksheets, textbook exercises, or student notes.
 - Use supplied official NESA URLs when relevant.
@@ -107,6 +149,12 @@ Quality bar:
 - Good: "Write one timed Module B thesis and opening sentence, then check it against the marking criteria for clarity, textual specificity, and argument."
 - Bad: "Practice quadratics."
 - Good: "Complete 5 quadratic formula questions from a past-paper/worksheet set, mark each line of working, and write one error-log rule for sign mistakes."
+- Bad Maths: "Revise calculus."
+- Good Maths: "Complete 4 differential calculus questions: one derivative, one tangent/normal, one stationary point, and one rates-of-change application. Mark method lines and write one error-log rule."
+- Bad Economics: "Write an essay on unemployment."
+- Good Economics: "Define unemployment and underemployment, draw a labour market diagram showing a fall in labour demand, then answer a 6-mark short response explaining the wage and employment effects."
+- Bad Business Studies: "Study marketing."
+- Good Business Studies: "Apply the marketing mix to one case business: identify target market, product, price, promotion and place decisions, then answer one 6-mark question using two specific business examples."
 
 Tone:
 - sharp
@@ -137,12 +185,24 @@ JSON schema:
       "mostCommonMistake": "marks-losing mistake",
       "whatNotToFocusOn": "thing to avoid",
       "estimatedMarksImpact": "why this creates marks",
-      "buttonText": "Start 25-Minute Practice"
+      "buttonText": "Start 25-Minute Practice",
+      "questions": [
+        {
+          "question": "one representative HSC-style practice question",
+          "difficulty": "Warm-up | Core | Challenge",
+          "estimatedTime": "5 min",
+          "focusPoint": "specific skill being tested",
+          "commonMistake": "specific marks-losing error",
+          "marksImpact": "why this matters for marks",
+          "whatToIgnore": "low-value distraction to avoid",
+          "sampleAnswer": "optional concise answer scaffold"
+        }
+      ]
     }
   ]
 }
 
-Create 2-3 cards only. The first card must always be "Tonight's Highest ROI Task".`;
+Create 2-3 cards only. The first card must always be "Tonight's Highest ROI Task". Include 3-5 concise questions when the topic is clear, especially for Economics labour market cards.`;
 
 async function buildPrompt(body) {
   const syllabusText = await fetchSyllabusText(body.syllabusUrl);
