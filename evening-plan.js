@@ -15,15 +15,11 @@
           body.question += `
 
 Evening revision flow requirement:
-- Return valid JSON with coachCall, eveningPlan, and cards.
-- eveningPlan must be an array of timed blocks that fills the available study time the student gave.
-- Each eveningPlan block must include: time, duration, title, action, subject, topic, purpose, opensPractice, cardIndex.
-- If the student has less than 45 minutes, create a survival plan: one practice task, one fix task, one recall check.
-- If the student has 60-120 minutes, create 4-6 blocks: warm-up, highest ROI task, marking/fix, second practice, final recall.
-- If the student has 2+ hours, create a longer plan with breaks and multiple subjects, but still prioritise weak areas.
-- Avoid generic blocks like review notes. Use active tasks: timed paragraph, short-answer drill, equation set, cause-effect chain, error log, recall check.
-- Blocks with opensPractice true should connect to a matching action card using cardIndex.
-- Keep cards underneath the schedule as the highest-value Start Practice tasks.`;
+- Keep the UI simple: generate only timed question/practice cards, not a long exam plan.
+- Return valid JSON with coachCall and 2-3 cards.
+- Each card should be a clear practice task with timeRequired, topic, questionType, doThisNow, focusPoint, mostCommonMistake and buttonText.
+- Do not create generic planning blocks like review notes, warm-up, final recall, or pack-down.
+- Prioritise direct exam-style questions students can start immediately.`;
           init.body = JSON.stringify(body);
         }
       } catch (error) {
@@ -54,6 +50,7 @@ Evening revision flow requirement:
     section.className = "evening-plan";
     section.innerHTML = renderEveningPlan(blocks, details, cardElements);
     stack.parentNode.insertBefore(section, stack);
+    output.querySelectorAll(".start-now-heading").forEach((item) => item.remove());
     stack.hidden = true;
     stack.classList.add("action-card-source");
   }
@@ -87,36 +84,13 @@ Evening revision flow requirement:
     const secondary = subjects[1] || primary;
     const weak = topics[0];
     const secondWeak = topics[1] || weak;
-
-    let blocks;
-    if (minutes < 45) {
-      blocks = fitBlocks([
-        block(5, "Set up the attempt", `Write the exact topic you are attacking: ${weak}. No planning beyond one sentence.`, primary, weak, "Remove friction before the timed task.", false),
-        block(25, "Highest ROI practice", actionFor(primary, weak), primary, weak, "Create marks fast through exam-style output.", true, 0),
-        block(8, "Mark and fix one error", "Check the answer against the success criteria and rewrite the weakest line, step or definition.", primary, weak, "Repair the mistake while it is fresh.", false),
-        block(7, "Final recall check", `Close notes and write the three things you must remember for ${weak}.`, primary, weak, "Lock in the minimum exam-ready memory.", false)
-      ], minutes);
-    } else if (minutes <= 120) {
-      blocks = fitBlocks([
-        block(10, "Warm-up recall", `Brain-dump the key formulas, definitions, arguments or steps for ${weak}.`, primary, weak, "Expose gaps before using the timer.", false),
-        block(25, "Highest ROI practice", actionFor(primary, weak), primary, weak, "Turn revision into assessable work.", true, 0),
-        block(10, "Mark and fix", "Circle one lost-mark reason and rewrite that part only.", primary, weak, "Stop repeating the same mistake.", false),
-        block(25, "Second practice rep", actionFor(secondary, secondWeak), secondary, secondWeak, "Build a second exam-style attempt while focus is still high.", true, Math.min(1, cardCount - 1)),
-        block(10, "Error log", "Write one mistake, the correct method, and the trigger that will remind you in the exam.", primary, weak, "Convert errors into rules.", false),
-        block(10, "Final recall", "Do a closed-book recall check: definitions, steps, structure, and one example.", primary, weak, "Finish with memory, not scrolling.", false)
-      ], minutes);
-    } else {
-      blocks = fitBlocks([
-        block(10, "Priority setup", `Rank tonight's weak areas. Put ${weak} first unless tomorrow's exam says otherwise.`, primary, weak, "Make the night strategic, not evenly balanced.", false),
-        block(30, "Deep practice block", actionFor(primary, weak), primary, weak, "Attack the highest marks impact first.", true, 0),
-        block(10, "Break", "Stand up, water, no phone scrolling. Come back with one correction target.", primary, weak, "Protect focus for the second block.", false),
-        block(25, "Weakness repair", "Redo the hardest step or paragraph from the first block with the mistake removed.", primary, weak, "Fix the exact leak in marks.", false),
-        block(30, "Second subject practice", actionFor(secondary, secondWeak), secondary, secondWeak, "Keep momentum across another likely exam area.", true, Math.min(1, cardCount - 1)),
-        block(10, "Break", "Reset your desk and write the next task before starting again.", secondary, secondWeak, "Prevent the long-session slump.", false),
-        block(25, "Challenge attempt", actionFor(primary, topics[2] || weak), primary, topics[2] || weak, "Push into exam application, not comfort work.", true, Math.min(2, cardCount - 1)),
-        block(15, "Final recall and pack-down", "Write tomorrow's must-remember list and one thing you will ignore.", primary, weak, "End calm with a clear exam target.", false)
-      ], minutes);
-    }
+    const count = Math.max(1, Math.min(cardCount, minutes < 50 ? 1 : minutes < 90 ? 2 : 3));
+    const baseDuration = count === 1 ? Math.min(minutes, 35) : count === 2 ? Math.min(35, Math.floor(minutes / 2)) : Math.min(30, Math.floor(minutes / 3));
+    const blocks = [
+      block(baseDuration, "Question Card 1", actionFor(primary, weak), primary, weak, "Start solving immediately.", true, 0),
+      block(baseDuration, "Question Card 2", actionFor(secondary, secondWeak), secondary, secondWeak, "Second focused practice rep.", true, Math.min(1, cardCount - 1)),
+      block(baseDuration, "Question Card 3", actionFor(primary, topics[2] || weak), primary, topics[2] || weak, "Harder follow-up practice.", true, Math.min(2, cardCount - 1))
+    ].slice(0, count);
 
     return addTimes(blocks);
   }
@@ -214,15 +188,14 @@ Evening revision flow requirement:
     return `
       <div class="evening-plan-head">
         <div>
-          <h3>Tonight's Revision Flow</h3>
-          <p>Each time block has the exact action underneath. Practice blocks include a big card you can open.</p>
+          <h3>Timed Question Cards</h3>
+          <p>Just the time and the practice card. Click Start Practice when you are ready.</p>
         </div>
         <span>${total} min</span>
       </div>
       <div class="evening-timeline" aria-label="Tonight revision timeline">
         ${blocks.map((item, index) => renderEveningBlock(item, index, cardElements)).join("")}
       </div>
-      <p class="evening-plan-note">Based on: ${escapeHtml(details.studyTime || "tonight")}. Follow the blocks from top to bottom.</p>
     `;
   }
 
@@ -234,11 +207,6 @@ Evening revision flow requirement:
           <div class="timeline-top">
             <span>${escapeHtml(item.time)}</span>
             <em>${escapeHtml(item.duration)}</em>
-          </div>
-          <div class="timeline-body">
-            <strong>${index + 1}. ${escapeHtml(item.title)}</strong>
-            <p>${escapeHtml(item.action)}</p>
-            <small>${escapeHtml(item.subject)} - ${escapeHtml(item.topic)} - ${escapeHtml(item.purpose)}</small>
           </div>
         </div>
         ${
