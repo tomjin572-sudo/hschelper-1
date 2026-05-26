@@ -20,6 +20,13 @@ Evening revision flow requirement:
 - Each card should be a clear practice task with timeRequired, topic, questionType, doThisNow, focusPoint, mostCommonMistake and buttonText.
 - Do not create generic planning blocks like review notes, warm-up, final recall, or pack-down.
 - Prioritise direct exam-style questions students can start immediately.`;
+          body.question += `
+
+Economics subject rule:
+- If the subject is Economics, the cards must teach economics content, not English writing technique.
+- For labour/labor market topics, include key terms such as labour demand, labour supply, wage rate, equilibrium wage, unemployment, underemployment, participation rate, productivity, minimum wage, skills mismatch and bargaining power.
+- Labour market practice should include definitions, labour market diagrams, cause-effect chains and one HSC-style short response.
+- Do not make Economics cards focus only on essay structure.`;
           init.body = JSON.stringify(body);
         }
       } catch (error) {
@@ -33,12 +40,40 @@ Evening revision flow requirement:
   const output = document.querySelector("#sprintOutput");
   if (!output) return;
 
-  const observer = new MutationObserver(() => injectEveningPlan());
+  const observer = new MutationObserver(() => {
+    cleanupPlanText();
+    injectEveningPlan();
+  });
   observer.observe(output, { childList: true, subtree: true });
-  document.addEventListener("submit", () => setTimeout(injectEveningPlan, 250), true);
-  setTimeout(injectEveningPlan, 500);
+  document.addEventListener("submit", () => setTimeout(() => {
+    cleanupPlanText();
+    injectEveningPlan();
+  }, 250), true);
+  setTimeout(() => {
+    cleanupPlanText();
+    injectEveningPlan();
+  }, 500);
+
+  function cleanupPlanText() {
+    output.querySelectorAll(".sprint-summary, .coach-call").forEach((item) => item.remove());
+    output.querySelectorAll("section").forEach((section) => {
+      if (section.classList.contains("evening-plan")) return;
+      if (section.querySelector(".action-card-stack, .execution-card")) return;
+      const text = (section.textContent || "").trim().toLowerCase();
+      if (
+        section.querySelector(".ai-plan-text") ||
+        text.startsWith("your exam plan") ||
+        text.startsWith("nesa syllabus source") ||
+        text.includes("weekly overview") ||
+        text.includes("daily study tasks")
+      ) {
+        section.remove();
+      }
+    });
+  }
 
   function injectEveningPlan() {
+    cleanupPlanText();
     const stack = output.querySelector(".action-card-stack");
     if (!stack || output.querySelector(".evening-plan")) return;
 
@@ -103,36 +138,12 @@ Evening revision flow requirement:
     const text = `${subject} ${topic}`.toLowerCase();
     if (text.includes("math")) return `Complete a timed equation set on ${topic}. Show every line of working and check signs.`;
     if (text.includes("english")) return `Write one timed paragraph on ${topic}. Use thesis, evidence, analysis, and a clear link back.`;
-    if (text.includes("economic")) return `Build one cause-effect chain for ${topic}, then turn it into an exam paragraph with one statistic or example.`;
+    if (text.includes("economic") && /labour|labor|wage|employment|unemployment|participation|underemployment|minimum wage|productivity/.test(text)) {
+      return `Learn the labour market terms, then answer a diagram-based short response on ${topic}.`;
+    }
+    if (text.includes("economic")) return `Define the key economics terms for ${topic}, then complete one cause-effect short answer.`;
     if (text.includes("biology") || text.includes("science")) return `Answer 3 short-response questions on ${topic}. Use correct terminology and process order.`;
     return `Complete one timed HSC-style task on ${topic}. Produce an answer, then mark and fix one weakness.`;
-  }
-
-  function fitBlocks(blocks, targetMinutes) {
-    const minFor = (item) => item.opensPractice ? 15 : 5;
-    let total = sumMinutes(blocks);
-    let index = 0;
-
-    while (total < targetMinutes) {
-      const item = blocks[index % blocks.length];
-      const add = Math.min(5, targetMinutes - total);
-      item.minutes += add;
-      total += add;
-      index += 1;
-    }
-
-    index = 0;
-    while (total > targetMinutes && index < blocks.length * 8) {
-      const item = blocks[index % blocks.length];
-      const remove = Math.min(5, total - targetMinutes, Math.max(0, item.minutes - minFor(item)));
-      if (remove > 0) {
-        item.minutes -= remove;
-        total -= remove;
-      }
-      index += 1;
-    }
-
-    return blocks.filter((item) => item.minutes >= 5);
   }
 
   function addTimes(blocks) {
@@ -170,10 +181,6 @@ Evening revision flow requirement:
     }
 
     return Math.max(25, Math.min(minutes || 90, 240));
-  }
-
-  function sumMinutes(blocks) {
-    return blocks.reduce((sum, item) => sum + item.minutes, 0);
   }
 
   function formatClock(totalMinutes) {
