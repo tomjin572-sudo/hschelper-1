@@ -78,4 +78,40 @@
         : "Learn the idea, see one example, then start practice.";
     }
   }
+
+  let rescueQueued = false;
+  const output = document.querySelector("#sprintOutput");
+  if (output) {
+    new MutationObserver(queuePlanRescue).observe(output, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["hidden", "class", "style"]
+    });
+    document.addEventListener("submit", () => {
+      setTimeout(queuePlanRescue, 1200);
+      setTimeout(queuePlanRescue, 5000);
+      setTimeout(queuePlanRescue, 12000);
+    }, true);
+    queuePlanRescue();
+  }
+
+  function queuePlanRescue() {
+    if (rescueQueued) return;
+    rescueQueued = true;
+    setTimeout(() => {
+      rescueQueued = false;
+      rescueBlankPlan();
+    }, 250);
+  }
+
+  function rescueBlankPlan() {
+    if (!output || output.querySelector(".loading-plan")) return;
+    const stack = output.querySelector(".action-card-stack");
+    const visibleTimelineCard = output.querySelector(".evening-plan .execution-card");
+    if (stack && stack.hidden && !visibleTimelineCard) {
+      stack.hidden = false;
+      stack.classList.remove("action-card-source");
+    }
+  }
 })();
