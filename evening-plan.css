@@ -70,9 +70,9 @@
 
 .timeline-header {
   display: grid;
-  grid-template-columns: minmax(120px, 0.22fr) minmax(0, 1fr);
+  grid-template-columns: 1fr;
   align-items: start;
-  gap: 14px;
+  gap: 0;
 }
 
 .timeline-top {
