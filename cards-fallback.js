@@ -27,8 +27,8 @@
     if (output.querySelector(".action-card-stack")) return;
     if (output.querySelector(".empty-plan") || output.querySelector(".loading-plan")) return;
 
-    const hasPlanText = output.querySelector(".ai-plan-text") || /plan|study|revision|practice|exam/i.test(output.textContent || "");
-    if (!hasPlanText) return;
+    const hasAnyResult = Boolean((output.textContent || "").trim() || output.querySelector("section"));
+    if (!hasAnyResult) return;
 
     const details = readDetails();
     fallbackCards = buildFallbackCards(details);
@@ -38,7 +38,7 @@
 
     const heading = document.createElement("div");
     heading.className = "start-now-heading";
-    heading.innerHTML = "<strong>Start Now Cards</strong><span>The plan stays above. These buttons open the question session.</span>";
+    heading.innerHTML = "<strong>Timed Question Cards</strong><span>Use Start Practice to begin the question session.</span>";
 
     output.appendChild(heading);
     output.appendChild(stack);
@@ -79,10 +79,10 @@
   function buildFallbackCards(details) {
     const subjects = details.subjects.length ? details.subjects : ["HSC"];
     const topics = details.topics.length ? details.topics : ["weakest topic"];
-    return [0, 1, 2].map((index) => makeCard(subjects[index] || subjects[0], topics[index] || topics[0], index));
+    return [0, 1, 2].map((index) => makeCard(subjects[index] || subjects[0], topics[index] || topics[0], index, details.studyTime));
   }
 
-  function makeCard(subject, topic, index) {
+  function makeCard(subject, topic, index, studyTime) {
     const subjectText = `${subject} ${topic}`.toLowerCase();
     const type = subjectType(subjectText);
     const templates = {
@@ -101,11 +101,17 @@
         ignore: "Rewriting the whole essay plan."
       },
       economics: {
-        questionType: "Cause-effect chain + paragraph",
-        task: `Build one cause-effect chain for ${topic}, then turn it into a 6-mark economics paragraph.`,
-        focus: "Definition, chain logic, terminology, example/statistic.",
-        mistake: "Writing English-style technique instead of economic cause and effect.",
-        ignore: "Long theory summaries without an exam paragraph."
+        questionType: isLabourMarket(topic) ? "Labour market terms + short answer" : "Economics content drill",
+        task: isLabourMarket(topic)
+          ? `Learn the labour market terms, then complete one diagram-based short answer on ${topic}.`
+          : `Define the key economics terms for ${topic}, then complete one cause-effect short answer.`,
+        focus: isLabourMarket(topic)
+          ? "Labour demand, labour supply, wage rate, equilibrium, unemployment and participation rate."
+          : "Definition, cause-effect logic, terminology, example/statistic.",
+        mistake: isLabourMarket(topic)
+          ? "Writing generally about jobs without using labour market concepts."
+          : "Writing English-style technique instead of economic cause and effect.",
+        ignore: "Long introductions or essay-style filler."
       },
       science: {
         questionType: "Short-answer drill",
@@ -152,7 +158,12 @@
     return "general";
   }
 
+  function isLabourMarket(topic) {
+    return /labour|labor|wage|employment|unemployment|participation|underemployment|minimum wage|labour market|labor market|productivity/.test(String(topic || "").toLowerCase());
+  }
+
   function approachFor(type, topic) {
+    if (type === "economics" && isLabourMarket(topic)) return ["Learn the terms: labour demand, labour supply, wage rate, equilibrium wage, unemployment, underemployment, participation rate.", "Draw or describe the labour market diagram.", "Explain the cause-effect chain using one Australian example."];
     if (type === "economics") return ["Define the key term first.", `Build a cause-effect chain for ${topic}.`, "Turn the chain into a paragraph with one example."];
     if (type === "english") return ["Write the argument before the quote.", "Add evidence and technique.", "Explain effect and link to the question."];
     if (type === "maths") return ["Write the formula or method first.", "Show each working step.", "Check the final answer against the question."];
@@ -162,6 +173,14 @@
 
   function questionsFor(type, topic) {
     if (type === "economics") {
+      if (isLabourMarket(topic)) {
+        return [
+          q("Define labour demand, labour supply, equilibrium wage, unemployment, underemployment and participation rate.", "Warm-up", "Key labour market terminology", "Using everyday wording instead of economic terms."),
+          q("Draw or describe a labour market diagram showing a shortage of labour. Explain the effect on wages and employment.", "Core", "Diagram logic", "Confusing labour shortages with unemployment."),
+          q("Explain how higher labour productivity can affect labour demand, wages and employment.", "Core", "Productivity -> labour demand -> wage/employment chain", "Saying productivity automatically raises wages without explaining why."),
+          q("Explain how a minimum wage can affect employment, business costs and income distribution.", "Challenge", "Policy trade-offs", "Only giving one side of the policy effect.")
+        ];
+      }
       return [
         q(`Define ${topic} in an economics context and identify one key indicator linked to it.`, "Warm-up", "Definition and terminology", "Vague everyday language."),
         q(`Construct a cause-effect chain showing how a change in ${topic} affects households, firms or the Australian economy.`, "Core", "Logical links", "Skipping the transmission mechanism."),
