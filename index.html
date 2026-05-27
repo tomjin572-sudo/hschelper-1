@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HSC Helper</title>
-    <link rel="stylesheet" href="./styles.css" />
-    <link rel="stylesheet" href="./evening-plan.css" />
+    <link rel="stylesheet" href="./styles.css?v=20260527-ui" />
+    <link rel="stylesheet" href="./evening-plan.css?v=20260527-ui" />
   </head>
   <body>
     <div class="app-shell">
@@ -18,7 +18,7 @@
           </span>
           <div>
             <strong>HSC Helper</strong>
-            <span>AI question execution system</span>
+            <span>1-day exam sprint planner</span>
           </div>
         </div>
 
@@ -31,12 +31,18 @@
       <main>
         <header class="hero simple-hero" id="overview">
           <div>
-            <p class="eyebrow">AI HSC Question Execution</p>
-            <h1>Stop planning. Start solving.</h1>
+            <p class="eyebrow">1-day pre-exam emergency revision</p>
+            <h1>Exam tomorrow? Get your next 3 study actions.</h1>
             <p class="hero-copy">
-              Add your subjects, dates, weak topics and study time. Get high-ROI tasks, real HSC-style questions and a timed focus session.
+              HSC Helper turns your subject, weak topic and time left into timed practice cards: what to revise first, what to ignore, and what to do after each task.
             </p>
-            <a class="hero-cta" href="#study-sprint">Create my plan</a>
+            <div class="hero-flow" aria-label="Study workflow">
+              <span>Input</span>
+              <span>Plan</span>
+              <span>Practice</span>
+              <span>Next task</span>
+            </div>
+            <a class="hero-cta" href="#study-sprint">Start emergency sprint</a>
           </div>
         </header>
 
@@ -50,55 +56,55 @@
         <section class="study-sprint panel" id="study-sprint">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">One-step setup</p>
-              <h2>StudySprint Planner</h2>
+              <p class="eyebrow">Emergency study setup</p>
+              <h2>Emergency Exam Sprint</h2>
             </div>
-            <span class="mode-pill">ChatGPT + NESA context</span>
+            <span class="mode-pill">Plan less. Start faster.</span>
           </div>
 
           <div class="sprint-layout">
             <form class="sprint-form" id="studySprintForm">
-              <p class="form-intro">Four quick inputs. The AI turns your revision time into a tonight flow plus practice cards you can start immediately.</p>
+              <p class="form-intro">Four quick inputs. Get 2-3 timed practice cards that tell you what to revise first, what to skip, and exactly how to start.</p>
 
               <label>
-                Subjects
-                <input id="subjectsInput" type="text" placeholder="English Advanced, Mathematics Advanced, Biology" />
+                Subject
+                <input id="subjectsInput" type="text" placeholder="Economics" />
               </label>
               <div class="chip-row" aria-label="Popular subjects">
+                <button type="button" class="input-chip" data-target="#subjectsInput" data-value="Economics">Economics</button>
                 <button type="button" class="input-chip" data-target="#subjectsInput" data-value="English Advanced">English Advanced</button>
                 <button type="button" class="input-chip" data-target="#subjectsInput" data-value="Mathematics Advanced">Maths Advanced</button>
-                <button type="button" class="input-chip" data-target="#subjectsInput" data-value="Biology">Biology</button>
               </div>
 
               <label>
-                Exam dates
-                <input id="examDatesInput" type="text" placeholder="English: 18 Oct, Maths: 22 Oct, Biology: 28 Oct" />
+                Exam timing
+                <input id="examDatesInput" type="text" placeholder="Tomorrow morning, Friday, or 18 Oct" />
               </label>
 
               <label>
-                Weak topics
-                <input id="weakTopicsInput" type="text" placeholder="Module B thesis, calculus applications, short-answer timing" />
+                Weak topic
+                <input id="weakTopicsInput" type="text" placeholder="Labour markets, minimum wage, unemployment" />
               </label>
               <div class="chip-row" aria-label="Common weak topics">
-                <button type="button" class="input-chip" data-target="#weakTopicsInput" data-value="timed paragraph practice">Timed paragraph</button>
-                <button type="button" class="input-chip" data-target="#weakTopicsInput" data-value="exam-style short answers">Short answers</button>
-                <button type="button" class="input-chip" data-target="#weakTopicsInput" data-value="marking criteria">Marking criteria</button>
+                <button type="button" class="input-chip" data-target="#weakTopicsInput" data-value="labour markets">Labour markets</button>
+                <button type="button" class="input-chip" data-target="#weakTopicsInput" data-value="short-answer timing">Short answers</button>
+                <button type="button" class="input-chip" data-target="#weakTopicsInput" data-value="diagram practice">Diagrams</button>
               </div>
 
               <label>
-                How much revision time do you have today?
-                <input id="studyTimeInput" type="text" placeholder="Example: 90 minutes tonight, 2 hours after dinner, 45 minutes before bed" />
+                Time available today
+                <input id="studyTimeInput" type="text" placeholder="90 minutes tonight" />
               </label>
 
-              <button class="primary-cta" type="submit">Create my study plan</button>
+              <button class="primary-cta" type="submit">Create my practice cards</button>
             </form>
 
             <article class="sprint-output" aria-live="polite">
-              <span id="sprintOutputLabel">Your plan will appear here</span>
+              <span id="sprintOutputLabel">Practice cards will appear here</span>
               <div id="sprintOutput">
                 <div class="empty-plan">
-                  <strong>Built for action.</strong>
-                  <p>The planner turns four inputs into practice cards with questions, timer, answer space and feedback.</p>
+                  <strong>Your first action will appear here.</strong>
+                  <p>Start with Card 1, press Start Practice, answer inside the timer, then follow the next action.</p>
                 </div>
               </div>
             </article>
@@ -124,7 +130,7 @@
       <div class="focus-shell" role="dialog" aria-modal="true" aria-labelledby="focusTaskTitle">
         <button class="ghost-close" id="closeFocusButton" type="button">Exit</button>
         <div class="focus-task">
-          <p class="eyebrow">Focus session</p>
+          <p class="eyebrow">Timed practice session</p>
           <h2 id="focusTaskTitle">Start practice</h2>
           <p id="focusTaskText"></p>
           <div class="focus-meta">
@@ -156,7 +162,7 @@
           <article class="question-engine">
             <div class="question-engine-head">
               <div>
-                <strong>Question Engine</strong>
+                <strong>Practice Questions</strong>
                 <p id="questionEngineBrief">Solve the questions below inside the timer.</p>
               </div>
               <span id="questionProgress">0/0 complete</span>
@@ -183,26 +189,25 @@
 
         <div class="completion-screen" id="completionScreen" hidden>
           <p class="eyebrow">Session completed</p>
-          <h2>Momentum banked.</h2>
+          <h2>Next action ready.</h2>
           <p id="completionFeedback"></p>
           <div class="completion-grid">
             <div><strong id="completionMinutes">25</strong><span>Focused minutes</span></div>
             <div><strong id="completionImpact">High</strong><span>Marks impact</span></div>
-            <div><strong id="completionNext">Next card</strong><span>Recommended next</span></div>
+            <div><strong id="completionNext">Next card</strong><span>Next action</span></div>
           </div>
-          <button id="continueButton" type="button">Continue</button>
+          <button id="continueButton" type="button">Back to cards</button>
         </div>
       </div>
     </section>
 
-    <script src="./reliability.js"></script>
-    <script src="./feedback-fix.js"></script>
-    <script src="./evening-plan.js"></script>
-    <script src="./app.js"></script>
-    <script src="./cards-fallback.js"></script>
-    <script src="./workflow.js"></script>
-    <script src="./study-pack.js"></script>
-    <script src="./cheat-sheet.js"></script>
-    <script src="./flow-simplify.js"></script>
+    <script src="./reliability.js?v=20260527-ui"></script>
+    <script src="./feedback-fix.js?v=20260527-debug-flow"></script>
+    <script src="./evening-plan.js?v=20260527-product-flow"></script>
+    <script src="./app.js?v=20260527-product-flow"></script>
+    <script src="./cards-fallback.js?v=20260527-product-flow"></script>
+    <script src="./workflow.js?v=20260527-product-flow"></script>
+    <script src="./flow-simplify.js?v=20260527-debug-flow-3"></script>
+    <script src="./study-pack.js?v=20260527-debug-flow"></script>
   </body>
 </html>
