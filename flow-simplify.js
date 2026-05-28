@@ -133,6 +133,19 @@
     if ((output.textContent || "").trim()) return;
 
     const topic = readValue("#weakTopicsInput") || "your weakest topic";
+    window.__hscReliabilityCards = [{
+      title: "Highest ROI Practice",
+      topic,
+      timeRequired: "25 minutes",
+      difficulty: "Medium",
+      highestRoiTask: "Complete one timed HSC-style response, then mark one mistake and fix it.",
+      questionType: "Timed exam-style practice",
+      focusPoint: "Definitions, cause-effect logic and one clear exam response.",
+      resourceName: "Internal HSC-style practice",
+      mostCommonMistake: "Reading passively without writing an answer.",
+      estimatedMarksImpact: "High because it creates immediate exam output.",
+      doThisNow: "Produce an answer now instead of rereading notes."
+    }];
     output.innerHTML = `
       <div class="action-card-stack fallback-action-cards">
         <article class="execution-card generated-card">
@@ -153,7 +166,7 @@
             <p><strong>What NOT To Focus On</strong>Making a perfect plan before starting.</p>
             <p><strong>Estimated Marks Impact</strong>High because it creates immediate exam output.</p>
           </div>
-          <button class="action-button" type="button">Start Practice</button>
+          <button class="action-button" type="button" data-reliability-card-index="0">Start Practice</button>
         </article>
       </div>
     `;
