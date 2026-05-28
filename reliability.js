@@ -191,6 +191,26 @@
     }, 1000);
   }
 
+  function resetCompleteButton() {
+    const complete = document.querySelector("#completeSessionButton");
+    if (!complete) return;
+    complete.disabled = false;
+    complete.textContent = "Mark Complete";
+  }
+
+  function guideCompletedSession() {
+    const screen = document.querySelector("#completionScreen");
+    if (!screen || screen.hidden) return;
+    const complete = document.querySelector("#completeSessionButton");
+    const back = document.querySelector("#continueButton");
+    if (complete) {
+      complete.disabled = true;
+      complete.textContent = "Completed";
+    }
+    screen.scrollIntoView({ block: "start", behavior: "smooth" });
+    back?.focus({ preventScroll: true });
+  }
+
   function queueFastFallback() {
     setTimeout(() => renderBackupCards(makeBackupCards()), 8000);
   }
@@ -214,6 +234,10 @@
       normalizeStartButtons();
     }).observe(output, { childList: true, subtree: true });
     document.addEventListener("submit", queueFastFallback, true);
+    document.addEventListener("click", (event) => {
+      if (event.target.closest("#completeSessionButton")) setTimeout(guideCompletedSession, 80);
+      if (event.target.closest(".start-session, [data-reliability-card-index]")) setTimeout(resetCompleteButton, 80);
+    }, true);
     output.addEventListener("click", handleBackupPractice, true);
   }
 
