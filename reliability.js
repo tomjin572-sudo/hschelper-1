@@ -132,10 +132,9 @@
 
   function renderBackupCards(cards) {
     const output = document.querySelector("#sprintOutput");
-    const label = document.querySelector("#sprintOutputLabel");
     if (!output || !output.querySelector(".loading-plan")) return;
     window.__hscReliabilityCards = cards;
-    if (label) label.textContent = "Practice cards ready";
+    releaseSubmitState();
     output.innerHTML = `
       <div class="action-card-stack reliability-action-cards">
         ${cards.map((card, index) => `
@@ -165,6 +164,31 @@
         `).join("")}
       </div>
     `;
+    keepSubmitReleased();
+  }
+
+  function releaseSubmitState() {
+    const label = document.querySelector("#sprintOutputLabel");
+    const submit = document.querySelector("#studySprintForm button[type='submit']");
+    if (label) label.textContent = "Practice cards ready";
+    if (submit) {
+      submit.disabled = false;
+      submit.textContent = "Create my practice cards";
+    }
+  }
+
+  function keepSubmitReleased() {
+    clearInterval(window.__hscReliabilityReleaseTimer);
+    let ticks = 0;
+    window.__hscReliabilityReleaseTimer = setInterval(() => {
+      const output = document.querySelector("#sprintOutput");
+      if (!output?.querySelector(".reliability-action-cards") || ticks > 12) {
+        clearInterval(window.__hscReliabilityReleaseTimer);
+        return;
+      }
+      releaseSubmitState();
+      ticks += 1;
+    }, 1000);
   }
 
   function queueFastFallback() {
