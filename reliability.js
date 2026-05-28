@@ -16,11 +16,22 @@
     });
   }
 
+  function normalizeStartButtons() {
+    document.querySelectorAll(".start-session, .action-button").forEach((button) => {
+      const text = (button.textContent || "").trim().toLowerCase();
+      if (text.includes("start") && text.includes("practice")) button.textContent = "Start Practice";
+    });
+  }
+
   function startWatching() {
     const output = document.querySelector("#sprintOutput");
     if (!output) return;
     rewriteFallbackText();
-    new MutationObserver(rewriteFallbackText).observe(output, { childList: true, subtree: true });
+    normalizeStartButtons();
+    new MutationObserver(() => {
+      rewriteFallbackText();
+      normalizeStartButtons();
+    }).observe(output, { childList: true, subtree: true });
   }
 
   if (document.readyState === "loading") {
