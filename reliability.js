@@ -7,11 +7,12 @@
     if (!output) return;
     output.querySelectorAll("*").forEach((node) => {
       if (!node.childNodes.length && node.textContent) {
-        node.textContent = node.textContent
+        const nextText = node.textContent
           .replaceAll("Offline fallback", "Backup plan")
           .replaceAll("Local fallback", "Backup plan")
           .replaceAll("Quick recovery plan", "Backup plan")
           .replaceAll("The plan is taking longer than expected. Try fewer subjects or weak topics.", "ChatGPT is connected, but this request took too long. Try 1 subject and 2-3 weak topics.");
+        if (nextText !== node.textContent) node.textContent = nextText;
       }
     });
   }
@@ -19,7 +20,9 @@
   function normalizeStartButtons() {
     document.querySelectorAll(".start-session, .action-button").forEach((button) => {
       const text = (button.textContent || "").trim().toLowerCase();
-      if (text.includes("start") && text.includes("practice")) button.textContent = "Start Practice";
+      if (text.includes("start") && text.includes("practice") && button.textContent.trim() !== "Start Practice") {
+        button.textContent = "Start Practice";
+      }
     });
   }
 
