@@ -80,22 +80,22 @@
 
     if (/inflation|monetary|fiscal|aggregate|cash rate|economic|policy|globalisation|exchange rate/.test(text)) {
       return {
-        knowledge: ["Explain means show cause and effect.", "Assess/evaluate means make a judgement.", "Economic chain: cause -> mechanism -> impact -> example/data -> judgement."],
-        wants: "Build economic reasoning, not a list of facts.",
-        first: "Start by defining the main economic term, then state the first cause-effect link.",
-        chain: ["Define the key term.", "State the policy/change/cause.", "Explain the transmission mechanism.", "Show the economic impact.", "Add example/data and judgement if required."],
-        marks: ["Definition", "Cause-effect chain", "Economic terminology", "Example/data or diagram", "Judgement for assess/evaluate"],
+        knowledge: ["Inflation: a sustained increase in the general price level.", "Cash rate: the interest rate set by the RBA that influences borrowing and saving rates.", "Aggregate demand: total spending in the economy, made up of C + I + G + X - M."],
+        wants: "Explain how the economic change in the question flows through households, firms, prices, output or employment.",
+        first: "Start: Inflation is a sustained increase in the general price level, which reduces purchasing power when incomes do not rise at the same pace.",
+        chain: ["Name and define the main economic term.", "Identify the first change: prices, rates, demand, supply, currency or policy.", "Trace the effect on households/firms: spending, costs, investment, exports or employment.", "Finish with the macro result: growth, inflation, unemployment, living standards or external stability.", "If asked to assess/evaluate, add a short judgement about strength or limitation."],
+        marks: ["Actual definition of the economic term", "Cause-effect chain with at least 3 linked steps", "One relevant diagram/data/example type, such as AD/AS shift, exchange-rate movement or recent Australian policy", "Clear final impact on an economic objective", "Judgement if the command term requires it"],
         trap: mistake
       };
     }
 
     if (/business|marketing|operations|finance|human resources|case study/.test(text)) {
       return {
-        knowledge: ["Explain means show impact; analyse means show relationships; evaluate means judge effectiveness.", "Business impact chain: function -> strategy/action -> performance effect -> case detail -> judgement."],
-        wants: "Apply a business concept to performance, not just define it.",
-        first: "Start by naming the business function and strategy, then link it to a performance outcome.",
-        chain: ["Define the strategy or term.", "Link it to operations/marketing/finance/HR.", "Explain the performance effect.", "Add a specific case detail or realistic business example.", "Judge effectiveness if asked."],
-        marks: ["Syllabus term", "Business function", "Performance impact", "Case/example detail", "Judgement for evaluate/assess"],
+        knowledge: ["Operations: the business function that transforms inputs into goods or services.", "Marketing: identifying customer needs and satisfying them profitably.", "Finance: managing funds, cash flow, profitability and solvency.", "Human resources: managing employees, skills, motivation and workplace relations."],
+        wants: "Show how the strategy or business term in the question changes business performance.",
+        first: "Start: The business can improve performance by using [strategy], which affects [operations/marketing/finance/HR] through [cost, revenue, quality, productivity or customer demand].",
+        chain: ["Define the business term or strategy named in the question.", "Name the business function it belongs to.", "Show the action: what the business actually does.", "Explain the performance impact: lower costs, higher sales, better quality, improved cash flow, productivity or customer satisfaction.", "Add a case detail: a named business, product, market, campaign, supply chain, finance decision or HR practice.", "Judge effectiveness if the question says assess/evaluate."],
+        marks: ["Correct business definition", "Relevant business function", "Action -> performance impact chain", "Specific case/example detail, not a generic company mention", "Judgement when required"],
         trap: mistake
       };
     }
@@ -124,43 +124,43 @@
 
     if (/physics|force|motion|wave|electric|magnetic|energy/.test(text)) {
       return {
-        knowledge: ["Formula answers need variables and units.", "Newton-style explanations need force -> acceleration/motion effect.", "Wave questions often use v = f lambda."],
+        knowledge: ["Net force: the vector sum of forces on an object.", "Newton's second law: F = ma, where F is net force in newtons, m is mass in kilograms and a is acceleration in m s^-2.", "Wave speed: v = f lambda, where v is speed, f is frequency and lambda is wavelength."],
         wants: "Apply a physics principle to the scenario with working or a cause-effect explanation.",
-        first: "Write the relevant formula/principle and define the variables before substituting.",
-        chain: ["Identify the principle.", "Write formula or labelled diagram.", "Substitute values with units or explain mechanism.", "State the final physical meaning."],
-        marks: ["Correct formula/principle", "Units and direction", "Working or labelled diagram", "Scenario-specific conclusion"],
+        first: "Write the relevant formula first, for example F = ma or v = f lambda, then substitute the values with units.",
+        chain: ["Identify the principle: force/motion, energy, waves, electricity or fields.", "Write the actual formula or draw a labelled diagram.", "Substitute the values with units and direction if relevant.", "Solve or explain the physical effect in the scenario.", "State the final answer with unit and meaning."],
+        marks: ["Correct formula/principle with variables", "Substitution with units", "Working or labelled diagram", "Scenario-specific conclusion"],
         trap: mistake
       };
     }
 
     if (/chemistry|mole|acid|base|equilibrium|reaction|organic|titration/.test(text)) {
       return {
-        knowledge: ["Mole questions need n = m/M or c = n/V.", "Equilibrium answers use disturbance -> shift -> concentration/yield effect.", "Acid-base questions often need balanced equation or pH/concentration logic."],
+        knowledge: ["Amount of substance: n = m/M, where n is moles, m is mass and M is molar mass.", "Concentration: c = n/V, with volume in litres.", "Equilibrium shift: a system changes direction to partly oppose the disturbance."],
         wants: "Use chemical particles, equations or calculation logic to explain the result.",
-        first: "Write the balanced equation, formula or reaction type before explaining.",
-        chain: ["Identify the reaction/calculation type.", "Write equation or formula.", "Substitute/process values or explain particles.", "State product, concentration, pH, yield or conclusion."],
-        marks: ["Balanced equation/formula", "Correct units and ratios", "Particle/reaction logic", "Clear final result"],
+        first: "Write the balanced equation or the formula n = m/M or c = n/V before doing any explanation.",
+        chain: ["Identify the reaction or calculation type: mole, titration, equilibrium, acid-base, redox or organic.", "Write the balanced equation, formula or relevant particles.", "Use mole ratios, concentration logic or equilibrium shift direction.", "State the product, concentration, pH, yield or chemical conclusion.", "Use units and significant figures if calculating."],
+        marks: ["Balanced equation/formula", "Correct mole ratio or particle logic", "Correct units and values", "Clear final result linked to the question"],
         trap: mistake
       };
     }
 
     if (/biology|enzyme|cell|genetic|disease|homeostasis|ecosystem|adaptation/.test(text)) {
       return {
-        knowledge: ["Biology explanations need process order and correct terms.", "Structure-function means link the part's feature to what it does.", "Data answers need a trend plus a value."],
+        knowledge: ["Homeostasis: maintaining a stable internal environment through feedback mechanisms.", "Enzymes: biological catalysts with active sites that speed up reactions.", "Structure-function link: explain how a feature helps a part perform its role."],
         wants: "Explain a biological process, structure-function link, disease/genetics pathway or data trend.",
-        first: "Start by naming the biological concept, then outline the first step in the process.",
-        chain: ["Define the key term.", "Put the process/pathway in order.", "Link structure to function or cause to effect.", "Use data/diagram evidence if given."],
-        marks: ["Correct terminology", "Correct process order", "Structure-function or cause-effect link", "Data/diagram evidence where relevant"],
+        first: "Start: [Key biological process] occurs when [first stage], leading to [main effect on the organism/cell/system].",
+        chain: ["Define the key biological term in the question.", "Put the process/pathway in the correct order.", "Link each stage to the next cause or function.", "Use a diagram label, data trend and value if provided.", "Finish with the effect on survival, function, disease response or ecosystem change."],
+        marks: ["Correct biological definition", "Correct process order", "Structure-function or cause-effect link", "Data/diagram evidence where relevant"],
         trap: mistake
       };
     }
 
     return {
-      knowledge: ["Command words control depth: identify = name, explain = cause/effect, analyse = relationships, evaluate = judgement.", "Use subject terms, evidence or working rather than general statements."],
+      knowledge: ["Explain: show cause and effect.", "Analyse: show how parts connect and why that matters.", "Evaluate: make a judgement using evidence or criteria."],
       wants: `It wants a focused answer on ${focus}, using the command word and topic clue.`,
-      first: "Write the key definition, formula, claim or first working line before adding detail.",
-      chain: ["Identify the task type.", "Write the key knowledge or first method step.", "Apply it to the question.", "Finish with the evidence, result or link."],
-      marks: ["Exact task answered", "Subject terminology", "Evidence/working/example", "Clear final link"],
+      first: "Start with the actual definition, formula, claim or first working line from the question topic, then apply it immediately.",
+      chain: ["Name the exact term, formula, concept or text idea in the question.", "Write the first content step, not a general introduction.", "Apply that content to the given scenario, data, text or numbers.", "Finish with the result, effect, judgement or link back to the question."],
+      marks: ["Exact task answered", "Actual subject content", "Evidence, working, example or diagram detail", "Clear final link"],
       trap: mistake || question
     };
   }
@@ -169,12 +169,12 @@
     return `
       <div class="guided-answer-path">
         <strong>Guided Answer Path</strong>
-        <div><b>Key Terms / Key Knowledge You Need</b><ul>${path.knowledge.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
-        <div><b>What the Question Wants</b><span>${escapeHtml(path.wants)}</span></div>
-        <div><b>First Sentence / First Move</b><span>${escapeHtml(path.first)}</span></div>
-        <div><b>Answer Chain</b><ol>${path.chain.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ol></div>
-        <div><b>What to Include for Full Marks</b><ul>${path.marks.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
-        <div><b>Common Trap</b><span>${escapeHtml(path.trap)}</span></div>
+        <div><b>Key Definitions You Need</b><ul>${path.knowledge.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
+        <div><b>What This Question Is Really Asking</b><span>${escapeHtml(path.wants)}</span></div>
+        <div><b>First Sentence You Can Use</b><span>${escapeHtml(path.first)}</span></div>
+        <div><b>Step-by-Step Answer Path</b><ol>${path.chain.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ol></div>
+        <div><b>What To Include For Full Marks</b><ul>${path.marks.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
+        <div><b>Common Mistake</b><span>${escapeHtml(path.trap)}</span></div>
       </div>
     `;
   }
