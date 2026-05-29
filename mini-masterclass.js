@@ -8,6 +8,7 @@
 
   function addMasterclasses() {
     document.querySelectorAll(".question-card").forEach((card) => {
+      if (card.querySelector(".attack-guide")) return;
       if (card.querySelector(".mini-masterclass")) return;
       const questionText = card.querySelector(".question-text");
       if (!questionText) return;
