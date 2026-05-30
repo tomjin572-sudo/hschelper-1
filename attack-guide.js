@@ -14,10 +14,30 @@
       if (!questionText) return;
       const existingGuide = card.querySelector(".guided-answer-path");
       if (existingGuide?.dataset.compactGuide === "true" && questionText.nextElementSibling === existingGuide) return;
-      const pathData = buildPath(card);
+      const pathData = existingGuide ? compactExistingPath(existingGuide, buildPath(card)) : buildPath(card);
       existingGuide?.remove();
       questionText.insertAdjacentHTML("afterend", renderPath(pathData));
     });
+  }
+
+  function compactExistingPath(guide, fallback) {
+    return path(
+      sectionItems(guide, /key|term|knowledge/i, fallback.knowledge).slice(0, 3),
+      "",
+      "",
+      sectionItems(guide, /step|answer|chain|move/i, fallback.chain).slice(0, 4),
+      sectionItems(guide, /full|mark|checklist/i, fallback.marks).slice(0, 4),
+      sectionItems(guide, /trap|mistake/i, [fallback.trap]).slice(0, 1)[0] || fallback.trap
+    );
+  }
+
+  function sectionItems(guide, labelPattern, fallback) {
+    const sections = Array.from(guide.querySelectorAll("div"));
+    const section = sections.find((item) => labelPattern.test(item.querySelector("b")?.textContent || ""));
+    if (!section) return fallback;
+    const items = Array.from(section.querySelectorAll("li")).map((item) => item.textContent.trim()).filter(Boolean);
+    const span = section.querySelector("span")?.textContent?.trim();
+    return items.length ? items : span ? [span] : fallback;
   }
 
   function buildPath(card) {
@@ -151,9 +171,9 @@
     return `
       <div class="guided-answer-path" data-compact-guide="true">
         <strong>Quick Answer Path</strong>
-        <div><b>Steps</b>${renderList(pathData.chain, "ol")}</div>
-        <div><b>Key Terms</b>${renderList(pathData.knowledge, "ul")}</div>
-        <div><b>Full Marks</b>${renderList(pathData.marks, "ul")}</div>
+        <div><b>Steps</b>${renderList(pathData.chain.slice(0, 4), "ol")}</div>
+        <div><b>Key Terms</b>${renderList(pathData.knowledge.slice(0, 3), "ul")}</div>
+        <div><b>Full Marks</b>${renderList(pathData.marks.slice(0, 4), "ul")}</div>
         <div><b>Trap</b>${renderList([pathData.trap], "ul")}</div>
       </div>
     `;
