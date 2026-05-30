@@ -10,9 +10,13 @@
     document.querySelectorAll(".question-card").forEach((card) => {
       card.querySelector(".mini-masterclass")?.remove();
       card.querySelector(".attack-guide")?.remove();
-      if (card.querySelector(".guided-answer-path")) return;
       const questionText = card.querySelector(".question-text");
-      if (questionText) questionText.insertAdjacentHTML("beforebegin", renderPath(buildPath(card)));
+      if (!questionText) return;
+      const existingGuide = card.querySelector(".guided-answer-path");
+      if (existingGuide?.dataset.compactGuide === "true" && questionText.nextElementSibling === existingGuide) return;
+      const pathData = buildPath(card);
+      existingGuide?.remove();
+      questionText.insertAdjacentHTML("afterend", renderPath(pathData));
     });
   }
 
@@ -145,12 +149,10 @@
 
   function renderPath(pathData) {
     return `
-      <div class="guided-answer-path">
-        <strong>Guided Answer Path</strong>
-        <div><b>Key Terms / Knowledge</b>${renderList(pathData.knowledge, "ul")}</div>
-        <div><b>Question Wants</b>${renderList([pathData.wants], "ul")}</div>
-        <div><b>First Move</b>${renderList([pathData.first], "ul")}</div>
-        <div><b>Answer Chain</b>${renderList(pathData.chain, "ol")}</div>
+      <div class="guided-answer-path" data-compact-guide="true">
+        <strong>Quick Answer Path</strong>
+        <div><b>Steps</b>${renderList(pathData.chain, "ol")}</div>
+        <div><b>Key Terms</b>${renderList(pathData.knowledge, "ul")}</div>
         <div><b>Full Marks</b>${renderList(pathData.marks, "ul")}</div>
         <div><b>Trap</b>${renderList([pathData.trap], "ul")}</div>
       </div>
