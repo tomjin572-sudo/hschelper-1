@@ -39,12 +39,14 @@ Economics subject rule:
 
   const output = document.querySelector("#sprintOutput");
   if (!output) return;
+  let eveningCards = [];
 
   const observer = new MutationObserver(() => {
     cleanupPlanText();
     injectEveningPlan();
   });
   observer.observe(output, { childList: true, subtree: true });
+  output.addEventListener("click", handleEveningPracticeClick, true);
   document.addEventListener("submit", () => setTimeout(() => {
     cleanupPlanText();
     injectEveningPlan();
@@ -86,6 +88,9 @@ Economics subject rule:
       stack.classList.remove("action-card-source");
       return;
     }
+
+    eveningCards = blocks.map((item) => cardFromBlock(item, cardElements));
+    syncReliabilityCardTimes(blocks);
 
     const section = document.createElement("section");
     section.className = "evening-plan";
@@ -251,6 +256,7 @@ Economics subject rule:
 
   function renderEveningBlock(item, index, cardElements) {
     const card = item.opensPractice ? cardElements[Number(item.cardIndex) || 0] || cardElements[0] : null;
+    const cardHtml = card ? timedCardHtml(card, item, index) : "";
     return `
       <article class="timeline-block ${item.opensPractice ? "is-practice" : ""}">
         <div class="timeline-header">
@@ -261,11 +267,63 @@ Economics subject rule:
         </div>
         ${
           card
-            ? `<div class="timeline-card-slot">${card.outerHTML}</div>`
+            ? `<div class="timeline-card-slot">${cardHtml}</div>`
             : `<div class="timeline-task-card"><strong>Do this block</strong><p>${escapeHtml(item.action)}</p></div>`
         }
       </article>
     `;
+  }
+
+  function timedCardHtml(card, item, index) {
+    const clone = card.cloneNode(true);
+    clone.querySelector(".execution-card-top em")?.replaceChildren(document.createTextNode(`${item.duration} - Medium`));
+    clone.querySelectorAll("button").forEach((button) => {
+      if (/start practice/i.test(button.textContent || "")) {
+        button.classList.remove("start-session");
+        button.removeAttribute("data-card-index");
+        button.removeAttribute("data-reliability-card-index");
+        button.removeAttribute("data-fallback-card-index");
+        button.dataset.eveningCardIndex = String(index);
+      }
+    });
+    return clone.outerHTML;
+  }
+
+  function cardFromBlock(item, cardElements) {
+    const card = cardElements[Number(item.cardIndex) || 0] || cardElements[0];
+    return {
+      title: card?.querySelector(".card-label")?.textContent?.trim() || item.title,
+      topic: card?.querySelector("h3")?.textContent?.trim() || item.topic,
+      timeRequired: item.duration,
+      difficulty: "Medium",
+      highestRoiTask: card?.querySelector(".card-grid div:first-child span")?.textContent?.trim() || item.action,
+      doThisNow: card?.querySelector(".do-now")?.textContent?.trim() || item.action,
+      questionType: card?.querySelector(".card-grid div:nth-child(2) span")?.textContent?.trim() || "Timed exam-style practice",
+      focusPoint: card?.querySelector(".card-grid div:nth-child(3) span")?.textContent?.trim() || "Complete the task inside the timer.",
+      resourceName: card?.querySelector(".card-grid div:nth-child(4) span")?.textContent?.trim() || "Internal HSC-style practice",
+      mostCommonMistake: card?.querySelector(".risk-row p:first-child")?.textContent?.replace(/^Most Common Mistake/i, "")?.trim() || "Rushing without checking the question.",
+      estimatedMarksImpact: card?.querySelector(".risk-row p:nth-child(2)")?.textContent?.replace(/^Estimated Marks Impact/i, "")?.trim() || "High",
+      howToApproach: [item.action]
+    };
+  }
+
+  function syncReliabilityCardTimes(blocks) {
+    if (!Array.isArray(window.__hscReliabilityCards)) return;
+    blocks.forEach((item, index) => {
+      const card = window.__hscReliabilityCards[Number(item.cardIndex) || index];
+      if (card) card.timeRequired = item.duration;
+    });
+  }
+
+  function handleEveningPracticeClick(event) {
+    const button = event.target.closest("[data-evening-card-index]");
+    if (!button) return;
+    const card = eveningCards[Number(button.dataset.eveningCardIndex)];
+    if (!card || typeof window.startPracticeSession !== "function") return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation?.();
+    window.startPracticeSession(card);
   }
 
   function escapeHtml(value) {
