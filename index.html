@@ -4,10 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HSC Helper</title>
-    <link rel="stylesheet" href="./styles.css?v=20260527-ui" />
+    <link rel="stylesheet" href="./styles.css?v=20260530-question-first" />
     <link rel="stylesheet" href="./evening-plan.css?v=20260527-ui" />
     <link rel="stylesheet" href="./mini-masterclass.css?v=20260529-masterclass" />
-    <link rel="stylesheet" href="./attack-guide.css?v=20260529-attack-guide" />
+    <link rel="stylesheet" href="./attack-guide.css?v=20260530-question-first" />
   </head>
   <body>
     <div class="app-shell">
@@ -20,7 +20,7 @@
           </span>
           <div>
             <strong>HSC Helper</strong>
-            <span>1-day exam sprint planner</span>
+            <span>Emergency marks sprint coach</span>
           </div>
         </div>
 
@@ -34,25 +34,25 @@
         <header class="hero simple-hero" id="overview">
           <div>
             <p class="eyebrow">1-day pre-exam emergency revision</p>
-            <h1>Exam tomorrow? Get your next 3 study actions.</h1>
+            <h1>Exam tomorrow? Attack the next 3 highest-value marks.</h1>
             <p class="hero-copy">
-              HSC Helper turns your subject, weak topic and time left into timed practice cards: what to revise first, what to ignore, and what to do after each task.
+              Tell us your subject, weak topic and time left. HSC Helper decides what to do first, what to skip, and gives you timed practice cards one at a time.
             </p>
             <div class="hero-flow" aria-label="Study workflow">
               <span>Input</span>
-              <span>Plan</span>
-              <span>Practice</span>
-              <span>Next task</span>
+              <span>Mark plan</span>
+              <span>Attack card</span>
+              <span>Next best move</span>
             </div>
             <a class="hero-cta" href="#study-sprint">Start emergency sprint</a>
           </div>
         </header>
 
         <section class="progress-strip" aria-label="Study progress">
-          <div><strong id="completedTasksStat">0</strong><span>Completed tasks</span></div>
-          <div><strong id="studyStreakStat">0</strong><span>Day streak</span></div>
+          <div><strong id="completedTasksStat">0</strong><span>Sprint cards completed</span></div>
+          <div><strong id="studyStreakStat">0</strong><span>Marks targeted</span></div>
           <div><strong id="focusedMinutesStat">0</strong><span>Focused minutes</span></div>
-          <div><strong id="weakTopicsStat">0</strong><span>Weak topics attacked</span></div>
+          <div><strong id="weakTopicsStat">0</strong><span>Weak spots attacked</span></div>
         </section>
 
         <section class="study-sprint panel" id="study-sprint">
@@ -61,12 +61,12 @@
               <p class="eyebrow">Emergency study setup</p>
               <h2>Emergency Exam Sprint</h2>
             </div>
-            <span class="mode-pill">Plan less. Start faster.</span>
+            <span class="mode-pill">Attack marks. Skip fluff.</span>
           </div>
 
           <div class="sprint-layout">
             <form class="sprint-form" id="studySprintForm">
-              <p class="form-intro">Four quick inputs. Get 2-3 timed practice cards that tell you what to revise first, what to skip, and exactly how to start.</p>
+              <p class="form-intro">Your goal is not to learn everything tonight. Give four quick inputs and get the highest-value marks to attack first.</p>
 
               <label>
                 Subject
@@ -98,15 +98,15 @@
                 <input id="studyTimeInput" type="text" placeholder="90 minutes tonight" />
               </label>
 
-              <button class="primary-cta" type="submit">Create my practice cards</button>
+              <button class="primary-cta" type="submit">Create my mark attack cards</button>
             </form>
 
             <article class="sprint-output" aria-live="polite">
-              <span id="sprintOutputLabel">Practice cards will appear here</span>
+              <span id="sprintOutputLabel">Mark attack cards will appear here</span>
               <div id="sprintOutput">
                 <div class="empty-plan">
-                  <strong>Your first action will appear here.</strong>
-                  <p>Start with Card 1, press Start Practice, answer inside the timer, then follow the next action.</p>
+                  <strong>Your first mark attack will appear here.</strong>
+                  <p>Secure easy marks first. Start with Card 1, answer inside the timer, then follow the next best move.</p>
                 </div>
               </div>
             </article>
@@ -158,25 +158,25 @@
 
         <div class="practice-workflow" id="practiceWorkflow">
           <article>
-            <strong>Do this now</strong>
+                <strong>Start here</strong>
             <p id="focusDoNow"></p>
           </article>
           <article class="question-engine">
             <div class="question-engine-head">
               <div>
-                <strong>Practice Questions</strong>
-                <p id="questionEngineBrief">Solve the questions below inside the timer.</p>
+                <strong>Mark Attack Practice</strong>
+                <p id="questionEngineBrief">This is a marks task, not a note-taking task.</p>
               </div>
               <span id="questionProgress">0/0 complete</span>
             </div>
             <div class="question-stack" id="questionStack"></div>
           </article>
           <article>
-            <strong>How to approach</strong>
+            <strong>Guided Answer Path</strong>
             <ol id="focusApproachList"></ol>
           </article>
           <article>
-            <strong>Common mistake</strong>
+            <strong>Trap that costs marks</strong>
             <p id="focusMistake"></p>
           </article>
           <label class="answer-box">
@@ -191,12 +191,12 @@
 
         <div class="completion-screen" id="completionScreen" hidden>
           <p class="eyebrow">Session completed</p>
-          <h2>Next action ready.</h2>
+          <h2>Next best move ready.</h2>
           <p id="completionFeedback"></p>
           <div class="completion-grid">
             <div><strong id="completionMinutes">25</strong><span>Focused minutes</span></div>
             <div><strong id="completionImpact">High</strong><span>Marks impact</span></div>
-            <div><strong id="completionNext">Next card</strong><span>Next action</span></div>
+            <div><strong id="completionNext">Next card</strong><span>Next best move</span></div>
           </div>
           <button id="continueButton" type="button">Back to cards</button>
         </div>
@@ -205,10 +205,10 @@
 
     <script src="./reliability.js?v=20260528-repeat-fix"></script>
     <script src="./evening-plan.js?v=20260530-card-time-sync-fix"></script>
-    <script src="./app.js?v=20260528-repeat-fix"></script>
-    <script src="./cards-fallback.js?v=20260528-repeat-fix"></script>
-    <script src="./flow-simplify.js?v=20260528-start-practice-fix"></script>
-    <script src="./mini-masterclass.js?v=20260529-guided-path-loop-fix"></script>
-    <script src="./attack-guide.js?v=20260529-guided-answer-path-v2"></script>
+    <script src="./app.js?v=20260530-question-first"></script>
+    <script src="./cards-fallback.js?v=20260530-product-soul"></script>
+    <script src="./flow-simplify.js?v=20260530-product-soul"></script>
+    <script src="./mini-masterclass.js?v=20260530-product-soul"></script>
+    <script src="./attack-guide.js?v=20260530-question-first"></script>
   </body>
 </html>
