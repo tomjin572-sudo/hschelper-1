@@ -81,9 +81,21 @@ Economics subject rule:
     const cardCount = Math.max(1, output.querySelectorAll(".execution-card").length || 1);
     const blocks = buildEveningPlan(details, cardCount);
     const cardElements = Array.from(stack.querySelectorAll(".execution-card"));
+    if (!blocks.length || !cardElements.length) {
+      stack.hidden = false;
+      stack.classList.remove("action-card-source");
+      return;
+    }
+
     const section = document.createElement("section");
     section.className = "evening-plan";
     section.innerHTML = renderEveningPlan(blocks, details, cardElements);
+    if (!section.querySelector(".execution-card")) {
+      stack.hidden = false;
+      stack.classList.remove("action-card-source");
+      return;
+    }
+
     stack.parentNode.insertBefore(section, stack);
     output.querySelectorAll(".start-now-heading").forEach((item) => item.remove());
     stack.hidden = true;
@@ -127,7 +139,7 @@ Economics subject rule:
       block(baseDuration, "Question Card 3", actionFor(primary, topics[2] || weak), primary, topics[2] || weak, "Harder follow-up practice.", true, Math.min(2, cardCount - 1))
     ].slice(0, count);
 
-    return addTimes(blocks);
+    return addTimes(fitBlocks(blocks, minutes));
   }
 
   function block(minutes, title, action, subject, topic, purpose, opensPractice, cardIndex) {
@@ -144,6 +156,33 @@ Economics subject rule:
     if (text.includes("economic")) return `Define the key economics terms for ${topic}, then complete one cause-effect short answer.`;
     if (text.includes("biology") || text.includes("science")) return `Answer 3 short-response questions on ${topic}. Use correct terminology and process order.`;
     return `Complete one timed HSC-style task on ${topic}. Produce an answer, then mark and fix one weakness.`;
+  }
+
+  function fitBlocks(blocks, targetMinutes) {
+    const minFor = (item) => item.opensPractice ? 15 : 5;
+    let total = sumMinutes(blocks);
+    let index = 0;
+
+    while (total < targetMinutes) {
+      const item = blocks[index % blocks.length];
+      const add = Math.min(5, targetMinutes - total);
+      item.minutes += add;
+      total += add;
+      index += 1;
+    }
+
+    index = 0;
+    while (total > targetMinutes && index < blocks.length * 8) {
+      const item = blocks[index % blocks.length];
+      const remove = Math.min(5, total - targetMinutes, Math.max(0, item.minutes - minFor(item)));
+      if (remove > 0) {
+        item.minutes -= remove;
+        total -= remove;
+      }
+      index += 1;
+    }
+
+    return blocks.filter((item) => item.minutes >= 5);
   }
 
   function addTimes(blocks) {
@@ -181,6 +220,10 @@ Economics subject rule:
     }
 
     return Math.max(25, Math.min(minutes || 90, 240));
+  }
+
+  function sumMinutes(blocks) {
+    return blocks.reduce((sum, item) => sum + item.minutes, 0);
   }
 
   function formatClock(totalMinutes) {
