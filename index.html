@@ -217,7 +217,7 @@
         let slot = 0;
         document.addEventListener("click", (event) => {
           const button = event.target.closest("[data-evening-card-index], [data-card-index]");
-          if (button) slot = Number(button.dataset.eveningCardIndex ?? button.datasetCardIndex ?? 0) || 0;
+          if (button) slot = Number(button.dataset.eveningCardIndex ?? button.dataset.cardIndex ?? 0) || 0;
         }, true);
         const install = setInterval(() => {
           if (typeof window.startPracticeSession !== "function" || window.startPracticeSession.__hscVarietyWrapped) return;
