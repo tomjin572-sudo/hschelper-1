@@ -27,7 +27,8 @@
       "",
       sectionItems(guide, /step|answer|chain|move/i, fallback.chain).slice(0, 4),
       sectionItems(guide, /full|mark|checklist/i, fallback.marks).slice(0, 4),
-      sectionItems(guide, /trap|mistake/i, [fallback.trap]).slice(0, 1)[0] || fallback.trap
+      sectionItems(guide, /trap|mistake/i, [fallback.trap]).slice(0, 1)[0] || fallback.trap,
+      fallback.matters
     );
   }
 
@@ -42,134 +43,75 @@
 
   function buildPath(card) {
     const text = card.textContent.toLowerCase();
-    const focus = card.querySelector(".question-meta-grid div:first-child span")?.textContent?.trim() || "the tested skill";
     const mistake = card.querySelector(".question-meta-grid div:nth-child(2) span")?.textContent?.trim() || "Missing the exact exam move.";
 
-    if (/first principles/.test(text)) return path(
-      ["Formula: f'(x)=lim h->0 [f(x+h)-f(x)]/h.", "f(x+h): replace x with x+h.", "Key move: cancel h first."],
-      "Use the limit definition, not shortcut rules.",
-      "Start: f'(x)=lim h->0 [f(x+h)-f(x)]/h.",
-      ["Find f(x+h).", "Subtract f(x).", "Factor and cancel h.", "Let h approach 0."],
-      ["Correct formula", "Correct f(x+h)", "h cancels before limit", "Final derivative"],
-      "Substituting h=0 too early."
+    if (/derived demand/.test(text)) return path(
+      ["Labour market: where workers supply labour and firms demand labour.", "Labour demand: amount of labour firms are willing and able to hire at different wage rates.", "Derived demand: labour demand comes from demand for goods/services."],
+      "Define the labour market and explain why firms hire workers.",
+      "Start: The labour market is where workers supply labour and firms demand labour.",
+      ["Labour market = workers supply, firms demand.", "Labour demand = firms willing and able to hire.", "Demand is derived from goods/services demand.", "More consumer demand can make firms hire more workers."],
+      ["Define labour market.", "Define labour demand.", "Explain derived demand.", "Link to goods/services demand.", "Mention hiring/employment."],
+      "Do not define the labour market as just jobs.",
+      "Labour market definitions are easy marks. Vague wording makes the whole answer sound less economic."
     );
 
-    if (/quadratic|factoris|x\^2|x2|parabola/.test(text)) return path(
-      ["Quadratic: ax^2 + bx + c = 0.", "Factorising: multiply to c, add to b.", "Formula: x=(-b +/- sqrt(b^2-4ac))/2a."],
-      "Solve or interpret the quadratic.",
-      "First: write ax^2 + bx + c = 0.",
-      ["Put in standard form.", "Choose factorising or formula.", "Show substitution/working.", "State both solutions."],
-      ["Correct method", "Clear working", "Both roots", "Context checked"],
-      mistake
+    if (/increase in labour demand|rise in labour demand|higher labour demand|labour demand shifts right/.test(text)) return path(
+      ["Labour demand: amount of labour firms are willing and able to hire at different wage rates.", "Equilibrium wage: wage where labour demand equals labour supply.", "Employment: number of workers hired in the labour market."],
+      "Explain the wage and employment effect of stronger demand.",
+      "Start: An increase in demand for goods and services can increase firms' demand for labour.",
+      ["Goods demand rises.", "Labour demand shifts right.", "Firms compete for workers.", "Wages and employment may rise."],
+      ["State labour demand increases.", "Rightward demand shift.", "Higher equilibrium wage.", "Higher employment if firms hire more workers."],
+      "Do not say wages rise without explaining the demand shift.",
+      "This is the main cause-effect chain behind labour market diagram marks."
     );
 
-    if (/differentiat|derivative|gradient|tangent|normal|stationary/.test(text)) return path(
-      ["Derivative: d/dx(ax^n)=anx^(n-1).", "Tangent gradient: y' at x.", "Normal gradient: negative reciprocal."],
-      "Find gradient, line equation, rate or stationary point.",
-      "First: differentiate, then substitute x.",
-      ["Find y'.", "Substitute x or solve y'=0.", "Find y-value if needed.", "Write final meaning."],
-      ["Correct derivative", "Correct substitution", "Coordinates/line if needed", "Question answered"],
-      mistake
+    if (/rising unemployment|rise in unemployment|higher unemployment|impact of unemployment/.test(text)) return path(
+      ["Unemployment: people willing and able to work who cannot find a job.", "Household disposable income: income available for spending after tax.", "Aggregate demand: total spending on goods and services in the economy."],
+      "Assess effects on households and the wider economy.",
+      "Start: Rising unemployment reduces household income because more people are unable to earn wages.",
+      ["Define unemployment.", "Household income falls.", "Consumption and AD fall.", "Judge severity by duration/scale."],
+      ["Define unemployment.", "Explain lower household income.", "Link lower consumption to AD/economic growth.", "Make a judgement about severity."],
+      "Do not stop at 'people lose jobs'; explain spending and AD.",
+      "Unemployment questions reward cause-effect links from households to the wider economy."
     );
 
-    if (/integrat|area under|area between|antiderivative/.test(text)) return path(
-      ["Integral: add 1 to power, divide.", "+C: needed for indefinite integrals.", "Area: split if curve crosses axis."],
-      "Find antiderivative, integral value or area.",
-      "First: write the antiderivative.",
-      ["Integrate the expression.", "Add +C if needed.", "Substitute bounds.", "Check area vs signed value."],
-      ["Correct antiderivative", "Correct bounds", "Area sign handled", "Exact value/units"],
-      mistake
+    if (/minimum wage|wage floor/.test(text)) return path(
+      ["Minimum wage: legal minimum wage employers must pay workers.", "Equilibrium wage: wage where labour demand equals labour supply.", "Excess labour supply: workers supplied exceed workers demanded."],
+      "Explain both the benefit and trade-off of a wage floor.",
+      "Start: A minimum wage can raise incomes for low-paid workers if set above the market wage.",
+      ["Define minimum wage.", "Explain income/equity benefit.", "Explain higher labour cost.", "Judge employment risk."],
+      ["Define minimum wage.", "Explain income/equity benefit.", "Explain higher business labour costs.", "Mention possible lower employment.", "Give balanced judgement."],
+      "Do not argue only one side of the policy.",
+      "Minimum wage questions are policy trade-off marks, not one-sided opinion marks."
     );
 
     if (/labour|wage|employment|unemployment|underemployment|participation/.test(text)) return path(
-      ["Labour demand: employers wanting workers.", "Labour supply: workers willing to work.", "Equilibrium wage: demand equals supply.", "Unemployment: seeking work, no job.", "Underemployment: working, wanting more hours."],
+      ["Labour demand: amount of labour firms are willing and able to hire at different wage rates.", "Labour supply: amount of labour workers are willing and able to offer at different wage rates.", "Equilibrium wage: wage where labour demand equals labour supply.", "Unemployment: willing and able to work but unable to find a job."],
       "Use labour terms, then wage/employment effects.",
-      "Start: Workers supply labour; employers demand labour.",
-      ["Define the key term.", "Show demand or supply shift.", "State wage/employment effect.", "Link to unemployment/productivity."],
-      ["Clear definitions", "Diagram logic", "Wage/employment effect", "Economic terms", "Example if needed"],
-      "Do not define labour markets as just jobs."
+      "Start: Workers supply labour; firms demand labour.",
+      ["Use the exact labour-market definition.", "Identify demand/supply change.", "State wage and employment effect.", "Link to the question's outcome."],
+      ["Exam-ready definition.", "Correct labour market concept.", "Wage/employment link.", "Specific answer to the question."],
+      "Do not define labour markets as just jobs.",
+      "Precise labour-market language makes the answer sound economic, not like everyday job talk."
     );
 
-    if (/inflation|monetary|fiscal|aggregate|cash rate|economic|policy|globalisation|exchange rate/.test(text)) return path(
-      ["Inflation: sustained rise in prices.", "Cash rate: RBA's key rate.", "Aggregate demand: C+I+G+X-M."],
-      "Build the economic cause-effect chain.",
-      "Start: Inflation reduces purchasing power.",
-      ["Define the term.", "State first economic change.", "Show household/firm response.", "Link to macro impact.", "Judge if required."],
-      ["Actual definition", "3 linked steps", "Diagram/data/example", "Economic objective", "Judgement if required"],
-      mistake
-    );
+    if (/first principles/.test(text)) return path(["Formula: f'(x)=lim h->0 [f(x+h)-f(x)]/h.", "f(x+h): replace x with x+h.", "Key move: cancel h first."], "Use the limit definition, not shortcut rules.", "Start: f'(x)=lim h->0 [f(x+h)-f(x)]/h.", ["Find f(x+h).", "Subtract f(x).", "Factor and cancel h.", "Let h approach 0."], ["Correct formula", "Correct f(x+h)", "h cancels before limit", "Final derivative"], "Substituting h=0 too early.");
+    if (/quadratic|factoris|x\^2|x2|parabola/.test(text)) return path(["Quadratic: ax^2 + bx + c = 0.", "Factorising: multiply to c, add to b.", "Formula: x=(-b +/- sqrt(b^2-4ac))/2a."], "Solve or interpret the quadratic.", "First: write ax^2 + bx + c = 0.", ["Put in standard form.", "Choose factorising or formula.", "Show substitution/working.", "State both solutions."], ["Correct method", "Clear working", "Both roots", "Context checked"], mistake);
+    if (/differentiat|derivative|gradient|tangent|normal|stationary/.test(text)) return path(["Derivative: d/dx(ax^n)=anx^(n-1).", "Tangent gradient: y' at x.", "Normal gradient: negative reciprocal."], "Find gradient, line equation, rate or stationary point.", "First: differentiate, then substitute x.", ["Find y'.", "Substitute x or solve y'=0.", "Find y-value if needed.", "Write final meaning."], ["Correct derivative", "Correct substitution", "Coordinates/line if needed", "Question answered"], mistake);
+    if (/integrat|area under|area between|antiderivative/.test(text)) return path(["Integral: add 1 to power, divide.", "+C: needed for indefinite integrals.", "Area: split if curve crosses axis."], "Find antiderivative, integral value or area.", "First: write the antiderivative.", ["Integrate the expression.", "Add +C if needed.", "Substitute bounds.", "Check area vs signed value."], ["Correct antiderivative", "Correct bounds", "Area sign handled", "Exact value/units"], mistake);
+    if (/inflation|monetary|fiscal|aggregate|cash rate|economic|policy|globalisation|exchange rate/.test(text)) return path(["Inflation: sustained rise in prices.", "Cash rate: RBA's key rate.", "Aggregate demand: C+I+G+X-M."], "Build the economic cause-effect chain.", "Start: Inflation reduces purchasing power.", ["Define the term.", "State first economic change.", "Show household/firm response.", "Link to macro impact.", "Judge if required."], ["Actual definition", "3 linked steps", "Diagram/data/example", "Economic objective", "Judgement if required"], mistake);
 
-    if (/business|marketing|operations|finance|human resources|case study/.test(text)) return path(
-      ["Operations: turning inputs into outputs.", "Marketing: satisfying customers profitably.", "Finance: managing cash and profit.", "HR: managing employees."],
-      "Show how the strategy changes performance.",
-      "Start: [Strategy] improves performance by affecting [function].",
-      ["Define the strategy.", "Name the function.", "Show the action.", "Link to performance.", "Add case detail."],
-      ["Correct business term", "Relevant function", "Action -> impact link", "Specific case detail", "Judgement if required"],
-      "Do not only define the term."
-    );
-
-    if (/english|module|thesis|paragraph|quote|composer|text|essay|analysis|isolation/.test(text)) return path(
-      ["Analyse: explain how meaning is made.", "Paragraph: Point -> Evidence -> Technique -> Effect -> Link.", "Thesis: judgement answering the question."],
-      "Make a text-specific argument.",
-      "Start: The composer represents [idea] as [judgement].",
-      ["Use question wording.", "Add quote or moment.", "Name technique/form.", "Explain effect and link."],
-      ["Clear argument", "Specific evidence", "Technique analysis", "Effect on meaning", "Question link"],
-      "Do not retell the plot."
-    );
-
-    if (/validity|reliability|accuracy|precision|variable|sample size|control|method/.test(text)) return path(
-      ["Validity: tests the intended variable.", "Reliability: repeatable, consistent results.", "Accuracy: close to true value.", "Control: kept the same."],
-      "Evaluate method quality using correct terms.",
-      "Start: This affects [validity/reliability/accuracy] because...",
-      ["Identify variables.", "Judge validity.", "Judge reliability.", "Judge accuracy.", "Suggest one improvement."],
-      ["Correct method term", "Evidence from method/data", "Specific improvement", "Effect of improvement"],
-      "Do not mix up validity and reliability."
-    );
-
-    if (/physics|force|motion|wave|electric|magnetic|energy/.test(text)) return path(
-      ["Net force: vector sum of forces.", "F=ma: force equals mass times acceleration.", "v=f lambda: wave speed formula."],
-      "Apply the principle with working or cause-effect.",
-      "First: write F=ma or v=f lambda.",
-      ["Identify the principle.", "Write formula or diagram.", "Substitute values with units.", "State physical meaning."],
-      ["Correct formula", "Units", "Working/diagram", "Scenario conclusion"],
-      mistake
-    );
-
-    if (/chemistry|mole|acid|base|equilibrium|reaction|organic|titration/.test(text)) return path(
-      ["Moles: n=m/M.", "Concentration: c=n/V.", "Equilibrium: system opposes disturbance."],
-      "Use particles, equations or calculation logic.",
-      "First: write equation, n=m/M, or c=n/V.",
-      ["Identify reaction/calculation type.", "Write equation/formula.", "Use ratios or particles.", "State chemical result.", "Check units."],
-      ["Balanced equation/formula", "Correct ratios", "Units", "Clear result"],
-      mistake
-    );
-
-    if (/biology|enzyme|cell|genetic|disease|homeostasis|ecosystem|adaptation/.test(text)) return path(
-      ["Homeostasis: stable internal conditions.", "Enzymes: catalysts with active sites.", "Structure-function: feature helps role."],
-      "Explain process, structure-function link or data trend.",
-      "Start: [Process] begins when [first stage].",
-      ["Define the key term.", "Sequence the process.", "Link cause to function.", "Use data/diagram if given.", "State biological effect."],
-      ["Correct terms", "Correct order", "Cause-effect link", "Data/diagram if relevant"],
-      mistake
-    );
-
-    return path(
-      ["Explain: show cause and effect.", "Analyse: show connections.", "Evaluate: judge using evidence."],
-      `Answer ${focus} using the command word.`,
-      "Start with the key definition, formula or claim.",
-      ["Name key content.", "Write first step.", "Apply to question.", "Finish with result/link."],
-      ["Exact task answered", "Actual content", "Evidence/working/example", "Clear final link"],
-      mistake
-    );
+    return path(["Explain: show cause and effect.", "Analyse: show connections.", "Evaluate: judge using evidence."], "Answer the command word with exact subject content.", "Start with the key definition, formula or claim.", ["State the exact content.", "Apply it to the question.", "Show the cause-effect link.", "Finish with the mark-winning link."], ["Exact task answered", "Actual content", "Evidence/working/example", "Clear final link"], mistake, "This card should produce a markable answer, not just notes.");
   }
 
-  function path(knowledge, wants, first, chain, marks, trap) {
-    return { knowledge, wants, first, chain, marks, trap };
+  function path(knowledge, wants, first, chain, marks, trap, matters = "") {
+    return { knowledge, wants, first, chain, marks, trap, matters };
   }
 
   function renderPath(pathData) {
     return `
       <div class="guided-answer-path" data-compact-guide="true">
+        ${pathData.matters ? `<div class="path-matters"><b>Why this card matters:</b> ${escapeHtml(pathData.matters)}</div>` : ""}
         <strong>Quick Answer Path</strong>
         <div class="answer-path-grid">
           <div class="path-card path-card-primary"><b>Steps</b>${renderList(pathData.chain.slice(0, 4), "ol")}</div>
@@ -194,11 +136,6 @@
   }
 
   function escapeHtml(value) {
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+    return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
   }
 })();
