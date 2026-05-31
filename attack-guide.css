@@ -37,3 +37,33 @@
   margin: 3px 0 0;
   padding-left: 18px;
 }
+
+.answer-path-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.path-card {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.path-card-primary {
+  border-color: rgba(143, 207, 255, 0.22);
+  background: rgba(143, 207, 255, 0.07);
+}
+
+.path-card-trap {
+  border-color: rgba(255, 198, 120, 0.24);
+  background: rgba(255, 198, 120, 0.07);
+}
+
+@media (max-width: 760px) {
+  .answer-path-grid {
+    grid-template-columns: 1fr;
+  }
+}
