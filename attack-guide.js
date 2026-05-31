@@ -171,10 +171,12 @@
     return `
       <div class="guided-answer-path" data-compact-guide="true">
         <strong>Quick Answer Path</strong>
-        <div><b>Steps</b>${renderList(pathData.chain.slice(0, 4), "ol")}</div>
-        <div><b>Key Terms</b>${renderList(pathData.knowledge.slice(0, 3), "ul")}</div>
-        <div><b>Full Marks</b>${renderList(pathData.marks.slice(0, 4), "ul")}</div>
-        <div><b>Trap</b>${renderList([pathData.trap], "ul")}</div>
+        <div class="answer-path-grid">
+          <div class="path-card path-card-primary"><b>Steps</b>${renderList(pathData.chain.slice(0, 4), "ol")}</div>
+          <div class="path-card"><b>Key Terms</b>${renderList(pathData.knowledge.slice(0, 3), "ul")}</div>
+          <div class="path-card"><b>Full Marks</b>${renderList(pathData.marks.slice(0, 4), "ul")}</div>
+          <div class="path-card path-card-trap"><b>Trap</b>${renderList([pathData.trap], "ul")}</div>
+        </div>
       </div>
     `;
   }
