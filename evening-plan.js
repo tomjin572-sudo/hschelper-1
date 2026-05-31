@@ -136,12 +136,13 @@ Economics subject rule:
     const secondary = subjects[1] || primary;
     const weak = topics[0];
     const secondWeak = topics[1] || weak;
-    const count = Math.max(1, Math.min(cardCount, minutes < 50 ? 1 : minutes < 90 ? 2 : 3));
-    const baseDuration = count === 1 ? Math.min(minutes, 35) : count === 2 ? Math.min(35, Math.floor(minutes / 2)) : Math.min(30, Math.floor(minutes / 3));
+    const count = Math.max(1, Math.min(4, Math.ceil(minutes / 30)));
+    const baseDuration = Math.max(15, Math.floor(minutes / count));
     const blocks = [
       block(baseDuration, "Question Card 1", actionFor(primary, weak), primary, weak, "Start solving immediately.", true, 0),
       block(baseDuration, "Question Card 2", actionFor(secondary, secondWeak), secondary, secondWeak, "Second focused practice rep.", true, Math.min(1, cardCount - 1)),
-      block(baseDuration, "Question Card 3", actionFor(primary, topics[2] || weak), primary, topics[2] || weak, "Harder follow-up practice.", true, Math.min(2, cardCount - 1))
+      block(baseDuration, "Question Card 3", actionFor(primary, topics[2] || weak), primary, topics[2] || weak, "Harder follow-up practice.", true, Math.min(2, cardCount - 1)),
+      block(baseDuration, "Question Card 4", actionFor(secondary, topics[3] || secondWeak), secondary, topics[3] || secondWeak, "Final timed practice rep.", true, Math.min(3, cardCount - 1))
     ].slice(0, count);
 
     return addTimes(fitBlocks(blocks, minutes));
