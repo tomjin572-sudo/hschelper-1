@@ -61,12 +61,19 @@ Question variety requirement:
     if (!Array.isArray(questions) || questions.length < 3) return false;
     const stems = new Set(questions.map((item) => clean(item.question)).filter(Boolean));
     const focuses = new Set(questions.map((item) => clean(item.focusPoint || item.question)).filter(Boolean));
-    return stems.size >= 3 && focuses.size >= 3;
+    const examCommands = /^(define|explain|assess|analyse|evaluate|describe|calculate|compare|justify|discuss|outline|solve|sketch|draw)/i;
+    const realQuestions = questions.filter((item) =>
+      examCommands.test(String(item.question || "").trim()) &&
+      item.markValue &&
+      item.estimatedTime &&
+      item.focusPoint
+    );
+    return stems.size >= 3 && focuses.size >= 3 && realQuestions.length >= 3;
   }
 
   function variedQuestionsFor(card, slot) {
     const text = `${card.title || ""} ${card.topic || ""} ${card.questionType || ""} ${card.doThisNow || ""}`.toLowerCase();
-    if (/economic/.test(text) && /labour|labor|wage|employment|unemployment|underemployment|participation|productivity|minimum wage|skills mismatch/.test(text)) {
+    if (/labour|labor|wage|employment|unemployment|underemployment|participation|productivity|minimum wage|skills mismatch/.test(text)) {
       return labourMarketQuestions(slot);
     }
     if (/math|quadratic|calculus|function|algebra|graph/.test(text)) return mathsQuestions(slot, card.topic);
@@ -78,24 +85,24 @@ Question variety requirement:
   function labourMarketQuestions(slot) {
     const sets = [
       [
-        q("Define unemployment and underemployment. Explain one difference using a labour force example.", "4 marks", "Warm-up", "Labour force measures", "Confusing underemployment with unemployment."),
-        q("Explain how the participation rate can rise even if unemployment also rises.", "4 marks", "Core", "Participation vs unemployment", "Treating all labour market measures as the same."),
-        q("Rewrite this as an exam definition: 'unemployment just means not having a job.'", "3 marks", "Warm-up", "Precise definitions", "Forgetting willingness and ability to work.")
+        q("Define the labour market and explain why labour demand is a derived demand.", "3 marks", "Warm-up", "Labour market + derived demand", "Calling labour markets just jobs.", "5 min", "Definitions = quick marks.", "Skip long examples."),
+        q("Define unemployment and underemployment, then state one difference between them.", "3 marks", "Warm-up", "Unemployment vs underemployment", "Mixing up unemployment and underemployment.", "5 min", "Precise terms win definition marks.", "Skip policy discussion."),
+        q("Outline how the participation rate measures labour force involvement.", "2 marks", "Warm-up", "Participation rate meaning", "Counting all non-workers as unemployed.", "4 min", "Correct measure = easy marks.", "Skip unemployment causes.")
       ],
       [
-        q("Draw or describe a fall in labour demand. Explain the effect on equilibrium wage and employment.", "5 marks", "Core", "Demand-supply diagram shift", "Shifting labour supply instead of labour demand."),
-        q("Explain why labour demand is derived demand, using one goods or services example.", "4 marks", "Core", "Derived demand", "Saying firms hire workers just because wages are low."),
-        q("Identify whether a skills shortage affects labour demand or labour supply, then explain the wage effect.", "4 marks", "Core", "Curve choice", "Calling every shortage unemployment.")
+        q("Explain how an increase in labour demand can affect wages and employment.", "4 marks", "Core", "Demand shift -> wage/employment", "Saying wages rise without the demand shift.", "7 min", "Cause-effect chain = easy marks.", "Skip broad job-market commentary."),
+        q("Explain how a fall in demand for goods and services can reduce demand for labour.", "4 marks", "Core", "Goods demand -> labour demand", "Skipping the goods/services link.", "7 min", "Derived demand link wins marks.", "Skip unemployment types."),
+        q("Draw a labour market diagram showing higher labour demand and explain the new equilibrium.", "4 marks", "Core", "Demand curve shift right", "Shifting labour supply instead of demand.", "7 min", "Diagram + effect wins marks.", "Skip long definitions.")
       ],
       [
-        q("Explain how higher labour productivity can increase labour demand in one industry.", "5 marks", "Core", "Productivity chain", "Saying productivity automatically raises wages."),
-        q("Explain how a skills mismatch can contribute to structural unemployment.", "4 marks", "Core", "Structural unemployment", "Naming the type without explaining the mismatch."),
-        q("Build this chain: training improves skills -> productivity changes -> labour demand changes -> employment changes.", "4 marks", "Core", "Linked economic chain", "Skipping the labour demand link.")
+        q("Explain how higher labour productivity can increase labour demand in one industry.", "4 marks", "Core", "Productivity -> labour demand", "Saying productivity automatically raises wages.", "7 min", "Productivity chain wins marks.", "Skip wage claims without cause."),
+        q("Explain how a skills mismatch can contribute to structural unemployment.", "4 marks", "Core", "Skills mismatch -> unemployment", "Naming structural unemployment without the mismatch.", "7 min", "Specific cause = stronger marks.", "Skip cyclical unemployment."),
+        q("Analyse how training programs may affect productivity, labour demand and employment.", "5 marks", "Core", "Training -> productivity -> employment", "Skipping the labour demand link.", "8 min", "Linked policy chain wins marks.", "Skip generic benefits.")
       ],
       [
-        q("Explain one benefit and one cost of a minimum wage above equilibrium.", "6 marks", "Challenge", "Minimum wage trade-off", "Only arguing one side."),
-        q("Assess whether a higher minimum wage improves living standards for all workers.", "6 marks", "Challenge", "Judgement and trade-off", "Ignoring possible employment effects."),
-        q("Use a labour market diagram to explain how a wage floor can create excess labour supply.", "5 marks", "Challenge", "Wage floor diagram", "Not linking excess supply to unemployment risk.")
+        q("Assess the impact of rising unemployment on households and the Australian economy.", "5 marks", "Challenge", "Household impact + macro link", "Not linking income loss to spending and AD.", "8 min", "Judgement adds top marks.", "Skip definitions-only answers."),
+        q("Assess whether a minimum wage above equilibrium improves outcomes for workers.", "6 marks", "Challenge", "Minimum wage trade-off", "Only arguing one side.", "9 min", "Balanced trade-off wins marks.", "Skip moral opinion only."),
+        q("Discuss how a wage floor can create both equity benefits and employment risks.", "5 marks", "Challenge", "Equity benefit + employment risk", "Forgetting the employment trade-off.", "8 min", "Two-sided answer wins marks.", "Skip one-sided policy claims.")
       ]
     ];
     return sets[slot] || sets[slot % sets.length];
@@ -145,16 +152,16 @@ Question variety requirement:
     return sets[slot] || sets[slot % sets.length];
   }
 
-  function q(question, markValue, difficulty, focusPoint, commonMistake) {
+  function q(question, markValue, difficulty, focusPoint, commonMistake, estimatedTime, marksImpact, whatToIgnore) {
     return {
       question,
       markValue,
       difficulty,
-      estimatedTime: difficulty === "Challenge" ? "8 min" : "5 min",
+      estimatedTime: estimatedTime || (difficulty === "Challenge" ? "8 min" : "5 min"),
       focusPoint,
       commonMistake,
-      marksImpact: "Targets a different exam skill inside this sprint.",
-      whatToIgnore: "Do not rewrite notes before attempting.",
+      marksImpact: marksImpact || "Specific exam move = marks.",
+      whatToIgnore: whatToIgnore || "Skip passive notes.",
       sampleAnswer: ""
     };
   }
