@@ -67,149 +67,30 @@
           <div class="sprint-layout">
             <form class="sprint-form" id="studySprintForm">
               <p class="form-intro">Your goal is not to learn everything tonight. Give four quick inputs and get the highest-value marks to attack first.</p>
-
-              <label>
-                Subject
-                <input id="subjectsInput" type="text" placeholder="Economics" />
-              </label>
+              <label>Subject<input id="subjectsInput" type="text" placeholder="Economics" /></label>
               <div class="chip-row" aria-label="Popular subjects">
                 <button type="button" class="input-chip" data-target="#subjectsInput" data-value="Economics">Economics</button>
                 <button type="button" class="input-chip" data-target="#subjectsInput" data-value="English Advanced">English Advanced</button>
                 <button type="button" class="input-chip" data-target="#subjectsInput" data-value="Mathematics Advanced">Maths Advanced</button>
               </div>
-
-              <label>
-                Exam timing
-                <input id="examDatesInput" type="text" placeholder="Tomorrow morning, Friday, or 18 Oct" />
-              </label>
-
-              <label>
-                Weak topic
-                <input id="weakTopicsInput" type="text" placeholder="Labour markets, minimum wage, unemployment" />
-              </label>
+              <label>Exam timing<input id="examDatesInput" type="text" placeholder="Tomorrow morning, Friday, or 18 Oct" /></label>
+              <label>Weak topic<input id="weakTopicsInput" type="text" placeholder="Labour markets, minimum wage, unemployment" /></label>
               <div class="chip-row" aria-label="Common weak topics">
                 <button type="button" class="input-chip" data-target="#weakTopicsInput" data-value="labour markets">Labour markets</button>
                 <button type="button" class="input-chip" data-target="#weakTopicsInput" data-value="short-answer timing">Short answers</button>
                 <button type="button" class="input-chip" data-target="#weakTopicsInput" data-value="diagram practice">Diagrams</button>
               </div>
-
-              <label>
-                Time available today
-                <input id="studyTimeInput" type="text" placeholder="90 minutes tonight" />
-              </label>
-
+              <label>Time available today<input id="studyTimeInput" type="text" placeholder="90 minutes tonight" /></label>
               <button class="primary-cta" type="submit">Create my mark attack cards</button>
             </form>
-
-            <article class="sprint-output" aria-live="polite">
-              <span id="sprintOutputLabel">Mark attack cards will appear here</span>
-              <div id="sprintOutput">
-                <div class="empty-plan">
-                  <strong>Your first mark attack will appear here.</strong>
-                  <p>Secure easy marks first. Start with Card 1, answer inside the timer, then follow the next best move.</p>
-                </div>
-              </div>
-            </article>
+            <article class="sprint-output" aria-live="polite"><span id="sprintOutputLabel">Mark attack cards will appear here</span><div id="sprintOutput"><div class="empty-plan"><strong>Your first mark attack will appear here.</strong><p>Secure easy marks first. Start with Card 1, answer inside the timer, then follow the next best move.</p></div></div></article>
           </div>
         </section>
-
-        <section class="past-papers panel" id="past-papers">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">Official NESA</p>
-              <h2>Past HSC Exam Papers</h2>
-            </div>
-          </div>
-          <p class="section-copy">
-            Official NSW Government/NESA exam packs by learning area. Use these for timed practice, marking guidelines and feedback.
-          </p>
-          <div class="paper-grid" id="paperDirectory"></div>
-        </section>
+        <section class="past-papers panel" id="past-papers"><div class="panel-heading"><div><p class="eyebrow">Official NESA</p><h2>Past HSC Exam Papers</h2></div></div><p class="section-copy">Official NSW Government/NESA exam packs by learning area. Use these for timed practice, marking guidelines and feedback.</p><div class="paper-grid" id="paperDirectory"></div></section>
       </main>
     </div>
-
-    <section class="focus-overlay" id="focusOverlay" aria-hidden="true">
-      <div class="focus-shell" role="dialog" aria-modal="true" aria-labelledby="focusTaskTitle">
-        <button class="ghost-close" id="closeFocusButton" type="button">Exit</button>
-        <div class="focus-task">
-          <p class="eyebrow">Timed practice session</p>
-          <h2 id="focusTaskTitle">Start practice</h2>
-          <p id="focusTaskText"></p>
-          <div class="focus-meta">
-            <span id="focusQuestionType"></span>
-            <span id="focusResourceName"></span>
-            <a id="focusResourceLink" href="#" target="_blank" rel="noreferrer">Open resource</a>
-          </div>
-        </div>
-
-        <div class="timer-panel">
-          <div class="progress-ring" aria-hidden="true">
-            <svg viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="52"></circle>
-              <circle id="timerProgressCircle" cx="60" cy="60" r="52"></circle>
-            </svg>
-            <strong id="timerDisplay">25:00</strong>
-          </div>
-          <div class="timer-actions">
-            <button id="pauseTimerButton" type="button">Pause</button>
-            <button id="completeSessionButton" type="button">Mark Complete</button>
-          </div>
-        </div>
-
-        <div class="practice-workflow" id="practiceWorkflow">
-          <article>
-                <strong>Start here</strong>
-            <p id="focusDoNow"></p>
-          </article>
-          <article class="question-engine">
-            <div class="question-engine-head">
-              <div>
-                <strong>Mark Attack Practice</strong>
-                <p id="questionEngineBrief">This is a marks task, not a note-taking task.</p>
-              </div>
-              <span id="questionProgress">0/0 complete</span>
-            </div>
-            <div class="question-stack" id="questionStack"></div>
-          </article>
-          <article>
-            <strong>Guided Answer Path</strong>
-            <ol id="focusApproachList"></ol>
-          </article>
-          <article>
-            <strong>Trap that costs marks</strong>
-            <p id="focusMistake"></p>
-          </article>
-          <label class="answer-box">
-            Your working / answer notes
-            <textarea id="sessionNotes" placeholder="Write your answer, working, error log, or paragraph here..."></textarea>
-          </label>
-          <label class="task-check">
-            <input id="taskCheck" type="checkbox" />
-            I completed the practice task and checked it against the resource.
-          </label>
-        </div>
-
-        <div class="completion-screen" id="completionScreen" hidden>
-          <p class="eyebrow">Session completed</p>
-          <h2>Next best move ready.</h2>
-          <p id="completionFeedback"></p>
-          <div class="completion-grid">
-            <div><strong id="completionMinutes">25</strong><span>Focused minutes</span></div>
-            <div><strong id="completionImpact">High</strong><span>Marks impact</span></div>
-            <div><strong id="completionNext">Next card</strong><span>Next best move</span></div>
-          </div>
-          <button id="continueButton" type="button">Back to cards</button>
-        </div>
-      </div>
-    </section>
-
-    <script src="./reliability.js?v=20260528-repeat-fix"></script>
-    <script src="./evening-plan.js?v=20260531-four-card-time-fix"></script>
-    <script src="./app.js?v=20260531-answer-path-cards"></script>
-    <script src="./cards-fallback.js?v=20260530-product-soul"></script>
-    <script src="./flow-simplify.js?v=20260530-product-soul"></script>
-    <script src="./mini-masterclass.js?v=20260530-product-soul"></script>
-    <script src="./attack-guide.js?v=20260531-answer-path-cards"></script>
-    <script src="./question-variety.js?v=20260531-varied-question-sets"></script>
+    <section class="focus-overlay" id="focusOverlay" aria-hidden="true"><div class="focus-shell" role="dialog" aria-modal="true" aria-labelledby="focusTaskTitle"><button class="ghost-close" id="closeFocusButton" type="button">Exit</button><div class="focus-task"><p class="eyebrow">Timed practice session</p><h2 id="focusTaskTitle">Start practice</h2><p id="focusTaskText"></p><div class="focus-meta"><span id="focusQuestionType"></span><span id="focusResourceName"></span><a id="focusResourceLink" href="#" target="_blank" rel="noreferrer">Open resource</a></div></div><div class="timer-panel"><div class="progress-ring" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52"></circle><circle id="timerProgressCircle" cx="60" cy="60" r="52"></circle></svg><strong id="timerDisplay">25:00</strong></div><div class="timer-actions"><button id="pauseTimerButton" type="button">Pause</button><button id="completeSessionButton" type="button">Mark Complete</button></div></div><div class="practice-workflow" id="practiceWorkflow"><article><strong>Start here</strong><p id="focusDoNow"></p></article><article class="question-engine"><div class="question-engine-head"><div><strong>Mark Attack Practice</strong><p id="questionEngineBrief">This is a marks task, not a note-taking task.</p></div><span id="questionProgress">0/0 complete</span></div><div class="question-stack" id="questionStack"></div></article><article><strong>Guided Answer Path</strong><ol id="focusApproachList"></ol></article><article><strong>Trap that costs marks</strong><p id="focusMistake"></p></article><label class="answer-box">Your working / answer notes<textarea id="sessionNotes" placeholder="Write your answer, working, error log, or paragraph here..."></textarea></label><label class="task-check"><input id="taskCheck" type="checkbox" />I completed the practice task and checked it against the resource.</label></div><div class="completion-screen" id="completionScreen" hidden><p class="eyebrow">Session completed</p><h2>Next best move ready.</h2><p id="completionFeedback"></p><div class="completion-grid"><div><strong id="completionMinutes">25</strong><span>Focused minutes</span></div><div><strong id="completionImpact">High</strong><span>Marks impact</span></div><div><strong id="completionNext">Next card</strong><span>Next best move</span></div></div><button id="continueButton" type="button">Back to cards</button></div></div></section>
+    <script src="./reliability.js?v=20260528-repeat-fix"></script><script src="./evening-plan.js?v=20260531-four-card-time-fix"></script><script src="./app.js?v=20260531-answer-path-cards"></script><script src="./cards-fallback.js?v=20260530-product-soul"></script><script src="./flow-simplify.js?v=20260530-product-soul"></script><script src="./mini-masterclass.js?v=20260530-product-soul"></script><script src="./attack-guide.js?v=20260531-answer-path-cards"></script>
+    <script>(()=>{if(window.__hscQuestionVarietyLoaded)return;window.__hscQuestionVarietyLoaded=true;let slot=0;document.addEventListener("click",e=>{const b=e.target.closest("[data-evening-card-index], [data-card-index]");if(b)slot=Number(b.dataset.eveningCardIndex??b.dataset.cardIndex??0)||0},true);const t=setInterval(()=>{if(typeof window.startPracticeSession!=="function"||window.startPracticeSession.__hscVarietyWrapped)return;const s=window.startPracticeSession;window.startPracticeSession=c=>s(v(c,slot));window.startPracticeSession.__hscVarietyWrapped=true;clearInterval(t)},100);setTimeout(()=>clearInterval(t),1e4);function v(c,i){return!c||h(c.questions)?c:{...c,questions:g(c,i)}}function h(qs){return Array.isArray(qs)&&qs.length>=3&&new Set(qs.map(x=>n(x.question))).size>=3}function g(c,i){const x=`${c.topic||""} ${c.questionType||""} ${c.doThisNow||""}`.toLowerCase();if(/economic/.test(x)&&/labour|labor|wage|employment|unemployment|underemployment|participation|productivity|minimum wage|skills mismatch/.test(x))return l(i);if(/math|quadratic|calculus|function|algebra|graph/.test(x))return u(i,c.topic,["formula/method","substitution/application","graph/interpretation","harder transfer"]);if(/english|module|quote|thesis|paragraph|essay|textual/.test(x))return u(i,c.topic,["thesis","quote-technique-effect","timed paragraph","mini essay plan"]);if(/biology|chemistry|physics|science/.test(x))return u(i,c.topic,["concept recall","calculation/process","data/practical","evaluation"]);return u(i,c.topic,["definition","application","error repair","harder transfer"])}function l(i){return[[q("Define unemployment and underemployment. Explain one difference using a labour force example.","4 marks","Labour force measures","Confusing underemployment with unemployment."),q("Explain how the participation rate can rise even if unemployment also rises.","4 marks","Participation vs unemployment","Treating all labour market measures as the same."),q("Rewrite this as an exam definition: 'unemployment just means not having a job.'","3 marks","Precise definitions","Forgetting willingness and ability to work.")],[q("Draw or describe a fall in labour demand. Explain the effect on equilibrium wage and employment.","5 marks","Demand-supply diagram shift","Shifting labour supply instead of labour demand."),q("Explain why labour demand is derived demand, using one goods or services example.","4 marks","Derived demand","Saying firms hire workers just because wages are low."),q("Identify whether a skills shortage affects labour demand or labour supply, then explain the wage effect.","4 marks","Curve choice","Calling every shortage unemployment.")],[q("Explain how higher labour productivity can increase labour demand in one industry.","5 marks","Productivity chain","Saying productivity automatically raises wages."),q("Explain how a skills mismatch can contribute to structural unemployment.","4 marks","Structural unemployment","Naming the type without explaining the mismatch."),q("Build this chain: training improves skills -> productivity changes -> labour demand changes -> employment changes.","4 marks","Linked economic chain","Skipping the labour demand link.")],[q("Explain one benefit and one cost of a minimum wage above equilibrium.","6 marks","Minimum wage trade-off","Only arguing one side."),q("Assess whether a higher minimum wage improves living standards for all workers.","6 marks","Judgement and trade-off","Ignoring possible employment effects."),q("Use a labour market diagram to explain how a wage floor can create excess labour supply.","5 marks","Wage floor diagram","Not linking excess supply to unemployment risk.")]][i%4]}function u(i,topic,skills){const skill=skills[i%skills.length],label=topic||"your weak topic";return[q(`Complete one ${skill} question on ${label}. Show the first exam move clearly.`,"4 marks",skill,"Starting with broad notes instead of the question."),q(`Answer a second ${skill} question on ${label}, then underline the mark-winning line.`,"4 marks",`${skill} accuracy`,`Not showing the working, evidence or link.`),q(`Fix one mistake from ${label} and redo the same skill under time.`,"3 marks",`${skill} repair`,`Moving on without correcting the error.`)]}function q(question,markValue,focusPoint,commonMistake){return{question,markValue,difficulty:"Core",estimatedTime:"5 min",focusPoint,commonMistake,marksImpact:"Targets a different exam skill inside this sprint.",whatToIgnore:"Do not rewrite notes before attempting.",sampleAnswer:""}}function n(v){return String(v||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}})();</script>
   </body>
 </html>
