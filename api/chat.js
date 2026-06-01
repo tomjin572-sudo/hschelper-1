@@ -15,7 +15,7 @@ module.exports = async function handler(req, res) {
     const body = req.body || {};
     const prompt = await buildPrompt(body);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 24000);
+    const timeout = setTimeout(() => controller.abort(), 45000);
 
     const apiResponse = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
