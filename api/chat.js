@@ -120,20 +120,32 @@ Integrated Essay Planning Mode:
 - Use this inside StudySprint cards for essay-based tasks in English, Economics, Business Studies, Legal Studies, History, PDHPE and any extended-response task.
 - Do not create a separate feature. Make the card itself an essay planning mode when the task is essay-based.
 - Do not write the full essay for the student.
+- The essay planner must provide the actual information the student needs, not just labels.
+- Include a compact definition bank for the key terms in the essay question.
+- Include a content bank: 3-6 syllabus-relevant points, economic chains, case details, legal examples, quotes/evidence placeholders or historical evidence types depending on subject.
+- Include a paragraph builder that teaches how to make a point and turn it into a paragraph.
+- Include a point-making formula, such as "Point = answer the question + name the factor + make a judgement".
+- Include sentence starters that show how to begin a thesis, paragraph point, evidence/example sentence and judgement.
 - The essay mode must guide the student through:
   1. Break Down Question: rewrite the question in plain student language.
   2. Directive Term: define the command word, such as analyse, assess, evaluate, discuss, explain, justify or compare.
   3. Thesis / Judgement Builder: give a thesis or judgement starter, not a full essay.
-  4. Argument Plan: 2-3 argument points in the best order.
-  5. Paragraph Structure: the subject-specific paragraph path.
-  6. Sentence Starters: 2-3 useful starters the student can adapt.
-  7. What To Actually Write: a short checklist of the exact content needed.
-  8. Practice Writing Task: a timed thesis, paragraph, intro, plan or mini response.
-  9. AI Feedback Criteria: what the feedback should judge.
-  10. Fix Drill: rewrite the weakest thesis, topic sentence, evidence link, case link, chain or judgement.
+  4. Definition Bank: actual exam-ready definitions for key terms.
+  5. Content Bank: the core content, chains, evidence or examples needed.
+  6. Argument Plan: 2-3 argument points in the best order.
+  7. Paragraph Builder: how to make a point, explain it, support it and link it.
+  8. Sentence Starters: 3-5 useful starters the student can adapt.
+  9. What To Actually Write: a short checklist of the exact content needed.
+  10. Practice Writing Task: a timed thesis, paragraph, intro, plan or mini response.
+  11. AI Feedback Criteria: what the feedback should judge.
+  12. Fix Drill: rewrite the weakest thesis, topic sentence, evidence link, case link, chain or judgement.
 - English essay planning must use: thesis -> argument -> evidence/quote -> technique/form -> effect -> link to question.
 - Economics essay planning must use: definition -> cause -> mechanism -> impact -> example/data -> judgement. Do not make it sound like English technique.
+- Economics essay plans must include: key definitions, diagram/data suggestion, 2-3 cause-effect chains, paragraph structure, how to make an economic point, and a judgement sentence starter.
+- For Economics, a paragraph should be taught as: Point -> Define term -> Explain chain -> Add data/example/diagram -> Link to economic objective -> Mini judgement.
+- Do not merely say "use economic terminology"; provide the exact terms and definitions the paragraph should use.
 - Business Studies essay planning must use: concept -> strategy/action -> case detail -> business performance impact -> judgement.
+- Business Studies essay plans must include: key business definitions, case detail type, performance indicator, paragraph structure and judgement starter.
 - Legal Studies essay planning must use: legal issue -> law/principle -> case/legislation/example -> effectiveness -> judgement.
 - History essay planning must use: argument -> evidence -> source/historical detail -> significance -> judgement.
 - PDHPE essay planning must use: syllabus concept -> factor/strategy -> impact on health/performance -> example -> judgement.
@@ -288,10 +300,13 @@ JSON schema:
       "essayPlan": {
         "breakDownQuestion": "plain-language version of the essay task, only if essay-based",
         "directiveTerm": "command word meaning, only if essay-based",
+        "keyDefinitions": ["actual exam-ready definitions for the key terms"],
+        "contentBank": ["3-6 specific content points, chains, examples, case details or evidence types"],
         "thesisOrJudgementStarter": "starter the student can adapt, not a full essay",
         "argumentPlan": ["2-3 argument points in order"],
+        "pointMakingFormula": "how to make a strong point in this subject",
         "paragraphStructure": ["subject-specific paragraph path"],
-        "sentenceStarters": ["2-3 useful starters"],
+        "sentenceStarters": ["3-5 useful starters for thesis, paragraph, evidence/example and judgement"],
         "whatToActuallyWrite": ["3-5 concrete content items"],
         "practiceWritingTask": "timed thesis, paragraph, intro, plan or mini response",
         "fixDrill": "one rewrite task"
