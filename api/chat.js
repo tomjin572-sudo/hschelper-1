@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || "gpt-4o-mini",
         input: prompt,
-        max_output_tokens: 1900,
+        max_output_tokens: 2600,
         temperature: 0.45
       })
     });
@@ -79,11 +79,12 @@ Subject rules:
 ESSAY PLANNER HARD TRIGGER:
 If the subject, weak topic, task or student request contains essay, extended response, paragraph, thesis, judgement, introduction, body paragraph or conclusion, generate an Essay Planner sprint. This applies for any timeframe: 1 hour, 2 hours, 3 hours or more. Shorten each card instead of removing a card.
 
-Every Essay Planner sprint MUST have exactly these 4 card types in order:
+Every Essay Planner sprint MUST have exactly 4 cards with these titles and questionTypes in order:
 1. Multiple Choice Learning Check - 3-5 original MCQs that teach directive terms, structure, content choices, thesis quality, paragraph order, evidence/example use or common traps.
 2. Short Answer Learning Drill - short response tasks that teach definitions, sentence starters, thesis/topic sentence, content blocks or paragraph planning.
 3. SA Paragraph Practice - the student writes one structured paragraph or mini response.
 4. Conclusion / Final Judgement - the student writes or improves a conclusion, final judgement, evaluation sentence or final linking sentence.
+For essay sprints, set each card title and questionType to the matching label above so the frontend visibly shows the different card types.
 
 Essay writing technique rules:
 - Teach writing technique, not only definitions and mistakes.
@@ -178,10 +179,12 @@ JSON schema:
   ]
 }
 
-Create 2-4 cards only. If study time is 120+ minutes, create 4 distinct cards. The first card must always be "Tonight's Highest ROI Task". Include 3-5 concise questions when the topic is clear, especially for Economics labour market cards. Every card must support Input -> plan -> mini lesson -> worked example -> practice -> feedback -> fix drill -> next step.`;
+If this is an essay sprint, create exactly 4 cards and do NOT use "Tonight's Highest ROI Task" as the first title. Use the four essay labels exactly. If this is not an essay sprint, create 2-4 cards and make the first card "Tonight's Highest ROI Task". Include concise questions when the topic is clear. Every card must support Input -> plan -> mini lesson -> worked example -> practice -> feedback -> fix drill -> next step.`;
 
 async function buildPrompt(body) {
   const syllabusText = await fetchSyllabusText(body.syllabusUrl);
+  const userText = `${body.subject || ""} ${body.question || ""}`.toLowerCase();
+  const isEssaySprint = /essay|extended response|paragraph|thesis|judgement|judgment|introduction|body paragraph|conclusion/.test(userText);
 
   return [
     {
@@ -210,7 +213,7 @@ Question:
 ${body.question || ""}
 
 Final instruction:
-Return only valid JSON matching the schema. Create 2-4 concise execution cards that help the student start immediately.`
+Return only valid JSON matching the schema. ${isEssaySprint ? "This is an ESSAY PLANNER sprint: create exactly 4 cards with titles in this order: Multiple Choice Learning Check, Short Answer Learning Drill, SA Paragraph Practice, Conclusion / Final Judgement. Do not create generic revision cards." : "Create 2-4 concise execution cards that help the student start immediately."}`
         }
       ]
     }
