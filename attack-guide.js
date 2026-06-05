@@ -28,6 +28,8 @@
       const sample = findSampleAnswer(card);
       const correct = sample.match(/correct answer:\s*([A-D])/i)?.[1] || "";
       const explanation = sample || "Check the key takeaway, then carry it into the next stage.";
+      card.dataset.mcqCorrect = correct;
+      card.dataset.mcqExplanation = simplifyExplanation(explanation);
       const group = document.createElement("div");
       group.className = "mcq-answer";
       group.innerHTML = `
@@ -57,11 +59,13 @@
           answerBox.dispatchEvent(new Event("input", { bubbles: true }));
         }
         const picked = option.dataset.letter || "";
+        card.dataset.mcqSelected = picked;
         const result = group.querySelector(".mcq-result");
         result.hidden = false;
         result.innerHTML = renderMcqResult(picked, correct, explanation);
         const complete = card.querySelector("[data-question-complete]");
         if (complete && !/completed/i.test(complete.textContent || "")) complete.click();
+        updateMcqSummary(card);
       });
     });
   }
@@ -94,6 +98,42 @@
     `;
   }
 
+  function updateMcqSummary(card) {
+    const engine = card.closest(".question-engine");
+    if (!engine) return;
+    const cards = Array.from(engine.querySelectorAll(".question-card[data-mcq-converted='true']"));
+    if (!cards.length || cards.some((item) => !item.dataset.mcqSelected)) return;
+
+    const rows = cards.map((item, index) => {
+      const picked = item.dataset.mcqSelected || "";
+      const correct = item.dataset.mcqCorrect || "";
+      const isCorrect = correct && picked === correct;
+      return {
+        index: index + 1,
+        picked,
+        correct,
+        isCorrect,
+        explanation: item.dataset.mcqExplanation || "Use the most precise exam answer."
+      };
+    });
+    const correctCount = rows.filter((row) => row.isCorrect).length;
+    const summary = engine.querySelector(".mcq-score-summary") || document.createElement("div");
+    summary.className = "mcq-score-summary";
+    summary.innerHTML = `
+      <strong>MCQ Score: ${correctCount}/${rows.length}</strong>
+      <span>${rows.length - correctCount} wrong. Check the fixes below before Stage 2.</span>
+      <ul>
+        ${rows.map((row) => `
+          <li>
+            <b>Q${row.index}: ${row.isCorrect ? "Correct" : "Wrong"}</b>
+            <span>You chose ${escapeHtml(row.picked)}${row.correct ? `; correct answer is ${escapeHtml(row.correct)}.` : "."} ${escapeHtml(row.explanation)}</span>
+          </li>
+        `).join("")}
+      </ul>
+    `;
+    if (!summary.parentNode) engine.appendChild(summary);
+  }
+
   function simplifyExplanation(explanation) {
     return String(explanation || "")
       .replace(/^correct answer:\s*[A-D][.)]?\s*/i, "")
@@ -121,6 +161,13 @@
       .mcq-result b { display: block; margin-bottom: 4px; color: rgba(247,249,255,.94); }
       .mcq-result span { color: rgba(210,218,235,.9); font-size: .9rem; line-height: 1.4; }
       .mcq-result em { display: block; margin-top: 6px; color: rgba(143,207,255,.92); font-size: .82rem; font-style: normal; font-weight: 800; }
+      .mcq-score-summary { display: grid; gap: 8px; border: 1px solid rgba(143,207,255,.26); border-radius: 16px; padding: 12px; background: rgba(143,207,255,.08); }
+      .mcq-score-summary > strong { color: rgba(247,249,255,.95); font-size: 1rem; }
+      .mcq-score-summary > span { color: rgba(210,218,235,.9); font-size: .9rem; }
+      .mcq-score-summary ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+      .mcq-score-summary li { display: grid; gap: 2px; border-radius: 10px; padding: 8px; background: rgba(255,255,255,.055); }
+      .mcq-score-summary li b { color: rgba(247,249,255,.92); font-size: .84rem; }
+      .mcq-score-summary li span { color: rgba(210,218,235,.9); font-size: .84rem; line-height: 1.35; }
     `;
     document.head.appendChild(style);
   }
@@ -192,7 +239,7 @@
   function buildMcqQuestions(card) {
     const supplied = Array.isArray(card.questions) ? card.questions : [];
     const realMcqs = supplied.filter((question) => /(^|\n)A[.)]\s+.+\nB[.)]\s+.+\nC[.)]\s+.+\nD[.)]\s+/i.test(String(question.question || "")));
-    if (realMcqs.length) return realMcqs.slice(0, 3);
+    if (realMcqs.length) return realMcqs.slice(0, 3).map(attachSampleAnswerToQuestion);
 
     const topic = `${card.topic || ""} ${card.focusPoint || ""} ${card.doThisNow || ""}`.toLowerCase();
     if (/labou?r|wage|employment|unemployment|market/.test(topic)) {
@@ -211,8 +258,9 @@
   }
 
   function mcqQuestion(stem, options, correct, reason) {
+    const answerLine = `Correct answer: ${correct}. ${reason}`;
     return {
-      question: `${stem}\nA. ${options[0]}\nB. ${options[1]}\nC. ${options[2]}\nD. ${options[3]}`,
+      question: `${stem}\nA. ${options[0]}\nB. ${options[1]}\nC. ${options[2]}\nD. ${options[3]}\n${answerLine}`,
       markValue: "1 mark",
       difficulty: "Warm-up",
       estimatedTime: "2 min",
@@ -220,13 +268,22 @@
       commonMistake: "Choosing the vague option.",
       marksImpact: "Checks the concept before written work.",
       whatToIgnore: "Do not type an answer for this question.",
-      sampleAnswer: `Correct answer: ${correct}. ${reason}`,
+      sampleAnswer: answerLine,
       guidedAnswerPath: {
         keyDefinitionsYouNeed: ["Only one option is correct.", "Choose the most precise exam answer."],
         stepByStepAnswerPath: ["Read the stem.", "Eliminate vague options.", "Choose A, B, C or D.", "Read the feedback."],
         whatToIncludeForFullMarks: ["Correct option", "Trap avoided"],
         commonMistake: "Picking the option that only sounds familiar."
       }
+    };
+  }
+
+  function attachSampleAnswerToQuestion(question) {
+    const sample = String(question.sampleAnswer || "");
+    if (!sample || /correct answer:/i.test(question.question || "")) return question;
+    return {
+      ...question,
+      question: `${question.question}\n${sample}`
     };
   }
 })();
