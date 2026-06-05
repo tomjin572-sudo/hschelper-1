@@ -2,6 +2,7 @@
   if (window.__hscMcqPracticeLoaded) return;
   window.__hscMcqPracticeLoaded = true;
 
+  compressStudySprintRequests();
   injectStyles();
   const observer = new MutationObserver(convertCards);
   observer.observe(document.documentElement, { childList: true, subtree: true });
@@ -109,5 +110,32 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
+  }
+
+  function compressStudySprintRequests() {
+    if (window.__hscFastStudySprintFetch) return;
+    window.__hscFastStudySprintFetch = true;
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = (input, init = {}) => {
+      const url = typeof input === "string" ? input : input && input.url;
+      if (url === "/api/chat" && init && typeof init.body === "string") {
+        try {
+          const payload = JSON.parse(init.body);
+          const question = String(payload.question || "");
+          if (question.length > 800 && /Weak topics:/i.test(question)) {
+            const subject = question.match(/Subjects:\s*([^\n]+)/i)?.[1] || payload.subject || "HSC subject";
+            const topics = question.match(/Weak topics:\s*([^\n]+)/i)?.[1] || "";
+            const time = question.match(/Available study time:\s*([^\n]+)/i)?.[1] || "";
+            const exam = question.match(/Exam dates:\s*([^\n]+)/i)?.[1] || "";
+            init.body = JSON.stringify({
+              ...payload,
+              subject,
+              question: `Subject: ${subject}\nWeak topic: ${topics}\nAvailable time: ${time}\nExam timing: ${exam}`
+            });
+          }
+        } catch {}
+      }
+      return nativeFetch(input, init);
+    };
   }
 })();
