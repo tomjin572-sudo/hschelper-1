@@ -3,6 +3,7 @@
   window.__hscMcqPracticeLoaded = true;
 
   compressStudySprintRequests();
+  installMcqSessionGuard();
   injectStyles();
   const observer = new MutationObserver(convertCards);
   observer.observe(document.documentElement, { childList: true, subtree: true });
@@ -136,6 +137,75 @@
         } catch {}
       }
       return nativeFetch(input, init);
+    };
+  }
+
+  function installMcqSessionGuard() {
+    let attempts = 0;
+    const timer = setInterval(() => {
+      attempts += 1;
+      if (typeof window.startPracticeSession === "function" && !window.startPracticeSession.__hscMcqGuard) {
+        const start = window.startPracticeSession;
+        window.startPracticeSession = (card) => start(forceMcqCard(card));
+        window.startPracticeSession.__hscMcqGuard = true;
+      }
+      if (attempts > 40) clearInterval(timer);
+    }, 100);
+  }
+
+  function forceMcqCard(card) {
+    if (!card || !isMultipleChoiceCard(card)) return card;
+    return {
+      ...card,
+      questionType: "Multiple Choice",
+      buttonText: "Start Concept Check",
+      questions: buildMcqQuestions(card)
+    };
+  }
+
+  function isMultipleChoiceCard(card) {
+    const text = `${card.title || ""} ${card.questionType || ""} ${card.doThisNow || ""}`.toLowerCase();
+    return /stage 1|check the concept|multiple choice|mcq|concept check|learning check/.test(text);
+  }
+
+  function buildMcqQuestions(card) {
+    const supplied = Array.isArray(card.questions) ? card.questions : [];
+    const realMcqs = supplied.filter((question) => /(^|\n)A[.)]\s+.+\nB[.)]\s+.+\nC[.)]\s+.+\nD[.)]\s+/i.test(String(question.question || "")));
+    if (realMcqs.length) return realMcqs.slice(0, 3);
+
+    const topic = `${card.topic || ""} ${card.focusPoint || ""} ${card.doThisNow || ""}`.toLowerCase();
+    if (/labou?r|wage|employment|unemployment|market/.test(topic)) {
+      return [
+        mcqQuestion("Define term: Which is the best definition of labour demand?", ["The number of people looking for work", "The amount of labour firms are willing and able to hire at different wage rates", "The total number of people in the labour force", "The wage workers want to receive"], "B", "Labour demand is from firms and changes at different wage rates."),
+        mcqQuestion("Explain chain: Which answer best explains derived demand for labour?", ["Workers want higher wages, so firms hire more", "Demand for goods/services rises, so firms need more workers", "Population rises, so labour demand rises automatically", "Unemployment rises, so labour demand rises"], "B", "Firms demand labour because workers help produce goods and services."),
+        mcqQuestion("Apply concept: If labour demand shifts right while supply is unchanged, what is the likely effect?", ["Equilibrium wage and employment rise", "Equilibrium wage falls and employment rises", "Only unemployment rises", "Labour supply shifts left"], "A", "Higher demand creates upward pressure on wages and increases employment at the new equilibrium.")
+      ];
+    }
+
+    return [
+      mcqQuestion("Concept check: Which first move is strongest before answering?", ["Start with everything you remember", "Identify the key term, method and command word", "Skip the question wording", "Write a conclusion first"], "B", "The first move is to understand exactly what the task wants."),
+      mcqQuestion("Concept check: What usually loses marks fastest?", ["Specific evidence or working", "A clear method", "A vague explanation with no link", "Answering the command term"], "C", "Vague responses are hard to mark."),
+      mcqQuestion("Concept check: What should happen after a mistake?", ["Ignore it", "Write the correction rule and redo the step", "Read more notes only", "Change topic immediately"], "B", "Mistake repair improves transfer.")
+    ];
+  }
+
+  function mcqQuestion(stem, options, correct, reason) {
+    return {
+      question: `${stem}\nA. ${options[0]}\nB. ${options[1]}\nC. ${options[2]}\nD. ${options[3]}`,
+      markValue: "1 mark",
+      difficulty: "Warm-up",
+      estimatedTime: "2 min",
+      focusPoint: "Choose one answer.",
+      commonMistake: "Choosing the vague option.",
+      marksImpact: "Checks the concept before written work.",
+      whatToIgnore: "Do not type an answer for this question.",
+      sampleAnswer: `Correct answer: ${correct}. ${reason}`,
+      guidedAnswerPath: {
+        keyDefinitionsYouNeed: ["Only one option is correct.", "Choose the most precise exam answer."],
+        stepByStepAnswerPath: ["Read the stem.", "Eliminate vague options.", "Choose A, B, C or D.", "Read the feedback."],
+        whatToIncludeForFullMarks: ["Correct option", "Trap avoided"],
+        commonMistake: "Picking the option that only sounds familiar."
+      }
     };
   }
 })();
