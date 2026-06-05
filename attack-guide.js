@@ -22,6 +22,8 @@
       const answerBox = card.querySelector("[data-question-answer]");
       const answerLabel = answerBox && answerBox.closest(".question-answer");
       if (answerLabel) answerLabel.hidden = true;
+      const feedbackButton = card.querySelector("[data-question-feedback]");
+      if (feedbackButton) feedbackButton.hidden = true;
 
       const sample = findSampleAnswer(card);
       const correct = sample.match(/correct answer:\s*([A-D])/i)?.[1] || "";
@@ -57,10 +59,7 @@
         const picked = option.dataset.letter || "";
         const result = group.querySelector(".mcq-result");
         result.hidden = false;
-        result.innerHTML = `
-          <b>${correct && picked === correct ? "Correct" : correct ? "Not quite" : "Answer selected"}</b>
-          <span>${escapeHtml(explanation)}</span>
-        `;
+        result.innerHTML = renderMcqResult(picked, correct, explanation);
         const complete = card.querySelector("[data-question-complete]");
         if (complete && !/completed/i.test(complete.textContent || "")) complete.click();
       });
@@ -85,6 +84,27 @@
     return match ? match[0].replace(/\s+/g, " ").trim() : "";
   }
 
+  function renderMcqResult(picked, correct, explanation) {
+    const isCorrect = correct && picked === correct;
+    const clean = simplifyExplanation(explanation);
+    return `
+      <b>${isCorrect ? "Correct" : correct ? "Not quite" : "Answer selected"}</b>
+      <span>${correct ? `Correct answer: ${escapeHtml(correct)}.` : ""} ${escapeHtml(clean)}</span>
+      <em>Next: use this idea in the written response stage.</em>
+    `;
+  }
+
+  function simplifyExplanation(explanation) {
+    return String(explanation || "")
+      .replace(/^correct answer:\s*[A-D][.)]?\s*/i, "")
+      .replace(/\bkey takeaway:\s*/i, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .split(/(?<=[.!?])\s+/)
+      .slice(0, 2)
+      .join(" ");
+  }
+
   function injectStyles() {
     if (document.querySelector("#hsc-mcq-choice-styles")) return;
     const style = document.createElement("style");
@@ -100,6 +120,7 @@
       .mcq-result { border: 1px solid rgba(71,230,164,.24); border-radius: 12px; padding: 10px; background: rgba(71,230,164,.08); color: rgba(247,249,255,.88); }
       .mcq-result b { display: block; margin-bottom: 4px; color: rgba(247,249,255,.94); }
       .mcq-result span { color: rgba(210,218,235,.9); font-size: .9rem; line-height: 1.4; }
+      .mcq-result em { display: block; margin-top: 6px; color: rgba(143,207,255,.92); font-size: .82rem; font-style: normal; font-weight: 800; }
     `;
     document.head.appendChild(style);
   }
