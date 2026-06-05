@@ -49,16 +49,20 @@
       group.addEventListener("click", (event) => {
         const option = event.target.closest(".mcq-option");
         if (!option) return;
+        const picked = option.dataset.letter || "";
         group.querySelectorAll(".mcq-option").forEach((button) => {
           const selected = button === option;
+          const letter = button.dataset.letter || "";
+          const isAnswer = correct && letter === correct;
           button.classList.toggle("is-selected", selected);
+          button.classList.toggle("is-correct", Boolean(isAnswer));
+          button.classList.toggle("is-wrong", Boolean(selected && correct && picked !== correct));
           button.setAttribute("aria-pressed", selected ? "true" : "false");
         });
         if (answerBox) {
           answerBox.value = option.dataset.value || "";
           answerBox.dispatchEvent(new Event("input", { bubbles: true }));
         }
-        const picked = option.dataset.letter || "";
         card.dataset.mcqSelected = picked;
         const result = group.querySelector(".mcq-result");
         result.hidden = false;
@@ -92,9 +96,9 @@
     const isCorrect = correct && picked === correct;
     const clean = simplifyExplanation(explanation);
     return `
-      <b>${isCorrect ? "Correct" : correct ? "Not quite" : "Answer selected"}</b>
-      <span>${correct ? `Correct answer: ${escapeHtml(correct)}.` : ""} ${escapeHtml(clean)}</span>
-      <em>Next: use this idea in the written response stage.</em>
+      <b>${isCorrect ? "Correct - you got this right" : correct ? "Wrong - correct answer is " + escapeHtml(correct) : "Answer selected"}</b>
+      <span>${isCorrect ? "Why it is right:" : "Why:"} ${escapeHtml(clean)}</span>
+      <em>${isCorrect ? "Keep this exact idea for Stage 2." : "Fix: read the correct option, then continue."}</em>
     `;
   }
 
@@ -121,7 +125,7 @@
     summary.className = "mcq-score-summary";
     summary.innerHTML = `
       <strong>MCQ Score: ${correctCount}/${rows.length}</strong>
-      <span>${rows.length - correctCount} wrong. Check the fixes below before Stage 2.</span>
+      <span>${correctCount} right, ${rows.length - correctCount} wrong. Check fixes before Stage 2.</span>
       <ul>
         ${rows.map((row) => `
           <li>
@@ -155,7 +159,11 @@
       .mcq-options { display: grid; gap: 8px; }
       .mcq-option { display: grid; grid-template-columns: 34px minmax(0,1fr); align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 8px 12px; color: rgba(247,249,255,.88); text-align: left; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; box-shadow: none; }
       .mcq-option:hover, .mcq-option.is-selected { border-color: rgba(143,207,255,.5); background: rgba(143,207,255,.14); }
+      .mcq-option.is-correct { border-color: rgba(71,230,164,.75); background: rgba(71,230,164,.14); }
+      .mcq-option.is-wrong { border-color: rgba(255,112,112,.8); background: rgba(255,112,112,.13); }
       .mcq-option span { display: inline-grid; place-items: center; width: 30px; height: 30px; color: #06101f; font-size: .78rem; font-weight: 900; background: linear-gradient(135deg, var(--cyan), var(--blue)); border-radius: 999px; }
+      .mcq-option.is-correct span { background: #47e6a4; }
+      .mcq-option.is-wrong span { background: #ff8a8a; }
       .mcq-option b { color: rgba(247,249,255,.9); font-size: .92rem; line-height: 1.3; }
       .mcq-result { border: 1px solid rgba(71,230,164,.24); border-radius: 12px; padding: 10px; background: rgba(71,230,164,.08); color: rgba(247,249,255,.88); }
       .mcq-result b { display: block; margin-bottom: 4px; color: rgba(247,249,255,.94); }
@@ -239,21 +247,25 @@
   function buildMcqQuestions(card) {
     const supplied = Array.isArray(card.questions) ? card.questions : [];
     const realMcqs = supplied.filter((question) => /(^|\n)A[.)]\s+.+\nB[.)]\s+.+\nC[.)]\s+.+\nD[.)]\s+/i.test(String(question.question || "")));
-    if (realMcqs.length) return realMcqs.slice(0, 3).map(attachSampleAnswerToQuestion);
+    if (realMcqs.length >= 5) return realMcqs.slice(0, 6).map(attachSampleAnswerToQuestion);
 
     const topic = `${card.topic || ""} ${card.focusPoint || ""} ${card.doThisNow || ""}`.toLowerCase();
     if (/labou?r|wage|employment|unemployment|market/.test(topic)) {
       return [
         mcqQuestion("Define term: Which is the best definition of labour demand?", ["The number of people looking for work", "The amount of labour firms are willing and able to hire at different wage rates", "The total number of people in the labour force", "The wage workers want to receive"], "B", "Labour demand is from firms and changes at different wage rates."),
         mcqQuestion("Explain chain: Which answer best explains derived demand for labour?", ["Workers want higher wages, so firms hire more", "Demand for goods/services rises, so firms need more workers", "Population rises, so labour demand rises automatically", "Unemployment rises, so labour demand rises"], "B", "Firms demand labour because workers help produce goods and services."),
-        mcqQuestion("Apply concept: If labour demand shifts right while supply is unchanged, what is the likely effect?", ["Equilibrium wage and employment rise", "Equilibrium wage falls and employment rises", "Only unemployment rises", "Labour supply shifts left"], "A", "Higher demand creates upward pressure on wages and increases employment at the new equilibrium.")
+        mcqQuestion("Apply concept: If labour demand shifts right while supply is unchanged, what is the likely effect?", ["Equilibrium wage and employment rise", "Equilibrium wage falls and employment rises", "Only unemployment rises", "Labour supply shifts left"], "A", "Higher demand creates upward pressure on wages and increases employment at the new equilibrium."),
+        mcqQuestion("Diagram logic: What happens on a labour market diagram when labour supply increases?", ["The supply curve shifts right and wage pressure falls", "The demand curve shifts right and wages rise", "Both curves disappear", "Employment must fall immediately"], "A", "More workers available shifts labour supply right, lowering wage pressure and often raising employment."),
+        mcqQuestion("Unemployment concept: Which answer best defines unemployment?", ["People not working because they are retired", "People willing and able to work but unable to find a job", "Anyone who works part-time", "A fall in wages across all industries"], "B", "Unemployment means willing and able to work, actively seeking work, but unable to find a job.")
       ];
     }
 
     return [
       mcqQuestion("Concept check: Which first move is strongest before answering?", ["Start with everything you remember", "Identify the key term, method and command word", "Skip the question wording", "Write a conclusion first"], "B", "The first move is to understand exactly what the task wants."),
       mcqQuestion("Concept check: What usually loses marks fastest?", ["Specific evidence or working", "A clear method", "A vague explanation with no link", "Answering the command term"], "C", "Vague responses are hard to mark."),
-      mcqQuestion("Concept check: What should happen after a mistake?", ["Ignore it", "Write the correction rule and redo the step", "Read more notes only", "Change topic immediately"], "B", "Mistake repair improves transfer.")
+      mcqQuestion("Concept check: What should happen after a mistake?", ["Ignore it", "Write the correction rule and redo the step", "Read more notes only", "Change topic immediately"], "B", "Mistake repair improves transfer."),
+      mcqQuestion("Concept check: Which option is most exam-ready?", ["A broad statement", "A memorised heading", "A precise answer with the required link", "A long introduction"], "C", "Markers reward precise content linked to the question."),
+      mcqQuestion("Concept check: What should you do before Stage 2?", ["Check why each wrong option was wrong", "Rewrite all your notes", "Skip feedback", "Change subject"], "A", "The feedback tells you what to carry into the written response.")
     ];
   }
 
