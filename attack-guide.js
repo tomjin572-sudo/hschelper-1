@@ -46,6 +46,7 @@
       `;
 
       (answerLabel || card.querySelector(".question-actions"))?.insertAdjacentElement("beforebegin", group);
+      ensureMcqScoreButton(card);
       group.addEventListener("click", (event) => {
         const option = event.target.closest(".mcq-option");
         if (!option) return;
@@ -69,6 +70,7 @@
         result.innerHTML = renderMcqResult(picked, correct, explanation);
         const complete = card.querySelector("[data-question-complete]");
         if (complete && !/completed/i.test(complete.textContent || "")) complete.click();
+        ensureMcqScoreButton(card);
         updateMcqSummary(card);
       });
     });
@@ -102,11 +104,23 @@
     `;
   }
 
-  function updateMcqSummary(card) {
+  function ensureMcqScoreButton(card) {
+    const engine = card.closest(".question-engine");
+    if (!engine || engine.querySelector(".mcq-score-actions")) return;
+    const actions = document.createElement("div");
+    actions.className = "mcq-score-actions";
+    actions.innerHTML = `<button type="button" class="mcq-score-button">Check My MCQ Score</button>`;
+    actions.querySelector("button").addEventListener("click", () => updateMcqSummary(card, true));
+    engine.appendChild(actions);
+  }
+
+  function updateMcqSummary(card, force = false) {
     const engine = card.closest(".question-engine");
     if (!engine) return;
     const cards = Array.from(engine.querySelectorAll(".question-card[data-mcq-converted='true']"));
-    if (!cards.length || cards.some((item) => !item.dataset.mcqSelected)) return;
+    if (!cards.length) return;
+    const hasUnanswered = cards.some((item) => !item.dataset.mcqSelected);
+    if (hasUnanswered && !force) return;
 
     const rows = cards.map((item, index) => {
       const picked = item.dataset.mcqSelected || "";
@@ -121,16 +135,19 @@
       };
     });
     const correctCount = rows.filter((row) => row.isCorrect).length;
+    const answeredCount = rows.filter((row) => row.picked).length;
+    const wrongCount = rows.filter((row) => row.picked && !row.isCorrect).length;
+    const unansweredCount = rows.length - answeredCount;
     const summary = engine.querySelector(".mcq-score-summary") || document.createElement("div");
     summary.className = "mcq-score-summary";
     summary.innerHTML = `
       <strong>MCQ Score: ${correctCount}/${rows.length}</strong>
-      <span>${correctCount} right, ${rows.length - correctCount} wrong. Check fixes before Stage 2.</span>
+      <span>${correctCount} right, ${wrongCount} wrong, ${unansweredCount} unanswered.</span>
       <ul>
         ${rows.map((row) => `
           <li>
-            <b>Q${row.index}: ${row.isCorrect ? "Correct" : "Wrong"}</b>
-            <span>You chose ${escapeHtml(row.picked)}${row.correct ? `; correct answer is ${escapeHtml(row.correct)}.` : "."} ${escapeHtml(row.explanation)}</span>
+            <b>Q${row.index}: ${row.picked ? row.isCorrect ? "Correct" : "Wrong" : "Unanswered"}</b>
+            <span>${row.picked ? `You chose ${escapeHtml(row.picked)}` : "Choose an answer"}${row.correct ? `; correct answer is ${escapeHtml(row.correct)}.` : "."} ${escapeHtml(row.explanation)}</span>
           </li>
         `).join("")}
       </ul>
@@ -159,16 +176,15 @@
       .mcq-options { display: grid; gap: 8px; }
       .mcq-option { display: grid; grid-template-columns: 34px minmax(0,1fr); align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 8px 12px; color: rgba(247,249,255,.88); text-align: left; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; box-shadow: none; }
       .mcq-option:hover, .mcq-option.is-selected { border-color: rgba(143,207,255,.5); background: rgba(143,207,255,.14); }
-      .mcq-option.is-correct { border-color: rgba(71,230,164,.75); background: rgba(71,230,164,.14); }
-      .mcq-option.is-wrong { border-color: rgba(255,112,112,.8); background: rgba(255,112,112,.13); }
       .mcq-option span { display: inline-grid; place-items: center; width: 30px; height: 30px; color: #06101f; font-size: .78rem; font-weight: 900; background: linear-gradient(135deg, var(--cyan), var(--blue)); border-radius: 999px; }
-      .mcq-option.is-correct span { background: #47e6a4; }
-      .mcq-option.is-wrong span { background: #ff8a8a; }
       .mcq-option b { color: rgba(247,249,255,.9); font-size: .92rem; line-height: 1.3; }
       .mcq-result { border: 1px solid rgba(71,230,164,.24); border-radius: 12px; padding: 10px; background: rgba(71,230,164,.08); color: rgba(247,249,255,.88); }
       .mcq-result b { display: block; margin-bottom: 4px; color: rgba(247,249,255,.94); }
       .mcq-result span { color: rgba(210,218,235,.9); font-size: .9rem; line-height: 1.4; }
       .mcq-result em { display: block; margin-top: 6px; color: rgba(143,207,255,.92); font-size: .82rem; font-style: normal; font-weight: 800; }
+      .mcq-score-actions { display: flex; justify-content: flex-start; margin-top: 4px; }
+      .mcq-score-button { min-height: 46px; padding: 10px 18px; color: #06101f; font-weight: 900; background: linear-gradient(135deg, var(--cyan), var(--blue)); border: 0; border-radius: 999px; box-shadow: none; }
+      .mcq-score-button:hover { transform: translateY(-1px); filter: brightness(1.04); }
       .mcq-score-summary { display: grid; gap: 8px; border: 1px solid rgba(143,207,255,.26); border-radius: 16px; padding: 12px; background: rgba(143,207,255,.08); }
       .mcq-score-summary > strong { color: rgba(247,249,255,.95); font-size: 1rem; }
       .mcq-score-summary > span { color: rgba(210,218,235,.9); font-size: .9rem; }
