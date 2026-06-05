@@ -1,7 +1,4 @@
 (() => {
-  const nativeSetTimeout = window.setTimeout.bind(window);
-  window.setTimeout = (handler, delay, ...args) => nativeSetTimeout(handler, delay === 24000 ? 45000 : delay, ...args);
-
   function rewriteFallbackText() {
     const output = document.querySelector("#sprintOutput");
     if (!output) return;
@@ -132,6 +129,7 @@
 
   function renderBackupCards(cards) {
     const output = document.querySelector("#sprintOutput");
+    const label = document.querySelector("#sprintOutputLabel");
     if (!output || !output.querySelector(".loading-plan")) return;
     window.__hscReliabilityCards = cards;
     releaseSubmitState();
@@ -212,7 +210,7 @@
   }
 
   function queueFastFallback() {
-    setTimeout(() => renderBackupCards(makeBackupCards()), 8000);
+    setTimeout(() => renderBackupCards(makeBackupCards()), 2000);
   }
 
   function handleBackupPractice(event) {
