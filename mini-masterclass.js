@@ -104,4 +104,10 @@
   script.src = "./study-sprint-learning-cards.js?v=20260606-learning-cards";
   script.defer = true;
   document.head.appendChild(script);
+  script.addEventListener("load", () => {
+    const journeyScript = document.createElement("script");
+    journeyScript.src = "./study-sprint-journey.js?v=20260606-learning-journey";
+    journeyScript.defer = true;
+    document.head.appendChild(journeyScript);
+  });
 })();
