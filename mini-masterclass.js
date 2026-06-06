@@ -75,14 +75,14 @@
   function renderGuide(guide) {
     return `
       <div class="mini-masterclass">
-        <strong>Mini Masterclass</strong>
+        <strong>Marks mini-brief</strong>
         <div class="masterclass-grid">
           <div><b>Skill</b><span>${escapeHtml(guide.skill)}</span></div>
-          <div><b>Exam why</b><span>${escapeHtml(guide.why)}</span></div>
+          <div><b>Why it wins marks</b><span>${escapeHtml(guide.why)}</span></div>
         </div>
         <ol>${guide.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join("")}</ol>
         <p><b>Tiny example:</b> ${escapeHtml(guide.example)}</p>
-        <p><b>Watch:</b> ${escapeHtml(guide.mistake)}</p>
+        <p><b>Trap that costs marks:</b> ${escapeHtml(guide.mistake)}</p>
       </div>
     `;
   }
@@ -95,4 +95,13 @@
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
   }
+})();
+
+(() => {
+  if (window.__hscLearningCardLoader) return;
+  window.__hscLearningCardLoader = true;
+  const script = document.createElement("script");
+  script.src = "./study-sprint-learning-cards.js?v=20260606-learning-cards";
+  script.defer = true;
+  document.head.appendChild(script);
 })();
