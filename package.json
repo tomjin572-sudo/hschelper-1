@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "node -e \"const fs=require('fs');fs.rmSync('public',{recursive:true,force:true});fs.mkdirSync('public');for(const f of ['index.html','styles.css','evening-plan.css','mini-masterclass.css','attack-guide.css','app.js','workflow.js','study-pack.js','learning-flow.js','feedback-fix.js','evening-plan.js','cards-fallback.js','reliability.js','cheat-sheet.js','flow-simplify.js','mini-masterclass.js','attack-guide.js','study-sprint-learning-cards.js','_redirects'])if(fs.existsSync(f))fs.copyFileSync(f,'public/'+f);console.log('Static site ready in public/')\"",
+    "build": "node -e \"const fs=require('fs');fs.rmSync('public',{recursive:true,force:true});fs.mkdirSync('public');for(const f of ['index.html','styles.css','evening-plan.css','mini-masterclass.css','attack-guide.css','app.js','workflow.js','study-pack.js','learning-flow.js','feedback-fix.js','evening-plan.js','cards-fallback.js','reliability.js','cheat-sheet.js','flow-simplify.js','mini-masterclass.js','attack-guide.js','study-sprint-learning-cards.js','study-sprint-journey.js','_redirects'])if(fs.existsSync(f))fs.copyFileSync(f,'public/'+f);console.log('Static site ready in public/')\"",
     "start": "node server.mjs"
   },
   "engines": {
