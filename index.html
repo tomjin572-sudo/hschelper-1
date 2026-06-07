@@ -158,7 +158,7 @@
 
         <div class="practice-workflow" id="practiceWorkflow">
           <article>
-            <strong>Start here</strong>
+                <strong>Start here</strong>
             <p id="focusDoNow"></p>
           </article>
           <article class="question-engine">
@@ -209,7 +209,7 @@
     <script src="./practice-fix.js?v=20260602-mcq-keep"></script>
     <script src="./cards-fallback.js?v=20260530-product-soul"></script>
     <script src="./flow-simplify.js?v=20260530-product-soul"></script>
-    <script src="./mini-masterclass.js?v=20260607-three-card-limit"></script>
+    <script src="./mini-masterclass.js?v=20260607-force-one-visible"></script>
     <script src="./attack-guide.js?v=20260531-answer-path-cards"></script>
     <script>
       (() => {
@@ -259,11 +259,11 @@
           ][index % 3];
         }
         function q(question, markValue, focusPoint, commonMistake, estimatedTime, marksImpact, whatToIgnore) {
-          return { question, markValue, difficulty: "Core", estimatedTime: estimatedTime || "5 min", focusPoint, commonMistake, marksImpact: marksImpact || `${focusPoint} = mark focus.`, whatToIgnore: whatToIgnore || "Skip passive notes.", sampleAnswer: "" };
+          return { question, markValue, difficulty: "Core", estimatedTime: estimatedTime || "5 min", focusPoint, commonMistake, marksImpact: marksImpact || `${focusPoint} = mark focus.`, whatToIgnore: whatToIgnore || "Skip passive notes until after answering.", sampleAnswer: "" };
         }
       })();
     </script>
     <script src="./study-sprint-learning-cards.js?v=20260607-single-card-flow"></script>
-    <script src="./study-sprint-journey.js?v=20260607-three-card-limit"></script>
+    <script src="./study-sprint-journey.js?v=20260607-force-one-visible"></script>
   </body>
 </html>
