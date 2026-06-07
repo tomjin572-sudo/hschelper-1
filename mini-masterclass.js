@@ -106,7 +106,7 @@
   document.head.appendChild(script);
   script.addEventListener("load", () => {
     const journeyScript = document.createElement("script");
-    journeyScript.src = "./study-sprint-journey.js?v=20260607-three-card-limit";
+    journeyScript.src = "./study-sprint-journey.js?v=20260607-force-one-visible";
     journeyScript.defer = true;
     document.head.appendChild(journeyScript);
   });
