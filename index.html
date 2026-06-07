@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HSC Helper</title>
-    <link rel="stylesheet" href="./styles.css?v=20260531-answer-path-cards" />
+    <link rel="stylesheet" href="./styles.css?v=20260606-learning-cards" />
     <link rel="stylesheet" href="./evening-plan.css?v=20260527-ui" />
     <link rel="stylesheet" href="./mini-masterclass.css?v=20260529-masterclass" />
     <link rel="stylesheet" href="./attack-guide.css?v=20260531-answer-path-cards" />
@@ -158,7 +158,7 @@
 
         <div class="practice-workflow" id="practiceWorkflow">
           <article>
-                <strong>Start here</strong>
+            <strong>Start here</strong>
             <p id="focusDoNow"></p>
           </article>
           <article class="question-engine">
@@ -205,10 +205,11 @@
 
     <script src="./reliability.js?v=20260528-repeat-fix"></script>
     <script src="./evening-plan.js?v=20260531-four-card-time-fix"></script>
-    <script src="./app.js?v=20260531-answer-path-cards"></script>
+    <script src="./app.js?v=20260606-learning-cards"></script>
+    <script src="./practice-fix.js?v=20260602-mcq-keep"></script>
     <script src="./cards-fallback.js?v=20260530-product-soul"></script>
     <script src="./flow-simplify.js?v=20260530-product-soul"></script>
-    <script src="./mini-masterclass.js?v=20260530-product-soul"></script>
+    <script src="./mini-masterclass.js?v=20260607-three-card-limit"></script>
     <script src="./attack-guide.js?v=20260531-answer-path-cards"></script>
     <script>
       (() => {
@@ -228,21 +229,10 @@
         }, 100);
         setTimeout(() => clearInterval(install), 10000);
         function withVariedQuestions(card, index) {
-          if (!card || hasVariety(card.questions)) return card;
-          return { ...card, questions: questionsFor(card, index) };
+          if (!card) return card;
+          return { ...card, questions: [questionFor(card, index)] };
         }
-        function hasVariety(questions) {
-          if (!Array.isArray(questions) || questions.length < 3) return false;
-          const command = /^(define|explain|assess|analyse|evaluate|describe|calculate|compare|justify|discuss|outline|solve|sketch|draw)/i;
-          const realQuestions = questions.filter((item) =>
-            command.test(String(item.question || "").trim()) &&
-            item.markValue &&
-            item.estimatedTime &&
-            item.focusPoint
-          );
-          return new Set(questions.map((item) => clean(item.question))).size >= 3 && realQuestions.length >= 3;
-        }
-        function questionsFor(card, index) {
+        function questionFor(card, index) {
           const text = `${card.topic || ""} ${card.questionType || ""} ${card.doThisNow || ""}`.toLowerCase();
           if (/labour|labor|wage|employment|unemployment|underemployment|participation|productivity|minimum wage|skills mismatch/.test(text)) return labour(index);
           if (/math|quadratic|calculus|function|algebra|graph/.test(text)) return subject(index, card.topic, ["formula/method", "substitution/application", "graph/interpretation", "harder transfer"]);
@@ -252,11 +242,12 @@
         }
         function labour(index) {
           return [
-            [q("Define the labour market and explain why labour demand is a derived demand.", "3 marks", "Labour market + derived demand", "Defining the labour market as just jobs.", "5 min", "Definitions = quick marks.", "Skip long examples."), q("Define unemployment and underemployment, then state one difference between them.", "3 marks", "Unemployment vs underemployment", "Confusing underemployment with unemployment.", "5 min", "Precise terms win definition marks.", "Skip policy discussion."), q("Outline how the participation rate measures labour force involvement.", "2 marks", "Participation rate meaning", "Treating all non-workers as unemployed.", "4 min", "Correct measure = easy marks.", "Skip unemployment causes.")],
-            [q("Explain how an increase in labour demand can affect wages and employment.", "4 marks", "Demand shift -> wage/employment", "Saying wages rise without explaining the demand shift.", "7 min", "Cause-effect chain = easy marks.", "Skip broad job-market commentary."), q("Explain how a fall in demand for goods and services can reduce demand for labour.", "4 marks", "Goods demand -> labour demand", "Skipping the goods/services demand link.", "7 min", "Derived demand link wins marks.", "Skip unemployment types."), q("Draw a labour market diagram showing higher labour demand and explain the new equilibrium.", "4 marks", "Demand curve shift right", "Shifting labour supply instead of demand.", "7 min", "Diagram + effect wins marks.", "Skip long definitions.")],
-            [q("Explain how higher labour productivity can increase labour demand in one industry.", "4 marks", "Productivity -> labour demand", "Saying productivity automatically raises wages.", "7 min", "Productivity chain wins marks.", "Skip wage claims without cause."), q("Explain how a skills mismatch can contribute to structural unemployment.", "4 marks", "Skills mismatch -> unemployment", "Naming structural unemployment without explaining the mismatch.", "7 min", "Specific cause = stronger marks.", "Skip cyclical unemployment."), q("Analyse how training programs may affect productivity, labour demand and employment.", "5 marks", "Training -> productivity -> employment", "Skipping the labour demand link.", "8 min", "Linked policy chain wins marks.", "Skip generic benefits.")],
-            [q("Assess the impact of rising unemployment on households and the Australian economy.", "5 marks", "Household impact + macro link", "Only saying people lose jobs without linking to spending and AD.", "8 min", "Judgement adds top marks.", "Skip definitions-only answers."), q("Assess whether a minimum wage above equilibrium improves outcomes for workers.", "6 marks", "Minimum wage trade-off", "Only arguing one side.", "9 min", "Balanced trade-off wins marks.", "Skip moral opinion only."), q("Discuss how a wage floor can create both equity benefits and employment risks.", "5 marks", "Equity benefit + employment risk", "Forgetting the employment trade-off.", "8 min", "Two-sided answer wins marks.", "Skip one-sided policy claims.")]
-          ][index % 4];
+            q("Define labour demand and explain why it is a derived demand.", "3 marks", "Labour demand", "Calling labour demand workers looking for jobs.", "5 min", "Definitions = quick marks.", "Skip long examples."),
+            q("Use a labour market diagram to explain how increased labour supply affects equilibrium wage and employment.", "4 marks", "Labour supply and equilibrium wage", "Moving the wrong curve.", "7 min", "Diagram logic wins marks.", "Skip broad job-market commentary."),
+            q("Explain how rising unemployment affects household consumption and aggregate demand.", "4 marks", "Unemployment, consumption and AD", "Not linking income loss to spending and AD.", "7 min", "Cause-effect chains win marks.", "Skip definitions-only answers."),
+            q("Explain how productivity or skills mismatch can affect labour demand and structural unemployment.", "5 marks", "Productivity and skills mismatch", "Saying productivity automatically raises wages.", "8 min", "Specific economic chains win marks.", "Skip generic training claims."),
+            q("Assess the impact of a minimum wage above equilibrium on workers and firms.", "6 marks", "Minimum wage trade-off", "Only arguing one side.", "9 min", "Balanced judgement wins higher marks.", "Skip moral opinion only.")
+          ][index % 5];
         }
         function subject(index, topic, skills) {
           const skill = skills[index % skills.length];
@@ -265,15 +256,14 @@
             q(`Explain one ${skill} issue in ${label} using a clear cause-effect link.`, "4 marks", skill, "Starting with broad notes instead of the question.", "6 min"),
             q(`Apply ${label} to one exam-style scenario and justify your answer.`, "4 marks", `${skill} application`, "Not showing the working, evidence or link.", "6 min"),
             q(`Evaluate one common error in ${label} and write the corrected response.`, "3 marks", `${skill} repair`, "Moving on without correcting the error.", "5 min")
-          ];
+          ][index % 3];
         }
         function q(question, markValue, focusPoint, commonMistake, estimatedTime, marksImpact, whatToIgnore) {
-          return { question, markValue, difficulty: "Core", estimatedTime: estimatedTime || "5 min", focusPoint, commonMistake, marksImpact: marksImpact || `${focusPoint} = mark focus.`, whatToIgnore: whatToIgnore || "Skip passive notes until after answering.", sampleAnswer: "" };
-        }
-        function clean(value) {
-          return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+          return { question, markValue, difficulty: "Core", estimatedTime: estimatedTime || "5 min", focusPoint, commonMistake, marksImpact: marksImpact || `${focusPoint} = mark focus.`, whatToIgnore: whatToIgnore || "Skip passive notes.", sampleAnswer: "" };
         }
       })();
     </script>
+    <script src="./study-sprint-learning-cards.js?v=20260607-single-card-flow"></script>
+    <script src="./study-sprint-journey.js?v=20260607-three-card-limit"></script>
   </body>
 </html>
