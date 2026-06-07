@@ -101,12 +101,12 @@
   if (window.__hscLearningCardLoader) return;
   window.__hscLearningCardLoader = true;
   const script = document.createElement("script");
-  script.src = "./study-sprint-learning-cards.js?v=20260606-learning-cards";
+  script.src = "./study-sprint-learning-cards.js?v=20260607-single-card-flow";
   script.defer = true;
   document.head.appendChild(script);
   script.addEventListener("load", () => {
     const journeyScript = document.createElement("script");
-    journeyScript.src = "./study-sprint-journey.js?v=20260606-learning-journey";
+    journeyScript.src = "./study-sprint-journey.js?v=20260607-three-card-limit";
     journeyScript.defer = true;
     document.head.appendChild(journeyScript);
   });
