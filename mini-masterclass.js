@@ -111,7 +111,7 @@
     document.head.appendChild(journeyScript);
     journeyScript.addEventListener("load", () => {
       const polishScript = document.createElement("script");
-      polishScript.src = "./session-flow-polish.js?v=20260608-session-flow-polish";
+      polishScript.src = "./session-flow-polish.js?v=20260608-title-badge-fix";
       polishScript.defer = true;
       document.head.appendChild(polishScript);
     });
