@@ -109,5 +109,11 @@
     journeyScript.src = "./study-sprint-journey.js?v=20260607-force-one-visible";
     journeyScript.defer = true;
     document.head.appendChild(journeyScript);
+    journeyScript.addEventListener("load", () => {
+      const polishScript = document.createElement("script");
+      polishScript.src = "./session-flow-polish.js?v=20260608-session-flow-polish";
+      polishScript.defer = true;
+      document.head.appendChild(polishScript);
+    });
   });
 })();
