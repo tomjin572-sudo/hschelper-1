@@ -31,7 +31,7 @@
     title(card,".exam-application-section","Step 3: Your Turn","Exam-style attempt");
     title(card,".reflection-section","Step 5: Fix","Lock the correction")
   }
-  function title(card,sel,strong,badge){var sec=card.querySelector(sel),s=sec&&sec.querySelector(".learning-section-title strong"),b=sec&&sec.querySelector(".learning-section-title span");if(s)s.textContent=strong;if(b)b.textContent=badge}
+  function title(card,sel,strong,badge){var sec=card.querySelector(sel),wrap=sec&&sec.querySelector(".learning-section-title"),first=wrap&&wrap.firstElementChild,s=wrap&&wrap.querySelector("strong"),b=wrap&&wrap.querySelector("span"),m=String(strong||"").match(/step\s*(\d+)/i);if(s)s.textContent=strong;if(b)b.textContent=first===b&&m?m[1]:badge}
   function addExample(card){
     var attack=card.querySelector(".attack-section");if(!attack||attack.querySelector(".sentence-scaffold"))return;
     var sc=scaffold(((val("#subjectsInput")||val("#cheatSubjectInput")||"")+" "+card.textContent).toLowerCase());
