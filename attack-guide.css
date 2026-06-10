@@ -62,19 +62,33 @@
   background: rgba(255, 198, 120, 0.07);
 }
 
-.mcq-option {
-  transition: border-color 160ms ease, background 160ms ease;
+.focus-shell .question-card,
+.focus-shell .question-card:hover {
+  transform: none !important;
+}
+
+.focus-shell button:hover,
+.focus-shell .mcq-option,
+.focus-shell .mcq-option:hover,
+.focus-shell .learning-mcq-option:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.focus-shell .mcq-option {
+  transition: none !important;
+}
+
+.focus-shell .mcq-option:not(.is-selected):not(.is-correct):not(.is-wrong):hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .mcq-option:hover,
 .mcq-option.is-selected {
   transform: none;
   box-shadow: none;
-}
-
-.focus-shell button:hover,
-.focus-shell .question-card:hover {
-  transform: none;
 }
 
 @media (max-width: 760px) {
