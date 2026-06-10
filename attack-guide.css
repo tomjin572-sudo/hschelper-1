@@ -62,6 +62,16 @@
   background: rgba(255, 198, 120, 0.07);
 }
 
+.mcq-option {
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.mcq-option:hover,
+.mcq-option.is-selected {
+  transform: none;
+  box-shadow: none;
+}
+
 @media (max-width: 760px) {
   .answer-path-grid {
     grid-template-columns: 1fr;
