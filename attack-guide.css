@@ -72,6 +72,11 @@
   box-shadow: none;
 }
 
+.focus-shell button:hover,
+.focus-shell .question-card:hover {
+  transform: none;
+}
+
 @media (max-width: 760px) {
   .answer-path-grid {
     grid-template-columns: 1fr;
