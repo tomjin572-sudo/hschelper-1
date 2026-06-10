@@ -4,9 +4,67 @@ module.exports = async function handler(req, res) {
   }
 
   const body = req.body || {};
+  if (isFeedbackRequest(body)) {
+    return res.status(200).json({ answer: buildAnswerFeedback(body) });
+  }
+
   const answer = JSON.stringify(buildSprint(body));
   return res.status(200).json({ answer });
 };
+
+function isFeedbackRequest(body) {
+  return /Mark this HSC-style practice answer/i.test(String(body.question || ""));
+}
+
+function buildAnswerFeedback(body) {
+  const prompt = String(body.question || "");
+  const subject = String(body.subject || "");
+  const question = field(prompt, "Question") || "the practice question";
+  const focus = field(prompt, "Focus point") || "the key marking point";
+  const mistake = field(prompt, "Common mistake to check") || "missing the mark-winning link";
+  const answer = field(prompt, "Student answer") || "";
+  const text = `${subject} ${question} ${focus} ${mistake}`.toLowerCase();
+  const words = answer.trim().split(/\s+/).filter(Boolean).length;
+  const noAnswer = !answer.trim() || /no answer written/i.test(answer);
+  const isEconomics = /economics|labou?r|unemployment|wage|employment|market|aggregate|inflation|policy/.test(text);
+
+  if (noAnswer || words < 8) {
+    return [
+      "What went well: You have started the task, but there is not enough written evidence to mark yet.",
+      `Mistake: ${mistake}.`,
+      `Fix: Write 2-3 direct sentences that show ${focus.toLowerCase()}.`,
+      "Next best move: Attempt the answer first, then ask for feedback again."
+    ].join("\n");
+  }
+
+  if (isEconomics) {
+    const hasDefinition = /is|refers to|defined|willing|able|rate|wage|employment|unemployment/.test(answer.toLowerCase());
+    const hasMechanism = /because|therefore|leads to|causes|shift|demand|supply|pressure|increase|decrease|rise|fall/.test(answer.toLowerCase());
+    const hasJudgement = /however|depends|extent|therefore|overall|significant|limited|short run|long run/.test(answer.toLowerCase());
+    return [
+      `What went well: ${hasDefinition ? "You used relevant economic language and started with the concept." : "You attempted the economic idea, but the definition needs to be clearer."}`,
+      `Mistake: ${hasMechanism ? "The chain is present, but it needs to be more explicit for HSC marks" : mistake}.`,
+      "Fix: Use Definition -> Cause -> Mechanism -> Impact -> Example/Data -> Judgement. Add one sentence that explains the exact labour demand/supply mechanism.",
+      `Next best move: ${hasJudgement ? "Try a harder 4-6 mark labour market question using the same chain." : "Add one judgement sentence, such as 'The impact depends on the size of the demand shift and labour supply elasticity.'"}`
+    ].join("\n");
+  }
+
+  return [
+    "What went well: You made a real attempt and gave the coach something to mark.",
+    `Mistake: ${mistake}.`,
+    `Fix: Add one sentence that directly proves ${focus.toLowerCase()}.`,
+    "Next best move: Rewrite the weakest sentence, then complete one similar question under time."
+  ].join("\n");
+}
+
+function field(text, label) {
+  const match = String(text || "").match(new RegExp(`${escapeRegex(label)}:\\s*([\\s\\S]*?)(?=\\n[A-Z][A-Za-z ]{2,40}:|\\n\\n|$)`, "i"));
+  return match?.[1]?.trim() || "";
+}
+
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 function buildSprint(body) {
   const subject = String(body.subject || "HSC subject");
