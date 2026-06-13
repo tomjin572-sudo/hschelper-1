@@ -56,6 +56,7 @@
   loadCheatSheet();
   new MutationObserver(queueRun).observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener("click", (event) => {
+    handleStepCardClick(event);
     handleCheatPractice(event);
     setTimeout(queueRun, 120);
     setTimeout(queueRun, 700);
@@ -121,6 +122,7 @@
       card.querySelectorAll(".mini-masterclass").forEach((node) => node.remove());
       ensureStepper(card);
       addQuestionExamRelevance(card);
+      setupStepCardFlow(card);
     });
   }
 
@@ -152,6 +154,154 @@
       return `<li class="${className}" data-session-step="${step}"><span>${step}</span><b>${escapeHtml(label)}</b></li>`;
     }).join("");
     card.querySelector(".learning-card-head, .question-topline")?.after(stepper);
+  }
+
+  function setupStepCardFlow(card) {
+    if (!card) return;
+    card.classList.add("step-card-flow");
+    ensureExtraStepSections(card);
+    ensureWorkedExample(card);
+    const step = inferStep(card);
+    setStep(card, step, true);
+  }
+
+  function handleStepCardClick(event) {
+    const start = event.target.closest(".start-session, [data-card-index], [data-evening-card-index], [data-fallback-card-index]");
+    if (start) window.__hscStepCardState = {};
+
+    const control = event.target.closest("[data-step-card-next], [data-step-card-prev], .step-card-flow .session-stepper [data-session-step]");
+    if (!control) return;
+    const card = control.closest(".step-card-flow");
+    if (!card) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const current = Number(card.dataset.stepCard || 1);
+    const next = control.hasAttribute("data-session-step")
+      ? Number(control.dataset.sessionStep)
+      : control.hasAttribute("data-step-card-prev")
+        ? current - 1
+        : current + 1;
+    setStep(card, next);
+  }
+
+  function inferStep(card) {
+    const key = stepKey(card);
+    const saved = window.__hscStepCardState?.[key];
+    const feedback = card.querySelector(".question-feedback:not([hidden])");
+    if (feedback && feedback.textContent.trim()) return Math.max(Number(saved || 0), 4);
+    if (saved) return Number(saved);
+    return 1;
+  }
+
+  function setStep(card, rawStep, quiet) {
+    const step = Math.max(1, Math.min(6, Number(rawStep) || 1));
+    window.__hscStepCardState = window.__hscStepCardState || {};
+    window.__hscStepCardState[stepKey(card)] = step;
+    card.dataset.stepCard = String(step);
+
+    card.querySelectorAll(".session-stepper [data-session-step]").forEach((item) => {
+      const itemStep = Number(item.dataset.sessionStep);
+      item.classList.toggle("is-active", itemStep === step);
+      item.classList.toggle("is-done", itemStep < step);
+    });
+
+    visibleStepSections(card).forEach(({ section, sectionStep }) => {
+      const show = sectionStep === step;
+      section.classList.toggle("is-step-hidden", !show);
+      section.setAttribute("aria-hidden", show ? "false" : "true");
+    });
+
+    const feedback = card.querySelector(".question-feedback");
+    if (feedback) {
+      const showFeedback = step === 4 && !feedback.hidden && feedback.textContent.trim();
+      feedback.classList.toggle("is-step-hidden", !showFeedback);
+      feedback.setAttribute("aria-hidden", showFeedback ? "false" : "true");
+    }
+
+    const actions = card.querySelector(".question-actions");
+    if (actions) {
+      actions.classList.toggle("is-step-hidden", step !== 3 && step !== 6);
+      actions.querySelectorAll("[data-question-feedback], [data-pack-feedback]").forEach((button) => {
+        button.hidden = step !== 3;
+        button.textContent = "Get feedback";
+      });
+      actions.querySelectorAll("[data-question-complete], [data-pack-complete]").forEach((button) => {
+        button.hidden = step !== 6;
+        button.textContent = /completed/i.test(button.textContent || "") ? "Mark locked" : "Lock this mark";
+      });
+    }
+
+    renderStepControls(card, step);
+    if (!quiet) document.querySelector(".focus-shell")?.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function visibleStepSections(card) {
+    return [
+      [card.querySelector(".why-section"), 1],
+      [card.querySelector(".attack-section"), 2],
+      [card.querySelector(".concept-section"), 3],
+      [card.querySelector(".short-response-section"), 3],
+      [card.querySelector(".exam-application-section"), 3],
+      [card.querySelector(".feedback-step-card"), 4],
+      [card.querySelector(".reflection-section"), 5],
+      [card.querySelector(".next-action-step-card"), 6]
+    ].filter(([section]) => section).map(([section, sectionStep]) => ({ section, sectionStep }));
+  }
+
+  function ensureExtraStepSections(card) {
+    if (!card.querySelector(".feedback-step-card")) {
+      const feedbackStep = document.createElement("div");
+      feedbackStep.className = "learning-section feedback-step-card";
+      feedbackStep.innerHTML = '<div class="learning-section-title"><strong>AI Feedback</strong><span>Coach check</span></div><p class="micro-prompt">Submit your attempt first. The coach will show what worked, what lost marks, and the one fix to make next.</p>';
+      const actions = card.querySelector(".question-actions");
+      if (actions) actions.before(feedbackStep);
+    }
+    if (!card.querySelector(".next-action-step-card")) {
+      const next = document.createElement("div");
+      next.className = "learning-section next-action-step-card";
+      next.innerHTML = '<div class="learning-section-title"><strong>Next Action</strong><span>Keep moving</span></div><p class="micro-prompt">Mark this as locked, then move to the next sprint card. Do not open notes yet; answer first, fix after.</p>';
+      const feedback = card.querySelector(".question-feedback");
+      if (feedback) feedback.after(next);
+      else card.appendChild(next);
+    }
+  }
+
+  function ensureWorkedExample(card) {
+    const attack = card.querySelector(".attack-section");
+    if (!attack || attack.querySelector(".worked-example-box")) return;
+    const text = card.textContent || "";
+    const economics = /labour|labor|wage|employment|unemployment|participation|productivity|minimum wage/i.test(text);
+    const box = document.createElement("div");
+    box.className = "worked-example-box";
+    box.innerHTML = economics
+      ? "<b>Worked example</b><p>Labour demand is the amount of labour firms are willing and able to hire at different wage rates. Because it is derived from demand for goods and services, stronger output demand can shift labour demand right, increasing employment and placing upward pressure on wages.</p><span>Why it gets marks: definition + derived demand + wage/employment effect.</span>"
+      : "<b>Worked example</b><p>Start with the exact concept, apply it to the question, then finish with the effect or judgement the marker can reward.</p><span>Why it gets marks: direct answer + subject term + clear link.</span>";
+    attack.appendChild(box);
+  }
+
+  function renderStepControls(card, step) {
+    card.querySelectorAll(".step-card-controls").forEach((node) => node.remove());
+    const controls = document.createElement("div");
+    controls.className = "step-card-controls";
+    const back = step > 1 ? '<button type="button" class="secondary-action" data-step-card-prev>Back</button>' : "";
+    const next = step === 3 || step === 6 ? "" : `<button type="button" class="primary-step-action" data-step-card-next>${stepButtonText(step)}</button>`;
+    controls.innerHTML = back + next;
+    const anchor = step === 3 ? card.querySelector(".question-actions")
+      : step === 4 ? card.querySelector(".question-feedback:not([hidden])") || card.querySelector(".feedback-step-card")
+        : card.querySelector(".learning-section:not(.is-step-hidden)");
+    if (anchor) anchor.after(controls);
+  }
+
+  function stepButtonText(step) {
+    if (step === 1) return "Show worked example";
+    if (step === 2) return "Try it now";
+    if (step === 4) return "Fix my answer";
+    if (step === 5) return "Show next action";
+    return "Next";
+  }
+
+  function stepKey(card) {
+    return card.dataset.questionIndex || "0";
   }
 
   function handleCheatPractice(event) {
@@ -254,7 +404,7 @@
     if (document.querySelector("#hsc-exam-sprint-runtime-style")) return;
     const style = document.createElement("style");
     style.id = "hsc-exam-sprint-runtime-style";
-    style.textContent = ".action-card-stack.action-card-source{display:none!important}.session-stepper{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}.session-stepper li{display:grid;gap:4px;min-width:0;border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:8px;background:rgba(255,255,255,.045);color:rgba(247,249,255,.64)}.session-stepper span{display:grid;place-items:center;width:22px;height:22px;border-radius:999px;background:rgba(255,255,255,.08);font-size:.72rem;font-weight:900}.session-stepper b{font-size:.72rem;line-height:1.15}.session-stepper li.is-active{border-color:rgba(103,232,249,.44);background:rgba(103,232,249,.12);color:rgba(247,249,255,.96)}.session-stepper li.is-active span{color:#06101f;background:linear-gradient(135deg,var(--cyan),var(--green))}.session-stepper li.is-done{border-color:rgba(71,230,164,.24);color:rgba(71,230,164,.9)}.exam-relevance-note{display:grid;gap:4px;border-radius:10px;padding:9px;background:rgba(71,230,164,.08);border:1px solid rgba(71,230,164,.22)}.exam-relevance-note b{color:rgba(247,249,255,.82);font-size:.68rem;text-transform:uppercase}.exam-relevance-note span{color:var(--muted);font-size:.84rem;line-height:1.35}@media(max-width:820px){.session-stepper{grid-template-columns:repeat(3,minmax(0,1fr))}.focus-shell{width:min(100%,calc(100vw - 16px));grid-template-columns:1fr;padding:12px}.question-actions{display:grid;grid-template-columns:1fr}.question-actions button{min-height:46px}.action-card-stack{grid-template-columns:1fr}}";
+    style.textContent = ".action-card-stack.action-card-source{display:none!important}.session-stepper{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}.session-stepper li{display:grid;gap:4px;min-width:0;border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:8px;background:rgba(255,255,255,.045);color:rgba(247,249,255,.64);cursor:pointer}.session-stepper span{display:grid;place-items:center;width:22px;height:22px;border-radius:999px;background:rgba(255,255,255,.08);font-size:.72rem;font-weight:900}.session-stepper b{font-size:.72rem;line-height:1.15}.session-stepper li.is-active{border-color:rgba(103,232,249,.44);background:rgba(103,232,249,.12);color:rgba(247,249,255,.96)}.session-stepper li.is-active span{color:#06101f;background:linear-gradient(135deg,var(--cyan),var(--green))}.session-stepper li.is-done{border-color:rgba(71,230,164,.24);color:rgba(71,230,164,.9)}.step-card-flow .is-step-hidden{display:none!important}.step-card-flow .learning-section{min-height:210px}.step-card-controls{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}.primary-step-action{border:0;border-radius:999px;padding:12px 16px;min-height:46px;background:linear-gradient(135deg,var(--cyan),var(--green));color:#06101f;font-weight:900;cursor:pointer}.exam-relevance-note,.worked-example-box{display:grid;gap:4px;border-radius:10px;padding:9px;background:rgba(71,230,164,.08);border:1px solid rgba(71,230,164,.22)}.worked-example-box{background:rgba(143,207,255,.08);border-color:rgba(143,207,255,.24);margin-top:8px}.exam-relevance-note b,.worked-example-box b{color:rgba(247,249,255,.82);font-size:.68rem;text-transform:uppercase}.exam-relevance-note span,.worked-example-box span,.worked-example-box p{color:var(--muted);font-size:.84rem;line-height:1.35;margin:0}@media(max-width:820px){.session-stepper{grid-template-columns:repeat(3,minmax(0,1fr))}.focus-shell{width:min(100%,calc(100vw - 16px));grid-template-columns:1fr;padding:12px}.question-actions{display:grid;grid-template-columns:1fr}.question-actions button{min-height:46px}.action-card-stack{grid-template-columns:1fr}.step-card-controls{display:grid;grid-template-columns:1fr}.step-card-flow .learning-section{min-height:0}}";
     document.head.appendChild(style);
   }
 
