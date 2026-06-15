@@ -1,47 +1,239 @@
 (function(){
   if(window.__hscExamSprintRuntimeFixes)return;
   window.__hscExamSprintRuntimeFixes=true;
-  var steps=["Define the key term.","Explain the mechanism.","State the mark-winning effect.","Link back to the question."];
+
   var packs=[
-    {id:"demand",match:/labou?r demand|derived demand|demand for labour/i,tag:"Labour Demand",must:["Labour demand = the quantity of labour firms are willing and able to hire at different wage rates.","It is derived demand: firms hire workers because consumers demand the goods and services those workers produce.","Diagram memory: wage rate on the vertical axis, quantity of labour on the horizontal axis, labour demand slopes downward.","High-value trigger: output demand, productivity, labour cost, technology or business confidence changes."],chain:"Higher demand for output -> firms need more workers -> labour demand shifts right -> employment rises and wage pressure increases.",task:"Explain why labour demand is derived demand and outline one factor that can increase labour demand. (4 marks)",model:["Labour demand is the amount of labour firms are willing and able to hire at different wage rates.","It is derived demand because workers are hired to produce output that consumers demand.","If demand for a firm's output rises, the firm may increase production and hire more workers.","This shifts labour demand right, increasing employment and putting upward pressure on wages."],scaffold:["Sentence 1: Define labour demand.","Sentence 2: Explain derived demand using output demand.","Sentence 3: Name one factor that shifts demand right.","Sentence 4: State the wage and employment effect."],trap:"Do not describe workers looking for jobs. That is labour supply, not labour demand.",next:"If you got the mechanism right, move to equilibrium wage. If not, rewrite the cause-effect chain before continuing."},
-    {id:"equilibrium",match:/supply|equilibrium|wage rate|shortage|surplus|diagram|minimum wage/i,tag:"Equilibrium Wage",must:["Labour supply = workers willing and able to work at different wage rates.","Equilibrium wage is where labour demand equals labour supply.","If supply shifts left, equilibrium wage rises and employment falls. If demand shifts right, both wage and employment usually rise.","Minimum wage questions test whether you can explain a price floor above equilibrium, not just say wages rise."],chain:"Market shock -> curve shifts -> new equilibrium wage -> new employment level -> possible shortage/surplus.",task:"Using a labour market diagram, explain the likely effect of a decrease in labour supply on wages and employment. (4 marks)",model:["A decrease in labour supply shifts the labour supply curve left.","At the original wage there is excess demand for labour, so employers compete for fewer workers.","The equilibrium wage rises while the equilibrium quantity of labour employed falls.","The answer should link both outcomes to the diagram, not only state that wages increase."],scaffold:["Sentence 1: State which curve shifts and direction.","Sentence 2: Explain pressure at the old wage.","Sentence 3: Give both wage and employment outcomes.","Sentence 4: Link back to the diagram/question."],trap:"Do not say every higher wage increases employment. In an equilibrium diagram, the curve shift decides the employment result.",next:"Now test whether you can transfer the diagram logic to unemployment or minimum wage."},
-    {id:"unemployment",match:/unemployment|underemployment|participation|labou?r force|cyclical|structural/i,tag:"Unemployment",must:["Unemployment = actively seeking work and unable to find it.","Underemployment = employed but wanting more hours or better use of skills.","Participation rate measures the share of working-age people in the labour force.","HSC-style answers often ask for impacts: lower income, lower consumption, weaker aggregate demand, lost skills and budget pressure."],chain:"Unemployment rises -> household income falls -> consumption falls -> aggregate demand weakens -> economic growth may slow.",task:"Explain one economic impact of rising unemployment on the Australian economy. (4 marks)",model:["Rising unemployment means more people who are willing and able to work cannot find jobs.","This reduces household income for affected workers.","Lower income can reduce consumption spending, which weakens aggregate demand.","As a result, economic growth may slow and government welfare spending may increase."],scaffold:["Sentence 1: Define unemployment accurately.","Sentence 2: Identify the immediate income effect.","Sentence 3: Explain the consumption/aggregate demand mechanism.","Sentence 4: Link to growth, welfare spending or living standards."],trap:"Do not confuse unemployment with participation rate. A person outside the labour force is not counted as unemployed.",next:"If your answer named only a social effect, add one economic mechanism before moving on."},
-    {id:"productivity",match:/productivity|skills mismatch|bargaining|real wage|structural|training/i,tag:"Productivity and Skills",must:["Labour productivity = output per worker or output per hour worked.","Higher productivity can increase labour demand when workers generate more output or revenue for firms.","Skills mismatch causes structural unemployment when worker skills do not match available jobs.","Real wage means wage adjusted for inflation; it matters for purchasing power and labour costs."],chain:"Training/technology improves productivity -> workers produce more value -> firms may demand more labour -> output and incomes can rise.",task:"Explain how improved labour productivity can affect labour demand and economic performance. (4 marks)",model:["Labour productivity is the amount of output produced per worker or per hour worked.","If productivity rises, each worker can produce more output for the firm.","This can increase the value of hiring workers and shift labour demand to the right.","Higher productivity can support higher output, stronger competitiveness and improved economic growth."],scaffold:["Sentence 1: Define productivity.","Sentence 2: Explain what changes for firms.","Sentence 3: Link to labour demand or employment.","Sentence 4: Add economic performance: output, competitiveness or growth."],trap:"Do not write that productivity means working harder only. It is output per worker/hour, often affected by skills, technology and capital.",next:"Lock the mark only if your answer has definition + mechanism + impact. Otherwise fix the missing link."}
+    {id:"demand",match:/labou?r demand|derived demand|demand for labour|economic term|concept check/i,task:"Explain why labour demand is derived demand and outline one factor that can increase labour demand. (4 marks)",must:["Labour demand = the quantity of labour firms are willing and able to hire at different wage rates.","It is derived demand: firms hire workers because consumers demand the goods and services those workers produce.","Diagram memory: wage rate on the vertical axis, quantity of labour on the horizontal axis, labour demand slopes downward.","High-value triggers: output demand, productivity, labour costs, technology and business confidence."],chain:"Higher demand for output -> firms need more workers -> labour demand shifts right -> employment rises and wage pressure increases.",model:["Labour demand is the amount of labour firms are willing and able to hire at different wage rates.","It is derived demand because workers are hired to produce output that consumers demand.","If demand for output rises, firms may increase production and hire more workers.","This shifts labour demand right, increasing employment and putting upward pressure on wages."],scaffold:["Define labour demand.","Explain derived demand using output demand.","Name one factor that shifts labour demand right.","State the wage and employment effect."],trap:"Do not describe workers looking for jobs. That is labour supply, not labour demand.",next:"If your mechanism is correct, move to equilibrium wage. If not, rewrite the cause-effect chain first."},
+    {id:"equilibrium",match:/supply|equilibrium|wage rate|shortage|surplus|diagram|minimum wage|cause-effect/i,task:"Using a labour market diagram, explain the likely effect of a decrease in labour supply on wages and employment. (4 marks)",must:["Labour supply = workers willing and able to work at different wage rates.","Equilibrium wage is where labour demand equals labour supply.","If supply shifts left, equilibrium wage rises and employment falls. If demand shifts right, both wage and employment usually rise.","Minimum wage questions test a price floor above equilibrium, not just 'wages go up'."],chain:"Market shock -> curve shifts -> new equilibrium wage -> new employment level -> possible shortage/surplus.",model:["A decrease in labour supply shifts the labour supply curve left.","At the original wage there is excess demand for labour, so employers compete for fewer workers.","The equilibrium wage rises while the equilibrium quantity of labour employed falls.","The answer must link both outcomes to the diagram, not only state that wages increase."],scaffold:["State which curve shifts and direction.","Explain pressure at the old wage.","Give both wage and employment outcomes.","Link back to the diagram/question."],trap:"Do not say every higher wage increases employment. The curve shift decides the employment result.",next:"Now transfer the same diagram logic to unemployment, productivity or minimum wage."},
+    {id:"unemployment",match:/unemployment|underemployment|participation|labou?r force|cyclical|structural/i,task:"Explain one economic impact of rising unemployment on the Australian economy. (4 marks)",must:["Unemployment = actively seeking work and unable to find it.","Underemployment = employed but wanting more hours or better use of skills.","Participation rate measures the share of working-age people in the labour force.","Common impacts: lower income, lower consumption, weaker aggregate demand, lost skills and budget pressure."],chain:"Unemployment rises -> household income falls -> consumption falls -> aggregate demand weakens -> economic growth may slow.",model:["Rising unemployment means more people who are willing and able to work cannot find jobs.","This reduces household income for affected workers.","Lower income can reduce consumption spending, weakening aggregate demand.","As a result, economic growth may slow and government welfare spending may increase."],scaffold:["Define unemployment accurately.","Identify the immediate income effect.","Explain the consumption/aggregate demand mechanism.","Link to growth, welfare spending or living standards."],trap:"Do not confuse unemployment with participation rate. A person outside the labour force is not counted as unemployed.",next:"If your answer only named a social effect, add one economic mechanism before moving on."},
+    {id:"productivity",match:/productivity|skills mismatch|bargaining|real wage|structural|training|application/i,task:"Explain how improved labour productivity can affect labour demand and economic performance. (4 marks)",must:["Labour productivity = output per worker or output per hour worked.","Higher productivity can increase labour demand when workers generate more output or revenue for firms.","Skills mismatch causes structural unemployment when worker skills do not match available jobs.","Real wage means wage adjusted for inflation; it matters for purchasing power and labour costs."],chain:"Training/technology improves productivity -> workers produce more value -> firms may demand more labour -> output and incomes can rise.",model:["Labour productivity is the amount of output produced per worker or per hour worked.","If productivity rises, each worker can produce more output for the firm.","This can increase the value of hiring workers and shift labour demand to the right.","Higher productivity can support higher output, competitiveness and economic growth."],scaffold:["Define productivity.","Explain what changes for firms.","Link to labour demand or employment.","Add output, competitiveness or growth."],trap:"Do not write that productivity means working harder only. It is output per worker/hour.",next:"Lock the mark only if your answer has definition + mechanism + impact. Otherwise fix the missing link."}
   ];
-  css();deepCss();wrapStarter();loadCheat();new MutationObserver(q).observe(document.documentElement,{childList:true,subtree:true});
-  document.addEventListener("click",function(e){if(feedbackGuard(e)||lockGuard(e))return;cheatGuard(e);stepClick(e);cheatPractice(e);setTimeout(q,120);setTimeout(q,700)},true);q();
-  function q(){clearTimeout(q.t);q.t=setTimeout(run,80)}
-  function run(){var b=document.querySelector("#studySprintForm button[type='submit']");if(b&&!b.disabled)b.textContent="Create my mark attack cards";cards();var c=document.querySelector("#tomorrow-cheat-sheet .section-copy");if(c)c.textContent="A last-minute exam action sheet: what to know, what to practise, what to ignore, and the first task to start now."}
-  function wrapStarter(){var t=setInterval(function(){if(typeof window.startPracticeSession!=="function"||window.startPracticeSession.__hscSingleQuestionWrapped)return;var old=window.startPracticeSession;window.startPracticeSession=function(card){return old(card&&Array.isArray(card.questions)?Object.assign({},card,{questions:card.questions.slice(0,1)}):card)};window.startPracticeSession.__hscSingleQuestionWrapped=true;clearInterval(t)},80);setTimeout(function(){clearInterval(t)},10000)}
-  function cards(){Array.from(document.querySelectorAll("#questionStack .question-card")).forEach(function(card,i){if(i>0){card.hidden=true;card.style.display="none";return}card.classList.add("step-card-flow");stepper(card);examNote(card);extra(card);example(card);yourTurn(card);enrich(card);setStep(card,infer(card),true)})}
-  function stepper(card){if(card.querySelector(".session-stepper"))return;var labels=["Learn","Worked Example","Your Turn","AI Feedback","Fix","Next Action"],ol=document.createElement("ol");ol.className="session-stepper";ol.innerHTML=labels.map(function(x,i){return'<li data-session-step="'+(i+1)+'"><span>'+(i+1)+'</span><b>'+esc(x)+'</b></li>'}).join("");(card.querySelector(".learning-card-head,.question-topline")||card).after(ol)}
-  function examNote(card){var t=card.textContent||"";if(!/labou?r|wage|employment|unemployment|participation|productivity|minimum wage/i.test(t)||card.querySelector(".exam-relevance-note"))return;var target=card.querySelector(".why-section .why-grid,.learning-section");if(!target)return;var n=document.createElement("div");n.className="exam-relevance-note";n.innerHTML="<b>Exam relevance</b><span>Syllabus-grounded labour market practice shaped like NESA Economics exam-pack short-answer patterns. Use official past papers for final timed practice.</span>";target.prepend(n)}
-  function extra(card){if(!card.querySelector(".feedback-step-card")){var f=document.createElement("div");f.className="learning-section feedback-step-card";f.innerHTML='<div class="learning-section-title"><strong>AI Feedback</strong><span>Coach check</span></div><p class="micro-prompt">Submit after a real attempt. Feedback should tell you what worked, what lost marks, and what to fix.</p>';card.querySelector(".question-actions")?.before(f)}if(!card.querySelector(".next-action-step-card")){var n=document.createElement("div");n.className="learning-section next-action-step-card";n.innerHTML='<div class="learning-section-title"><strong>Next Action</strong><span>Keep moving</span></div><p class="micro-prompt">Lock this mark, then move to the next sprint card. Do not open notes yet; answer first, fix after.</p>';(card.querySelector(".question-feedback")||card).after(n)}}
-  function example(card){var a=card.querySelector(".attack-section");if(!a||a.querySelector(".worked-example-box"))return;var t=(card.textContent||"").toLowerCase(),ex="Start with the exact concept, apply it to the question, then finish with the effect or judgement the marker can reward.",why="direct answer + subject term + clear link";if(/labou?r demand/.test(t)){ex="Labour demand is the amount of labour firms are willing and able to hire at different wage rates. It is derived from demand for output.";why="definition + derived demand"}else if(/supply|equilibrium|diagram|shortage/.test(t)){ex="If labour supply falls, the supply curve shifts left. Equilibrium wage rises and equilibrium employment falls.";why="shock + curve shift + wage/employment result"}else if(/unemployment|underemployment|participation/.test(t)){ex="Unemployment means people are willing and able to work, actively seeking work, but cannot find a job. Higher unemployment reduces income, consumption and aggregate demand.";why="correct measure + economic impact"}else if(/productivity|skills mismatch|structural/.test(t)){ex="Higher productivity can increase output per worker, raising firms' demand for labour if workers generate more revenue.";why="productivity cause + labour demand mechanism"}var box=document.createElement("div");box.className="worked-example-box";box.innerHTML="<b>Worked example</b><p>"+esc(ex)+"</p><span>Why it gets marks: "+esc(why)+".</span>";a.appendChild(box)}
-  function yourTurn(card){var s=card.querySelector(".short-response-section");if(!s||s.querySelector(".exam-task-mini"))return;var qtxt=card.querySelector(".exam-application-section .question-text")?.textContent?.trim()||"Write the answer now using the worked example.";var box=document.createElement("div");box.className="exam-task-mini";box.innerHTML="<b>Exam task</b><span>"+esc(qtxt)+"</span>";(s.querySelector(".micro-prompt")||s).after(box)}
-  function pack(card){var text=card.textContent||"";return packs.find(function(p){return p.match.test(text)})||(/economics|labou?r|wage|employment|market/i.test(text)?packs[0]:null)}
-  function enrich(card){var p=pack(card);if(!p||card.dataset.deepPack===p.id)return;card.dataset.deepPack=p.id;deepLearn(card,p);deepExample(card,p);deepTurn(card,p);deepFix(card,p);deepNext(card,p)}
-  function deepLearn(card,p){var target=card.querySelector(".why-section .why-grid");if(!target)return;target.innerHTML='<div class="sprint-deep-content"><b>Must know</b>'+list(p.must,"ul")+'</div><div class="sprint-deep-content"><b>Cause-effect chain</b><p>'+esc(p.chain)+'</p></div><div class="sprint-deep-content"><b>Trap that costs marks</b><p>'+esc(p.trap)+'</p></div><div class="sprint-deep-content"><b>What to ignore tonight</b><p>Do not rewrite notes. Build the diagram/mechanism, answer once, then fix the missing link.</p></div>'}
-  function deepExample(card,p){var a=card.querySelector(".attack-section");if(!a)return;var old=a.querySelector(".worked-example-box");if(old)old.remove();var box=document.createElement("div");box.className="worked-example-box deep-example";box.innerHTML='<b>Model 4-mark answer</b><p class="deep-question">'+esc(p.task)+'</p>'+list(p.model.map(function(x,i){return "Mark "+(i+1)+": "+x}),"ol")+'<span>Why it works: each sentence earns a separate mark - definition, mechanism, effect, and link.</span>';a.appendChild(box)}
-  function deepTurn(card,p){var s=card.querySelector(".short-response-section");if(!s)return;var prompt=s.querySelector(".micro-prompt");if(prompt)prompt.textContent="Write this now. Aim for 4 sentences, not a paragraph of notes.";var old=s.querySelector(".exam-task-mini");if(old)old.remove();var box=document.createElement("div");box.className="exam-task-mini deep-task";box.innerHTML='<b>Your timed answer</b><span>'+esc(p.task)+'</span><div class="sentence-scaffold"><b>Sentence scaffold</b>'+list(p.scaffold,"ol")+'</div>';(prompt||s).after(box)}
-  function deepFix(card,p){var r=card.querySelector(".reflection-section");if(!r||r.querySelector(".fix-checklist"))return;var box=document.createElement("div");box.className="fix-checklist";box.innerHTML='<b>Fix before you move</b>'+list(["Did I define the key term using Economics wording?","Did I explain the mechanism instead of just naming the topic?","Did I include the wage/employment/growth impact?","Did I avoid this trap: "+p.trap],"ul");r.prepend(box)}
-  function deepNext(card,p){var n=card.querySelector(".next-action-step-card .micro-prompt");if(n)n.textContent=p.next}
-  function infer(card){var saved=window.__hscStepCardState&&window.__hscStepCardState[key(card)],fb=card.querySelector(".question-feedback:not([hidden])");if(fb&&fb.textContent.trim())return Math.max(Number(saved||0),4);return Number(saved||1)}
-  function setStep(card,raw,quiet){var step=Math.max(1,Math.min(6,Number(raw)||1));window.__hscStepCardState=window.__hscStepCardState||{};window.__hscStepCardState[key(card)]=step;card.dataset.stepCard=String(step);card.querySelectorAll(".session-stepper [data-session-step]").forEach(function(li){var n=Number(li.dataset.sessionStep);li.classList.toggle("is-active",n===step);li.classList.toggle("is-done",n<step)});[[card.querySelector(".why-section"),1],[card.querySelector(".attack-section"),2],[card.querySelector(".short-response-section"),3],[card.querySelector(".concept-section"),0],[card.querySelector(".exam-application-section"),0],[card.querySelector(".feedback-step-card"),4],[card.querySelector(".reflection-section"),5],[card.querySelector(".next-action-step-card"),6]].forEach(function(x){if(!x[0])return;var show=x[1]===step;x[0].classList.toggle("is-step-hidden",!show);x[0].setAttribute("aria-hidden",show?"false":"true")});var fb=card.querySelector(".question-feedback");if(fb){var show=step===4&&!fb.hidden&&fb.textContent.trim();fb.classList.toggle("is-step-hidden",!show)}var actions=card.querySelector(".question-actions");if(actions){actions.classList.toggle("is-step-hidden",step!==3&&step!==6);actions.querySelectorAll("[data-question-feedback],[data-pack-feedback]").forEach(function(b){b.hidden=step!==3;b.textContent="Get feedback"});actions.querySelectorAll("[data-question-complete],[data-pack-complete]").forEach(function(b){b.hidden=step!==6;b.textContent=/completed/i.test(b.textContent||"")?"Mark locked":"Lock this mark"})}controls(card,step);if(!quiet)document.querySelector(".focus-shell")?.scrollTo({top:0,behavior:"smooth"})}
-  function controls(card,step){card.querySelectorAll(".step-card-controls").forEach(function(n){n.remove()});var c=document.createElement("div");c.className="step-card-controls";c.innerHTML=(step>1?'<button type="button" class="secondary-action" data-step-card-prev>Back</button>':"")+(step===3||step===6?"":'<button type="button" class="primary-step-action" data-step-card-next>'+["","Show worked example","Try it now","","Fix my answer","Show next action"][step]+"</button>");var a=step===3?card.querySelector(".question-actions"):step===4?(card.querySelector(".question-feedback:not([hidden])")||card.querySelector(".feedback-step-card")):card.querySelector(".learning-section:not(.is-step-hidden)");if(a)a.after(c)}
-  function stepClick(e){var start=e.target.closest(".start-session,[data-card-index],[data-evening-card-index],[data-fallback-card-index]");if(start)window.__hscStepCardState={};var b=e.target.closest("[data-step-card-next],[data-step-card-prev],.step-card-flow .session-stepper [data-session-step]");if(!b)return;var card=b.closest(".step-card-flow");if(!card)return;e.preventDefault();e.stopPropagation();var cur=Number(card.dataset.stepCard||1),n=b.hasAttribute("data-session-step")?Number(b.dataset.sessionStep):b.hasAttribute("data-step-card-prev")?cur-1:cur+1;setStep(card,n)}
-  function feedbackGuard(e){var b=e.target.closest("[data-question-feedback],[data-pack-feedback]");if(!b)return false;var card=b.closest(".step-card-flow,.question-card");if(!card)return false;var box=card.querySelector("[data-question-answer]"),shared=document.querySelector("#sessionNotes"),ans=(box?.value||shared?.value||"").trim();if(box&&!box.value&&shared?.value){box.value=shared.value;box.dispatchEvent(new Event("input",{bubbles:true}))}if(ans.split(/\s+/).filter(Boolean).length>=8)return false;e.preventDefault();e.stopImmediatePropagation();warn(card);setStep(card,3);return true}
-  function warn(card){var sec=card.querySelector(".short-response-section")||card,w=sec.querySelector(".attempt-warning");if(!w){w=document.createElement("div");w.className="attempt-warning";sec.appendChild(w)}w.innerHTML="<strong>Write the attempt first</strong><p>Do one real sentence before asking for feedback. Minimum target: define the term, explain the mechanism, and link it to the question.</p>"}
-  function lockGuard(e){var b=e.target.closest("[data-question-complete],[data-pack-complete]"),card=b&&b.closest(".step-card-flow");if(!b||!card||Number(card.dataset.stepCard||1)!==6)return false;e.preventDefault();e.stopImmediatePropagation();document.querySelector("#completeSessionButton")?.click();return true}
-  function cheatGuard(e){if(e.target.closest("[data-use-planner]")){setTimeout(copyPlanner,0);return}var g=e.target.closest("#cheatSheetForm button[type='submit']");if(!g)return;var any=["#cheatSubjectInput","#cheatExamDateInput","#cheatTopicsInput","#cheatWeakAreasInput","#cheatStudyTimeInput","#cheatNotesInput"].some(val);if(any)return;e.preventDefault();e.stopImmediatePropagation();set(document,"#cheatSheetStatus","Add details or use your planner first");var out=document.querySelector("#cheatSheetOutput");if(out)out.innerHTML='<div class="empty-plan"><strong>Add the exam details first.</strong><p>Use My Planner Details, or enter the subject, topic and time left.</p></div>'}
-  function copyPlanner(){[["#cheatSubjectInput",val("#subjectsInput").split(",")[0].trim()],["#cheatExamDateInput",val("#examDatesInput")||"tomorrow"],["#cheatTopicsInput",val("#weakTopicsInput")],["#cheatWeakAreasInput",val("#weakTopicsInput")],["#cheatStudyTimeInput",val("#studyTimeInput")||"90 minutes"]].forEach(function(p){var i=document.querySelector(p[0]);if(i&&p[1])i.value=p[1]});set(document,"#cheatSheetStatus",val("#subjectsInput")||val("#weakTopicsInput")?"Planner details copied. Generate the action sheet when ready.":"Fill the planner first, then copy the details here.")}
-  function cheatPractice(e){var t=e.target.closest("[data-start-sheet],[data-cheat-practice]");if(!t||typeof window.startPracticeSession!=="function")return;e.preventDefault();e.stopImmediatePropagation();var topic=val("#cheatTopicsInput")||val("#weakTopicsInput")||"your weak topic",econ=/economics|labou?r|wage|unemployment|market/i.test(val("#cheatSubjectInput")+" "+topic),task=t.dataset.cheatPractice||(econ?"Write one labour-market response using definition, mechanism, impact and judgement.":"Answer one exam-style question on "+topic+".");window.startPracticeSession({title:"Cheat Sheet - Start Here",topic:topic,highestRoiTask:task,doThisNow:task,questionType:"Last-minute exam application",resourceName:econ?"NESA Economics HSC exam packs":"Tomorrow action sheet",resourceUrl:econ?"https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/economics":"#tomorrow-cheat-sheet",timeRequired:"12 minutes",difficulty:"Core",focusPoint:econ?"Definition, mechanism, impact and judgement.":"Direct answer, subject term and link to the question.",mostCommonMistake:econ?"Using everyday wording instead of economic terms.":"Writing notes instead of an answer.",whatNotToFocusOn:"Skip passive note rewriting until this timed answer is done.",estimatedMarksImpact:"High if corrected before tomorrow's exam.",howToApproach:econ?steps:["Answer the command word.","Use one subject term.","Add evidence, working or example.","Link back."],questions:[{question:task,markValue:"4 marks",difficulty:"Core",estimatedTime:"6 min",focusPoint:econ?"Definition, mechanism, impact and judgement.":"Direct answer, subject term and link to the question.",commonMistake:econ?"Using everyday wording instead of economic terms.":"Writing notes instead of an answer.",marksImpact:"This is the first mark attack from your action sheet.",whatToIgnore:"Skip passive note rewriting until after feedback."}]})}
-  function loadCheat(){if(document.querySelector("script[src*=cheat-sheet]"))return;var s=document.createElement("script");s.src="./cheat-sheet.js?v=20260611-action-sheet";s.defer=true;document.head.appendChild(s)}
-  function set(root,sel,text){var n=root.querySelector(sel);if(n)n.textContent=text}
-  function val(sel){return document.querySelector(sel)?.value?.trim()||""}
+
+  injectCss();
+  wrapStarter();
+  new MutationObserver(queue).observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener("click",function(e){
+    if(feedbackGuard(e)||lockGuard(e))return;
+    if(e.target.closest(".start-session,[data-card-index],[data-evening-card-index],[data-fallback-card-index]"))window.__hscStepCardState={};
+    stepClick(e);
+    setTimeout(queue,120);
+    setTimeout(queue,700);
+  },true);
+  queue();
+
+  function queue(){clearTimeout(queue.t);queue.t=setTimeout(run,80)}
+  function run(){
+    var b=document.querySelector("#studySprintForm button[type='submit']");
+    if(b&&!b.disabled)b.textContent="Create my mark attack cards";
+    dedupePlannerCards();
+    Array.from(document.querySelectorAll("#questionStack .question-card")).forEach(function(card,i){
+      if(i>0){card.hidden=true;card.style.display="none";return}
+      card.classList.add("step-card-flow");
+      addStepper(card);
+      addShellSections(card);
+      enrich(card);
+      setStep(card,inferStep(card),true);
+    });
+  }
+
+  function wrapStarter(){
+    var t=setInterval(function(){
+      if(typeof window.startPracticeSession!=="function"||window.startPracticeSession.__hscSingleQuestionWrapped)return;
+      var old=window.startPracticeSession;
+      window.startPracticeSession=function(card){
+        return old(card&&Array.isArray(card.questions)?Object.assign({},card,{questions:card.questions.slice(0,1)}):card);
+      };
+      window.startPracticeSession.__hscSingleQuestionWrapped=true;
+      clearInterval(t);
+    },80);
+    setTimeout(function(){clearInterval(t)},10000);
+  }
+
+  function dedupePlannerCards(){
+    var cards=Array.from(document.querySelectorAll(".execution-card,.action-card,.timed-question-card"));
+    var hasPart=cards.some(function(c){return /^Part\s+\d/i.test((c.innerText||"").trim())});
+    if(!hasPart)return;
+    document.querySelectorAll(".action-card-source").forEach(function(stack){
+      if(/Stage\s+\d/i.test(stack.innerText||"")){stack.hidden=true;stack.style.display="none"}
+    });
+  }
+
+  function addStepper(card){
+    if(card.querySelector(".session-stepper"))return;
+    var labels=["Learn","Worked Example","Your Turn","AI Feedback","Fix","Next Action"];
+    var ol=document.createElement("ol");
+    ol.className="session-stepper";
+    ol.innerHTML=labels.map(function(x,i){return'<li data-session-step="'+(i+1)+'"><span>'+(i+1)+'</span><b>'+esc(x)+'</b></li>'}).join("");
+    (card.querySelector(".learning-card-head,.question-topline")||card).after(ol);
+  }
+
+  function addShellSections(card){
+    if(!card.querySelector(".feedback-step-card")){
+      var f=document.createElement("div");
+      f.className="learning-section feedback-step-card";
+      f.innerHTML='<div class="learning-section-title"><strong>AI Feedback</strong><span>Coach check</span></div><p class="micro-prompt">Submit after a real attempt. Feedback should tell you what worked, what lost marks, and what to fix.</p>';
+      card.querySelector(".question-actions")?.before(f);
+    }
+    if(!card.querySelector(".next-action-step-card")){
+      var n=document.createElement("div");
+      n.className="learning-section next-action-step-card";
+      n.innerHTML='<div class="learning-section-title"><strong>Next Action</strong><span>Keep moving</span></div><p class="micro-prompt">Lock this mark, then move to the next sprint card. Do not open notes yet; answer first, fix after.</p>';
+      (card.querySelector(".question-feedback")||card).after(n);
+    }
+  }
+
+  function packFor(card){
+    var text=card.textContent||"";
+    return packs.find(function(p){return p.match.test(text)})||(/economics|labou?r|wage|employment|market/i.test(text)?packs[0]:null);
+  }
+
+  function enrich(card){
+    var p=packFor(card);
+    if(!p)return;
+    deepLearn(card,p);
+    deepExample(card,p);
+    deepTurn(card,p);
+    deepFix(card,p);
+    var next=card.querySelector(".next-action-step-card .micro-prompt");
+    if(next)next.textContent=p.next;
+  }
+
+  function deepLearn(card,p){
+    var target=card.querySelector(".why-section .why-grid");
+    if(!target||target.querySelector(".sprint-deep-content"))return;
+    target.innerHTML='<div class="sprint-deep-content"><b>Must know</b>'+list(p.must,"ul")+'</div><div class="sprint-deep-content"><b>Cause-effect chain</b><p>'+esc(p.chain)+'</p></div><div class="sprint-deep-content"><b>Trap that costs marks</b><p>'+esc(p.trap)+'</p></div><div class="sprint-deep-content"><b>What to ignore tonight</b><p>Do not rewrite notes. Build the mechanism, answer once, then fix the missing link.</p></div>';
+  }
+
+  function deepExample(card,p){
+    var a=card.querySelector(".attack-section");
+    if(!a)return;
+    a.querySelectorAll(".worked-example-box").forEach(function(x){x.remove()});
+    var box=document.createElement("div");
+    box.className="worked-example-box deep-example";
+    box.innerHTML='<b>Model 4-mark answer</b><p class="deep-question">'+esc(p.task)+'</p>'+list(p.model.map(function(x,i){return "Mark "+(i+1)+": "+x}),"ol")+'<span>Why it works: each sentence earns a separate mark - definition, mechanism, effect, and link.</span>';
+    a.appendChild(box);
+  }
+
+  function deepTurn(card,p){
+    var s=card.querySelector(".short-response-section");
+    if(!s)return;
+    var prompt=s.querySelector(".micro-prompt");
+    if(prompt)prompt.textContent="Write this now. Aim for 4 sentences, not a paragraph of notes.";
+    s.querySelectorAll(".exam-task-mini").forEach(function(x){x.remove()});
+    var box=document.createElement("div");
+    box.className="exam-task-mini deep-task";
+    box.innerHTML='<b>Your timed answer</b><span>'+esc(p.task)+'</span><div class="sentence-scaffold"><b>Sentence scaffold</b>'+list(p.scaffold.map(function(x,i){return "Sentence "+(i+1)+": "+x}),"ol")+'</div>';
+    (prompt||s).after(box);
+  }
+
+  function deepFix(card,p){
+    var r=card.querySelector(".reflection-section");
+    if(!r||r.querySelector(".fix-checklist"))return;
+    var box=document.createElement("div");
+    box.className="fix-checklist";
+    box.innerHTML='<b>Fix before you move</b>'+list(["Did I define the key term using Economics wording?","Did I explain the mechanism instead of just naming the topic?","Did I include the wage/employment/growth impact?","Did I avoid this trap: "+p.trap],"ul");
+    r.prepend(box);
+  }
+
+  function inferStep(card){
+    var saved=window.__hscStepCardState&&window.__hscStepCardState[key(card)];
+    var fb=card.querySelector(".question-feedback:not([hidden])");
+    if(fb&&fb.textContent.trim())return Math.max(Number(saved||0),4);
+    return Number(saved||1);
+  }
+
+  function setStep(card,raw,quiet){
+    var step=Math.max(1,Math.min(6,Number(raw)||1));
+    window.__hscStepCardState=window.__hscStepCardState||{};
+    window.__hscStepCardState[key(card)]=step;
+    card.dataset.stepCard=String(step);
+    card.querySelectorAll(".session-stepper [data-session-step]").forEach(function(li){
+      var n=Number(li.dataset.sessionStep);
+      li.classList.toggle("is-active",n===step);
+      li.classList.toggle("is-done",n<step);
+    });
+    [[card.querySelector(".why-section"),1],[card.querySelector(".attack-section"),2],[card.querySelector(".short-response-section"),3],[card.querySelector(".concept-section"),0],[card.querySelector(".exam-application-section"),0],[card.querySelector(".feedback-step-card"),4],[card.querySelector(".reflection-section"),5],[card.querySelector(".next-action-step-card"),6]].forEach(function(x){
+      if(!x[0])return;
+      var show=x[1]===step;
+      x[0].classList.toggle("is-step-hidden",!show);
+      x[0].setAttribute("aria-hidden",show?"false":"true");
+    });
+    var fb=card.querySelector(".question-feedback");
+    if(fb)fb.classList.toggle("is-step-hidden",!(step===4&&!fb.hidden&&fb.textContent.trim()));
+    var actions=card.querySelector(".question-actions");
+    if(actions){
+      actions.classList.toggle("is-step-hidden",step!==3&&step!==6);
+      actions.querySelectorAll("[data-question-feedback],[data-pack-feedback]").forEach(function(b){b.hidden=step!==3;b.textContent="Get feedback"});
+      actions.querySelectorAll("[data-question-complete],[data-pack-complete]").forEach(function(b){b.hidden=step!==6;b.textContent=/completed/i.test(b.textContent||"")?"Mark locked":"Lock this mark"});
+    }
+    controls(card,step);
+    if(!quiet)document.querySelector(".focus-shell")?.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  function controls(card,step){
+    card.querySelectorAll(".step-card-controls").forEach(function(n){n.remove()});
+    if(step===3||step===6)return;
+    var c=document.createElement("div");
+    c.className="step-card-controls";
+    c.innerHTML=(step>1?'<button type="button" class="secondary-action" data-step-card-prev>Back</button>':"")+'<button type="button" class="primary-step-action" data-step-card-next>'+["","Show worked example","Try it now","","Fix my answer","Show next action"][step]+"</button>";
+    var a=step===4?(card.querySelector(".question-feedback:not([hidden])")||card.querySelector(".feedback-step-card")):card.querySelector(".learning-section:not(.is-step-hidden)");
+    if(a)a.after(c);
+  }
+
+  function stepClick(e){
+    var b=e.target.closest("[data-step-card-next],[data-step-card-prev],.step-card-flow .session-stepper [data-session-step]");
+    if(!b)return;
+    var card=b.closest(".step-card-flow");
+    if(!card)return;
+    e.preventDefault();
+    e.stopPropagation();
+    var cur=Number(card.dataset.stepCard||1);
+    var n=b.hasAttribute("data-session-step")?Number(b.dataset.sessionStep):b.hasAttribute("data-step-card-prev")?cur-1:cur+1;
+    setStep(card,n);
+  }
+
+  function feedbackGuard(e){
+    var b=e.target.closest("[data-question-feedback],[data-pack-feedback]");
+    if(!b)return false;
+    var card=b.closest(".step-card-flow,.question-card");
+    if(!card)return false;
+    var box=card.querySelector("[data-question-answer]"),shared=document.querySelector("#sessionNotes");
+    var ans=(box?.value||shared?.value||"").trim();
+    if(box&&!box.value&&shared?.value){box.value=shared.value;box.dispatchEvent(new Event("input",{bubbles:true}))}
+    if(ans.split(/\s+/).filter(Boolean).length>=8)return false;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    warn(card);
+    setStep(card,3);
+    return true;
+  }
+
+  function warn(card){
+    var sec=card.querySelector(".short-response-section")||card;
+    var w=sec.querySelector(".attempt-warning");
+    if(!w){w=document.createElement("div");w.className="attempt-warning";sec.appendChild(w)}
+    w.innerHTML="<strong>Write the attempt first</strong><p>Do one real sentence before asking for feedback. Minimum target: define the term, explain the mechanism, and link it to the question.</p>";
+  }
+
+  function lockGuard(e){
+    var b=e.target.closest("[data-question-complete],[data-pack-complete]");
+    var card=b&&b.closest(".step-card-flow");
+    if(!b||!card||Number(card.dataset.stepCard||1)!==6)return false;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    document.querySelector("#completeSessionButton")?.click();
+    return true;
+  }
+
   function key(card){return card.dataset.questionIndex||"0"}
   function list(items,type){return"<"+type+">"+items.map(function(x){return"<li>"+esc(x)+"</li>"}).join("")+"</"+type+">"}
-  function css(){if(document.querySelector("#hsc-exam-sprint-runtime-style"))return;var s=document.createElement("style");s.id="hsc-exam-sprint-runtime-style";s.textContent=".session-stepper{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}.session-stepper li{display:grid;gap:4px;min-width:0;border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:8px;background:rgba(255,255,255,.045);color:rgba(247,249,255,.64)}.session-stepper span{display:grid;place-items:center;width:22px;height:22px;border-radius:999px;background:rgba(255,255,255,.08);font-size:.72rem;font-weight:900}.session-stepper b{font-size:.72rem;line-height:1.15}.session-stepper li.is-active{border-color:rgba(103,232,249,.44);background:rgba(103,232,249,.12);color:rgba(247,249,255,.96)}.session-stepper li.is-active span{color:#06101f;background:linear-gradient(135deg,var(--cyan),var(--green))}.session-stepper li.is-done{border-color:rgba(71,230,164,.24);color:rgba(71,230,164,.9)}.step-card-flow .is-step-hidden{display:none!important}.step-card-controls{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}.primary-step-action{border:0;border-radius:999px;padding:12px 16px;min-height:46px;background:linear-gradient(135deg,var(--cyan),var(--green));color:#06101f;font-weight:900}.exam-relevance-note,.worked-example-box,.exam-task-mini,.attempt-warning{display:grid;gap:4px;border-radius:10px;padding:9px;background:rgba(71,230,164,.08);border:1px solid rgba(71,230,164,.22)}.worked-example-box,.exam-task-mini{margin-top:8px;background:rgba(143,207,255,.08);border-color:rgba(143,207,255,.24)}.attempt-warning{margin-top:8px;background:rgba(255,193,7,.08);border-color:rgba(255,193,7,.24)}.exam-relevance-note b,.worked-example-box b,.exam-task-mini b,.attempt-warning strong{color:rgba(247,249,255,.82);font-size:.68rem;text-transform:uppercase}.exam-relevance-note span,.worked-example-box span,.worked-example-box p,.exam-task-mini span,.attempt-warning p{color:var(--muted);font-size:.84rem;line-height:1.35;margin:0}@media(max-width:820px){.session-stepper{grid-template-columns:repeat(3,minmax(0,1fr))}.question-actions,.step-card-controls{display:grid;grid-template-columns:1fr}.question-actions button{min-height:46px}}";document.head.appendChild(s)}
-  function deepCss(){if(document.querySelector("#hsc-deep-card-style"))return;var s=document.createElement("style");s.id="hsc-deep-card-style";s.textContent=".sprint-deep-content,.sentence-scaffold,.fix-checklist{display:grid;gap:7px;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px;background:rgba(255,255,255,.055)}.sprint-deep-content b,.sentence-scaffold b,.fix-checklist b,.deep-example>b,.deep-task>b{font-size:.72rem;text-transform:uppercase;color:rgba(247,249,255,.9);letter-spacing:.02em}.sprint-deep-content p,.deep-question{margin:0;color:rgba(247,249,255,.82);line-height:1.42}.sprint-deep-content ul,.deep-example ol,.sentence-scaffold ol,.fix-checklist ul{margin:0;padding-left:18px;display:grid;gap:6px;color:var(--muted);line-height:1.42;font-size:.9rem}.deep-example,.deep-task{gap:9px;padding:12px}.deep-example ol li::marker,.sentence-scaffold ol li::marker{font-weight:900;color:var(--cyan)}.why-grid{align-items:stretch}.step-card-flow .short-response-section .criteria-grid{margin-top:8px}.step-card-flow .question-answer textarea{min-height:130px}@media(max-width:820px){.sprint-deep-content,.sentence-scaffold,.fix-checklist,.deep-example,.deep-task{padding:10px}.step-card-flow .question-answer textarea{min-height:110px}}";document.head.appendChild(s)}
   function esc(v){return String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+
+  function injectCss(){
+    if(document.querySelector("#hsc-exam-sprint-runtime-style"))return;
+    var s=document.createElement("style");
+    s.id="hsc-exam-sprint-runtime-style";
+    s.textContent=".session-stepper{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}.session-stepper li{display:grid;gap:4px;min-width:0;border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:8px;background:rgba(255,255,255,.045);color:rgba(247,249,255,.64);cursor:pointer}.session-stepper span{display:grid;place-items:center;width:22px;height:22px;border-radius:999px;background:rgba(255,255,255,.08);font-size:.72rem;font-weight:900}.session-stepper b{font-size:.72rem;line-height:1.15}.session-stepper li.is-active{border-color:rgba(103,232,249,.44);background:rgba(103,232,249,.12);color:rgba(247,249,255,.96)}.session-stepper li.is-active span{color:#06101f;background:linear-gradient(135deg,var(--cyan),var(--green))}.session-stepper li.is-done{border-color:rgba(71,230,164,.24);color:rgba(71,230,164,.9)}.step-card-flow .is-step-hidden{display:none!important}.step-card-controls{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}.primary-step-action{border:0;border-radius:999px;padding:12px 16px;min-height:46px;background:linear-gradient(135deg,var(--cyan),var(--green));color:#06101f;font-weight:900}.sprint-deep-content,.worked-example-box,.exam-task-mini,.sentence-scaffold,.fix-checklist,.attempt-warning{display:grid;gap:7px;border-radius:12px;padding:10px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12)}.worked-example-box,.exam-task-mini{margin-top:8px;background:rgba(143,207,255,.08);border-color:rgba(143,207,255,.24)}.attempt-warning{margin-top:8px;background:rgba(255,193,7,.08);border-color:rgba(255,193,7,.24)}.sprint-deep-content b,.worked-example-box>b,.exam-task-mini>b,.sentence-scaffold b,.fix-checklist b,.attempt-warning strong{color:rgba(247,249,255,.9);font-size:.72rem;text-transform:uppercase}.sprint-deep-content p,.worked-example-box p,.worked-example-box span,.exam-task-mini span,.attempt-warning p{color:var(--muted);font-size:.9rem;line-height:1.42;margin:0}.sprint-deep-content ul,.worked-example-box ol,.sentence-scaffold ol,.fix-checklist ul{display:grid;gap:6px;margin:0;padding-left:18px;color:var(--muted);font-size:.9rem;line-height:1.42}.why-grid{align-items:stretch}.question-answer textarea{min-height:130px}@media(max-width:820px){.session-stepper{grid-template-columns:repeat(3,minmax(0,1fr))}.question-actions,.step-card-controls{display:grid;grid-template-columns:1fr}.question-actions button{min-height:46px}.question-answer textarea{min-height:110px}}";
+    document.head.appendChild(s);
+  }
 })();
