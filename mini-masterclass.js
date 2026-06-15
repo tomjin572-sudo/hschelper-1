@@ -20,6 +20,7 @@
     setTimeout(queue,700);
   },true);
   queue();
+  setInterval(run,1000);
 
   function queue(){clearTimeout(queue.t);queue.t=setTimeout(run,80)}
   function run(){
