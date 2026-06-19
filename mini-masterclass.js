@@ -29,7 +29,8 @@
   document.addEventListener("click",function(e){
     if(feedbackGuard(e)||lockGuard(e))return;
     handlePracticeMode(e);
-    if(e.target.closest(".start-session,[data-card-index],[data-evening-card-index],[data-fallback-card-index]"))window.__hscStepCardState={};
+    var starter=e.target.closest(".start-session,[data-card-index],[data-evening-card-index],[data-fallback-card-index]");
+    if(starter){window.__hscStepCardState={};window.__hscActiveJourneyIndex=Number(starter.dataset.cardIndex||starter.dataset.eveningCardIndex||starter.dataset.fallbackCardIndex||0)}
     stepClick(e);
     setTimeout(queue,120);
     setTimeout(queue,700);
@@ -120,6 +121,8 @@
       var part=parts[index];
       if(!part||index>=count){card.hidden=true;card.style.display="none";return}
       card.hidden=false;card.style.display="";
+      card.dataset.hscJourneyIndex=String(index);
+      card.dataset.hscJourneyMode=practiceMode();
       setText(card,".execution-card-top span",part.label);
       setText(card,"h3",part.title);
       setText(card,".do-now",part.task);
@@ -129,7 +132,7 @@
       setLabel(card,"Estimated Marks Impact",part.impact);
       setLabel(card,"What NOT To Focus On",practiceMode()==="essay"?"Do not write the whole essay yet. Build one strong paragraph first.":"Do not do more same-looking questions. Learn the move, then answer.");
       var action=card.querySelector(".start-session");
-      if(action)action.textContent=practiceMode()==="essay"?"Start Essay Sprint":"Start Learning Card";
+      if(action)setNodeText(action,practiceMode()==="essay"?"Start Essay Sprint":"Start Learning Card");
     });
   }
 
@@ -137,7 +140,9 @@
     if(!card)return card;
     var essay=practiceMode()==="essay";
     var topic=document.querySelector("#weakTopicsInput")?.value||card.topic||"labour markets";
-    var task=essay?"Write one Economics body paragraph on "+topic+" using Definition -> Cause -> Mechanism -> Impact -> Example/Data -> Judgement.":card.highestRoiTask||card.doThisNow||"Complete one focused learning card.";
+    var partIndex=Number(card.__hscJourneyIndex||window.__hscActiveJourneyIndex||0);
+    var part=selectedParts()[partIndex]||selectedParts()[0];
+    var task=essay?essaySessionTask(part,topic):shortSessionTask(part,topic,card);
     return Object.assign({},card,{
       title:essay?"Essay Sprint - Write one high-value paragraph":"Short Answer Sprint - Learn then answer",
       questionType:essay?"Essay / Extended response":"Tony-style short answer learning card",
@@ -148,12 +153,31 @@
         question:task,
         markValue:essay?"12 marks":"4 marks",
         estimatedTime:essay?"10 min":"6 min",
-        focusPoint:essay?"Thesis, mechanism, evidence/data and judgement.":"Definition, mechanism, impact and link.",
-        commonMistake:essay?"Retelling content without a judgement.":"Repeating notes without the economic mechanism.",
-        marksImpact:essay?"One strong paragraph gives the essay something real to build from.":"One clear mechanism wins short-answer marks.",
-        whatToIgnore:essay?"Do not polish the introduction yet.":"Do not rewrite notes first."
+        focusPoint:part.focus||(essay?"Thesis, mechanism, evidence/data and judgement.":"Definition, mechanism, impact and link."),
+        commonMistake:part.trap||(essay?"Retelling content without a judgement.":"Repeating notes without the economic mechanism."),
+        marksImpact:part.impact||(essay?"One strong paragraph gives the essay something real to build from.":"One clear mechanism wins short-answer marks."),
+        whatToIgnore:essay?"Do not polish the full essay yet. Finish this learning move first.":"Do not do another similar question before fixing the learning move."
       })]
     });
+  }
+
+  function essaySessionTask(part,topic){
+    var title=(part&&part.title)||"Essay paragraph";
+    if(/really asking/i.test(title))return "Decode this essay question for "+topic+": identify the directive, define the key issue, and write the judgement the essay must prove.";
+    if(/thesis|argument/i.test(title))return "Write one thesis for "+topic+" with a clear position and two economic arguments.";
+    if(/paragraph skeleton/i.test(title))return "Plan three body paragraphs for "+topic+": topic sentence, mechanism, example/data, and link for each.";
+    if(/best paragraph|high-value/i.test(title))return "Write one full body paragraph on "+topic+" using Definition -> Cause -> Mechanism -> Impact -> Example/Data -> Judgement.";
+    return "Upgrade one essay paragraph on "+topic+" by adding data/example, economic terminology and a final judgement sentence.";
+  }
+
+  function shortSessionTask(part,topic,card){
+    var title=(part&&part.title)||"Short answer";
+    if(/derived demand|core idea/i.test(title))return "Explain labour demand as derived demand in four exam-ready sentences.";
+    if(/trap|mistake/i.test(title))return "Read a weak labour-market answer, identify the mark-losing mistake, and rewrite the corrected sentence.";
+    if(/chain/i.test(title))return "Build the chain for "+topic+": output demand change -> labour demand shift -> wage/employment effect.";
+    if(/4-mark|exam answer/i.test(title))return "Write one timed 4-mark labour market response using definition, mechanism, diagram language and link.";
+    if(/upgrade/i.test(title))return "Upgrade a basic labour market answer by adding precise terms, diagram language and a stronger final effect.";
+    return card.highestRoiTask||card.doThisNow||"Complete one focused learning card.";
   }
 
   function addStepper(card){
@@ -333,8 +357,9 @@
   }
 
   function key(card){return card.dataset.questionIndex||"0"}
-  function setText(root,sel,text){var node=root.querySelector(sel);if(node)node.textContent=text}
-  function setLabel(root,label,value){Array.from(root.querySelectorAll(".card-grid div,.essay-guidance-grid div,p")).forEach(function(node){var strong=node.querySelector("strong");if(strong&&strong.textContent.trim().toLowerCase()===label.toLowerCase()){var span=node.querySelector("span");if(span)span.textContent=value;else node.lastChild&&(node.lastChild.textContent=value)}})}
+  function setText(root,sel,text){var node=root.querySelector(sel);if(node)setNodeText(node,text)}
+  function setNodeText(node,text){text=String(text||"");if(node.textContent!==text)node.textContent=text}
+  function setLabel(root,label,value){Array.from(root.querySelectorAll(".card-grid div,.essay-guidance-grid div,p")).forEach(function(node){var strong=node.querySelector("strong");if(strong&&strong.textContent.trim().toLowerCase()===label.toLowerCase()){var span=node.querySelector("span");if(span)setNodeText(span,value);else if(node.lastChild&&node.lastChild.textContent!==String(value||""))node.lastChild.textContent=value}})}
   function list(items,type){return"<"+type+">"+items.map(function(x){return"<li>"+esc(x)+"</li>"}).join("")+"</"+type+">"}
   function esc(v){return String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
 
