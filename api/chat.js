@@ -1,15 +1,8 @@
 module.exports = async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Use POST for chat requests." });
-  }
-
+  if (req.method !== "POST") return res.status(405).json({ error: "Use POST for chat requests." });
   const body = req.body || {};
-  if (isFeedbackRequest(body)) {
-    return res.status(200).json({ answer: buildAnswerFeedback(body) });
-  }
-
-  const answer = JSON.stringify(buildSprint(body));
-  return res.status(200).json({ answer });
+  if (isFeedbackRequest(body)) return res.status(200).json({ answer: buildAnswerFeedback(body) });
+  return res.status(200).json({ answer: JSON.stringify(buildSprint(body)) });
 };
 
 function isFeedbackRequest(body) {
@@ -25,77 +18,70 @@ function buildAnswerFeedback(body) {
   const answer = field(prompt, "Student answer") || "";
   const text = `${subject} ${question} ${focus} ${mistake}`.toLowerCase();
   const words = answer.trim().split(/\s+/).filter(Boolean).length;
-  const noAnswer = !answer.trim() || /no answer written/i.test(answer);
   const isEconomics = /economics|labou?r|unemployment|wage|employment|market|aggregate|inflation|policy/.test(text);
   const isEssay = /essay|thesis|paragraph|judgement|assess|discuss|evaluate|extended/.test(text);
-
-  if (noAnswer || words < 8) {
+  if (!answer.trim() || /no answer written/i.test(answer) || words < 8) {
     return [
       "Coach read: There is not enough written evidence to coach yet.",
-      `Lost mark: The marker cannot see ${focus.toLowerCase()} because the sentence is not complete.`,
+      "Mark protected: None yet. The answer needs one complete exam sentence first.",
+      `Mark missing: The marker cannot see ${focus.toLowerCase()} because the sentence is not complete.`,
       `Stronger version: ${strongerSentence({ isEconomics, isEssay, focus, question })}`,
-      "Why stronger: It gives the marker a clear claim and a reason instead of a fragment.",
+      "Band 6 upgrade: Add the cause-effect link, not just the topic word.",
+      "Plain English: Write one sentence that says what changes and why it changes.",
       "Rewrite now: Write one complete sentence, then ask for feedback again."
     ].join("\n");
   }
-
   if (isEconomics) {
-    const hasDefinition = /is|refers to|defined|willing|able|rate|wage|employment|unemployment/.test(answer.toLowerCase());
-    const hasMechanism = /because|therefore|leads to|causes|shift|demand|supply|pressure|increase|decrease|rise|fall/.test(answer.toLowerCase());
-    const hasJudgement = /however|depends|extent|therefore|overall|significant|limited|short run|long run/.test(answer.toLowerCase());
-    const lostMark = !hasDefinition
-      ? "The sentence needs a clearer economics term before the explanation."
+    const lower = answer.toLowerCase();
+    const hasDefinition = /is|refers to|defined|willing|able|rate|wage|employment|unemployment/.test(lower);
+    const hasChainTerm = /income|consumption|aggregate demand|economic growth|growth|demand curve|supply curve|equilibrium|productivity|household spending|welfare|living standards/.test(lower);
+    const hasCausalLanguage = /because|therefore|leads to|causes|shift|pressure|reduces|lowers|increase|decrease|rise|fall|slowing|weakening/.test(lower);
+    const hasMechanism = hasChainTerm && hasCausalLanguage;
+    const hasJudgement = /however|depends|extent|therefore|overall|significant|limited|short run|long run/.test(lower);
+    const hasExample = /for example|data|statistic|australia|rba|budget|cyclical|structural|participation|underemployment|fiscal|policy/.test(lower);
+    const vagueWord = answer.match(/\b(bad|good|things|stuff|people|money|jobs)\b/i)?.[0] || "";
+    const missing = !hasDefinition
+      ? "The sentence needs a clearer Economics term before the explanation."
       : !hasMechanism
-        ? "The sentence names an outcome but does not show the economic mechanism."
+        ? `The sentence names an outcome but does not show the economic mechanism${vagueWord ? `; \"${vagueWord}\" is too vague for Economics marks` : ""}.`
         : !hasJudgement && isEssay
           ? "The sentence explains the idea but does not make a judgement yet."
-          : "The chain is present, but it needs sharper cause-effect wording.";
+          : !hasExample
+            ? "The chain is strong, but it needs one example, data point or policy context to feel exam-ready."
+            : "This is already a strong sentence; the next gain is precision and a tighter link to the question.";
     return [
-      `Coach read: ${hasDefinition ? "You are using relevant Economics language." : "You are circling the idea, but the marker needs a precise Economics term first."}`,
-      `Lost mark: ${lostMark}`,
-      `Stronger version: ${strongerSentence({ isEconomics, isEssay, focus, question })}`,
-      "Why stronger: It follows Definition -> Cause -> Mechanism -> Impact, so the marker can see the reasoning step.",
-      `Rewrite now: ${hasJudgement ? "Add one example or data point to make the sentence more exam-specific." : "Add one judgement sentence beginning with 'This effect is significant because...'"}`
+      `Coach read: ${!hasDefinition ? "You are circling the idea, but the marker needs a precise Economics term first." : !hasMechanism ? "You have the topic, but not the mark-winning cause-effect chain yet." : isEssay && !hasJudgement ? "Your mechanism is working; now it needs a judgement to become essay-level." : !hasExample ? "This is a solid Economics sentence; it now needs exam specificity." : "This is close to exam-ready. The next improvement is sharper wording, not more length."}`,
+      `Mark protected: ${!hasDefinition ? "You identified the general topic." : !hasMechanism ? "You used a relevant Economics term." : "You protected the core analysis marks with a clear mechanism."}`,
+      `Mark missing: ${missing}`,
+      `Stronger version: ${strongerSentence({ isEconomics, isEssay, focus, question, answer, hasMechanism, hasJudgement, hasExample })}`,
+      `Band 6 upgrade: ${!hasMechanism ? "Replace vague wording with a visible income -> consumption -> aggregate demand chain." : isEssay && !hasJudgement ? "Turn the explanation into an argument by weighing significance." : !hasExample ? "Add specificity so the answer does not sound generic." : "Make the final link more deliberate."}`,
+      `Plain English: ${!hasMechanism ? "Mechanism means the chain: unemployment rises -> income falls -> spending falls -> growth weakens." : isEssay && !hasJudgement ? "Judgement means saying how important the effect is and what it depends on." : !hasExample ? "Example/data means one real-world detail." : "Answer the exact directive word in the question."}`,
+      `Rewrite now: ${!hasMechanism ? "Rewrite using: Rising unemployment reduces household income, which lowers consumption and aggregate demand." : isEssay && !hasJudgement ? "Add one judgement sentence beginning: This effect is significant because..." : !hasExample ? "Add one example/data sentence beginning: For example, in Australia..." : "Write the next sentence that links this impact back to the directive word."}`
     ].join("\n");
   }
-
   return [
     "Coach read: You made a real attempt and gave the coach something to improve.",
-    `Lost mark: ${mistake}.`,
+    "Mark protected: You have started answering instead of just rereading notes.",
+    `Mark missing: ${mistake}.`,
     `Stronger version: ${strongerSentence({ isEconomics, isEssay, focus, question })}`,
-    `Why stronger: It directly proves ${focus.toLowerCase()} instead of only naming the topic.`,
+    `Band 6 upgrade: Prove ${focus.toLowerCase()} with a cause-effect link or evidence.`,
+    "Plain English: The marker needs to see why your point is true.",
     "Rewrite now: Rewrite your weakest sentence using the stronger version as the pattern."
   ].join("\n");
 }
 
-function strongerSentence({ isEconomics, isEssay, focus, question }) {
+function strongerSentence({ isEconomics, isEssay, focus, question, answer, hasMechanism, hasJudgement, hasExample }) {
   const target = cleanSentence(focus || question || "the question");
-  if (isEconomics && isEssay) {
-    return "Labour market conditions can significantly affect economic performance because changes in unemployment, wages and productivity influence household income, consumption and aggregate demand.";
+  const economicsTarget = `${question || ""} ${focus || ""} ${answer || ""}`.toLowerCase();
+  if (isEconomics && /unemployment|jobless|economic growth|aggregate demand|consumption/.test(economicsTarget)) {
+    if (!hasMechanism) return "Rising unemployment reduces household income, which lowers consumption and aggregate demand, slowing economic growth.";
+    if (!hasExample) return `${cleanSentence(answer)}. For example, higher cyclical unemployment can reduce household spending and place pressure on government welfare payments.`;
+    return `${cleanSentence(answer)}. This earns marks because it links unemployment to income, spending, aggregate demand and growth.`;
   }
-  if (isEconomics) {
-    return "An increase in labour demand shifts the demand curve right, placing upward pressure on equilibrium wages and increasing employment if labour supply is unchanged.";
-  }
-  if (/thesis|quote|technique|paragraph|module|english/i.test(`${focus} ${question}`)) {
-    return "The composer represents the idea as complex and contested, using evidence and technique to shape the audience's response.";
-  }
-  if (/business|operations|marketing|finance|human resources/i.test(`${focus} ${question}`)) {
-    return "This strategy improves business performance because it changes a specific business action and links that action to cost, quality, revenue or efficiency.";
-  }
+  if (isEconomics && isEssay) return "Labour market conditions can significantly affect economic performance because changes in unemployment, wages and productivity influence household income, consumption and aggregate demand.";
+  if (isEconomics) return "An increase in labour demand shifts the demand curve right, placing upward pressure on equilibrium wages and increasing employment if labour supply is unchanged.";
+  if (/business|operations|marketing|finance|human resources|recruitment/i.test(`${focus} ${question}`)) return "This strategy improves business performance because it changes a specific business action and links that action to cost, quality, revenue or efficiency.";
   return `This answer is stronger when it explains how ${target.toLowerCase()} directly causes the result in the question.`;
-}
-
-function cleanSentence(value) {
-  return String(value || "").trim().replace(/[.!?]+$/, "");
-}
-
-function field(text, label) {
-  const match = String(text || "").match(new RegExp(`${escapeRegex(label)}:\\s*([\\s\\S]*?)(?=\\n[A-Z][A-Za-z ]{2,40}:|\\n\\n|$)`, "i"));
-  return match?.[1]?.trim() || "";
-}
-
-function escapeRegex(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function buildSprint(body) {
@@ -104,228 +90,137 @@ function buildSprint(body) {
   const topic = inferTopic(request, subject);
   const minutes = parseMinutes(request) || 60;
   const timeRequired = `${Math.max(6, Math.round(minutes / 4))} minutes`;
-  const text = `${subject} ${topic} ${request}`.toLowerCase();
-
-  let cards;
-  if (/economics|labou?r|unemployment|inflation|wage|aggregate|cash rate|market/.test(text)) {
-    cards = economicsCards(topic, timeRequired);
-  } else if (/business|marketing|operations|finance|human resources|case study/.test(text)) {
-    cards = businessCards(topic, timeRequired);
-  } else if (/english|module|essay|paragraph|quote|thesis|text|composer|analysis/.test(text)) {
-    cards = englishCards(topic, timeRequired);
-  } else if (/math|mathematics|quadratic|calculus|function|algebra|graph|trig/.test(text)) {
-    cards = mathsCards(topic, timeRequired);
-  } else if (/physics|chemistry|biology|science|validity|reliability|experiment|mole|force|enzyme/.test(text)) {
-    cards = scienceCards(topic, timeRequired);
-  } else {
-    cards = generalCards(topic, timeRequired);
-  }
-
+  const template = selectTopicTemplate(subject, topic, request) || genericTemplate(subject, topic);
   return {
-    coachCall: "Use the four-stage sprint: check the concept, build the response, fix the mistake, then prove it under exam conditions.",
-    cards
+    coachCall: "Use the three-card sprint: check the concept, write the short answer, then apply it under exam pressure.",
+    cards: topicTemplateCards(template, timeRequired)
   };
 }
 
-function inferTopic(request, subject) {
-  const weak = request.match(/weak topic\s*:\s*([^.;\n]+)/i);
-  if (weak) return weak[1].trim();
-  const topic = request.match(/topic\s*:\s*([^.;\n]+)/i);
-  if (topic) return topic[1].trim();
-  if (/labou?r market/i.test(request)) return "labour markets";
-  if (/essay/i.test(request)) return `${subject} essay`;
-  return subject || "your weak topic";
-}
+const TOPIC_TEMPLATES = {
+  labourMarket: {
+    title: "Economics - Labour Market",
+    examPriority: "High: definitions, diagrams and wage/employment effects turn up often in short-answer style practice.",
+    keyDefinitions: ["Labour demand: the amount of labour firms are willing and able to hire at different wage rates.", "Labour supply: the amount of labour workers are willing and able to offer at different wage rates.", "Equilibrium wage: the wage where labour demand equals labour supply."],
+    coreLogic: "Change in output demand/productivity/costs -> labour demand or supply shifts -> wage and employment change -> economic impact.",
+    markingCriteria: ["Correct labour-market term", "Correct demand/supply mechanism", "Wage or employment effect", "Clear final link"],
+    commonMistakes: ["Calling labour demand workers looking for jobs.", "Moving the wrong curve.", "Stating wages change without explaining why."],
+    miniMasterclass: "Start with the side of the market: firms demand labour, workers supply labour. Then explain the shift before the result.",
+    nextSteps: "After this, do one timed past-paper style labour-market response.",
+    cards: [
+      templateMcq("Concept MCQ", "Which is the best definition of labour demand?", ["Workers looking for jobs", "The amount of labour firms are willing and able to hire at different wage rates", "The total labour force", "The wage workers want"], "B", "Labour demand comes from firms, not workers."),
+      templateShort("Short Answer", "Explain how an increase in labour demand may affect wages and employment.", "Labour demand rises -> demand curve shifts right -> firms compete for workers -> equilibrium wage and employment may rise."),
+      templateShort("Exam Application", "Assess one effect of a labour market change on wages, employment or economic performance in 4-6 sentences.", "Define the change, explain the demand/supply mechanism, add the wage/employment effect, then make one judgement.", "6 marks")
+    ]
+  },
+  unemployment: {
+    title: "Economics - Unemployment",
+    examPriority: "High: unemployment links labour markets to economic growth, living standards, fiscal pressure and policy.",
+    keyDefinitions: ["Unemployment: people willing and able to work, actively seeking work, but unable to find a job.", "Underemployment: people employed but wanting more hours or better use of their skills.", "Participation rate: the share of the working-age population in the labour force."],
+    coreLogic: "Unemployment rises -> household income falls -> consumption falls -> aggregate demand weakens -> growth and living standards may fall.",
+    markingCriteria: ["Accurate labour-force definition", "Cause or type classified", "Economic chain shown", "Impact linked to growth/living standards"],
+    commonMistakes: ["Counting people outside the labour force as unemployed.", "Only saying unemployment is bad.", "Listing types without explaining the cause."],
+    miniMasterclass: "Unemployment answers need an economic chain, not sympathy. Show income, consumption, AD, growth or budget effects.",
+    nextSteps: "Next, practise one policy response or one unemployment-type classification.",
+    cards: [
+      templateMcq("Concept MCQ", "Which statement uses unemployment correctly?", ["Anyone without a job is unemployed", "An unemployed person is willing and able to work, actively looking, but cannot find work", "Retired people are unemployed", "Underemployment means no job"], "B", "The definition requires active job search and willingness/ability to work."),
+      templateShort("Short Answer", "Explain one economic impact of rising unemployment on Australian households or the economy.", "Unemployment reduces household income, which can reduce consumption and aggregate demand, slowing economic growth."),
+      templateShort("Exam Application", "Assess how rising unemployment may affect economic growth and government budget outcomes.", "Define unemployment, explain lower income and consumption, link to AD/growth, then add welfare spending or tax revenue pressure.", "6 marks")
+    ]
+  },
+  recruitment: {
+    title: "Business Studies - Recruitment",
+    examPriority: "Medium-high: recruitment is a practical HR process that connects strategy, staffing and business performance.",
+    keyDefinitions: ["Recruitment: the process of finding and attracting suitable applicants for a job vacancy.", "Internal recruitment: filling a vacancy from within the existing workforce.", "External recruitment: attracting applicants from outside the business."],
+    coreLogic: "Business need -> job analysis -> recruitment method -> applicant pool -> selection quality -> performance effect.",
+    markingCriteria: ["Correct HR term", "Specific recruitment method", "Performance impact", "Case/scenario link"],
+    commonMistakes: ["Confusing recruitment with selection.", "Listing methods without business impact.", "Saying external is always better."],
+    miniMasterclass: "Recruitment answers should move from HR action to business performance: who is hired, why that method, and what it changes.",
+    nextSteps: "Next, practise selection or training using the same HR strategy -> performance chain.",
+    cards: [
+      templateMcq("Concept MCQ", "Which option best defines recruitment?", ["Choosing the final employee after interviews", "Finding and attracting suitable applicants for a vacancy", "Training workers after they are hired", "Paying employees fairly"], "B", "Recruitment is about attracting applicants before selection."),
+      templateShort("Short Answer", "Explain one advantage and one disadvantage of internal recruitment.", "Internal recruitment can reduce cost and improve morale, but may limit new skills and ideas entering the business."),
+      templateShort("Exam Application", "Recommend a recruitment method for a growing business that needs skilled employees quickly. Justify your answer.", "Define the method, explain why it fits the business need, link to skills/cost/time, then make a judgement.", "6 marks")
+    ]
+  }
+};
 
-function parseMinutes(text) {
-  const source = String(text || "").toLowerCase();
-  const hours = [...source.matchAll(/(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours)\b/g)]
-    .reduce((total, match) => total + Number(match[1]) * 60, 0);
-  const minutes = [...source.matchAll(/(\d+)\s*(m|min|mins|minute|minutes)\b/g)]
-    .reduce((total, match) => total + Number(match[1]), 0);
-  return Math.round(hours + minutes);
+function templateMcq(label, question, options, correct, reason) { return { label, type: "Multiple Choice", question, options, correct, reason }; }
+function templateShort(label, question, sampleAnswer, markValue = "4 marks") { return { label, type: label === "Short Answer" ? "Short Response / Written Answer" : "Exam Application", question, sampleAnswer, markValue }; }
+function selectTopicTemplate(subject, topic, request) {
+  const text = `${subject} ${topic} ${request}`.toLowerCase();
+  if (/business|human resources|hr/.test(text) && /recruitment/.test(text)) return TOPIC_TEMPLATES.recruitment;
+  if (/economics/.test(text) && /unemployment/.test(text) && !/labou?r market/.test(text)) return TOPIC_TEMPLATES.unemployment;
+  if (/economics|labou?r|wage|employment/.test(text) && /labou?r market|labou?r demand|wage|minimum wage|participation|underemployment/.test(text)) return TOPIC_TEMPLATES.labourMarket;
+  return null;
 }
-
-function economicsCards(topic, timeRequired) {
-  const labour = /labou?r|wage|employment|unemployment|underemployment|participation|minimum wage/i.test(topic);
-  if (!labour) return genericEconomicsCards(topic || "Economics", timeRequired);
-  return [
-    card(1, "Check the Concept", "Multiple Choice", topic, timeRequired, "Answer 5 MCQs on labour demand, unemployment and diagram logic.", "Recognise the correct labour-market concept.", "Choosing broad wording with no economic mechanism.", "Concept checks protect later written marks.", "Do not write paragraphs yet.", "Start Concept Check", "Choose exact economics: definition, curve shift, wage/employment effect.", [
-      mcq("Which is the best definition of labour demand?", ["The number of people looking for work", "The amount of labour firms are willing and able to hire at different wage rates", "The total number of people in the labour force", "The wage workers want to receive"], "B", "Labour demand is from firms and changes at different wage rates."),
-      mcq("Which answer best explains derived demand for labour?", ["Workers want higher wages, so firms hire more", "Demand for goods/services rises, so firms need more workers", "Population rises, so labour demand rises automatically", "Unemployment rises, so labour demand rises"], "B", "Firms demand labour because workers help produce goods and services."),
-      mcq("If labour demand shifts right while supply is unchanged, what is the likely effect?", ["Equilibrium wage and employment rise", "Equilibrium wage falls and employment rises", "Only unemployment rises", "Labour supply shifts left"], "A", "Higher demand creates upward pressure on wages and increases employment at the new equilibrium."),
-      mcq("On a labour market diagram, what does an increase in labour supply usually do?", ["Shifts supply right and reduces wage pressure", "Shifts demand right and increases wages", "Removes the equilibrium wage", "Always increases unemployment"], "A", "More available workers shifts labour supply right, changing equilibrium wage and employment."),
-      mcq("Which is the best definition of unemployment?", ["People willing and able to work but unable to find a job", "Everyone without a full-time job", "People who choose retirement", "A fall in the equilibrium wage"], "A", "Unemployment requires willingness and ability to work, plus inability to find a job.")
-    ], "Use the concept in a written response."),
-    card(2, "Build the Response", "Short Response / Written Answer", topic, timeRequired, "Write one 4-mark response using definition -> cause -> mechanism -> effect.", "Build a complete labour-market cause-effect chain.", "Saying wages rise without explaining the demand shift.", "Cause-effect chains are easy Economics marks.", "Skip long policy evaluation.", "Build Written Response", "Start with the exact term, then explain the movement.", [
-      short("Explain how an increase in labour demand may affect wages and employment.", "4 marks", "Labour demand rises -> demand curve shifts right -> firms compete for workers -> equilibrium wage and employment may rise.", ["Labour demand: labour firms are willing and able to hire at each wage.", "Equilibrium wage: wage where labour demand equals labour supply."], ["Define labour demand.", "Explain rightward demand shift.", "Link to wage and employment rise.", "Use economic terms."])
-    ], "Repair the common missing-link mistake."),
-    card(3, "Fix the Mistake", "Error Repair", topic, timeRequired, "Fix a weak answer that skips the economic mechanism.", "Identify the missing link and rewrite it.", "Listing an outcome without the curve shift.", "Error repair prevents repeated lost explanation marks.", "Do not rewrite the whole answer.", "Fix the Mistake", "A marker needs to see why the outcome happens.", [
-      repair("Weak answer: 'When labour demand increases, wages rise and people get more jobs.' Identify what is missing and rewrite the answer in 3 improved sentences.", "4 marks", "Missing mechanism: it must explain stronger demand shifts labour demand right and firms compete for workers.")
-    ], "Finish with one exam-ready answer."),
-    card(4, "Prove You Can Do It", "Final Exam Task / Exit Ticket", topic, timeRequired, "Write a 4-6 sentence final answer using definition, chain, example and judgement.", "Combine definition, cause-effect chain and judgement.", "Writing a definition-only answer.", "This proves the skill transfers into exam conditions.", "Do not add a long introduction.", "Complete Exit Ticket", "Final answer formula: define -> explain chain -> example/diagram -> judge impact.", [
-      short("Assess the impact of rising unemployment on households and the Australian economy in 4-6 sentences.", "6 marks", "Define unemployment; explain income falls; link to consumption/aggregate demand; add example/data placeholder; judge severity by duration and scale.", ["Unemployment: willing and able to work but unable to find a job.", "Aggregate demand: total spending in the economy."], ["Define unemployment.", "Explain household income effect.", "Link to consumption/AD.", "Add judgement on severity."])
-    ], "Sprint Summary: skill improved = labour-market chains; mistake fixed = missing mechanism; best move = define then explain the curve/effect; next = one timed past-paper labour-market response.")
-  ];
-}
-
-function genericEconomicsCards(topic, timeRequired) {
-  return genericSubjectCards(topic, timeRequired, {
-    subjectMove: "Economics chain = definition -> cause -> mechanism -> impact -> judgement.",
-    mcqFocus: "economic definitions and cause-effect chains",
-    shortQuestion: `Explain one cause and one effect of ${topic}.`,
-    weakAnswer: `Weak answer: '${topic} affects the economy because it changes things for people.' Identify the vague wording and rewrite it with one economic mechanism.`,
-    finalQuestion: `Write a 4-6 sentence response assessing the impact of ${topic}.`
-  });
-}
-
-function businessCards(topic, timeRequired) {
-  return genericSubjectCards(topic || "Business Studies", timeRequired, {
-    subjectMove: "Business chain = function -> strategy/action -> performance impact -> case detail.",
-    mcqFocus: "business functions, case use and performance impact",
-    shortQuestion: `Explain how one strategy in ${topic} can improve business performance.`,
-    weakAnswer: "Weak answer: 'Operations is about producing goods and services. Businesses use operations strategies.' Identify what is missing and rewrite it with a performance impact.",
-    finalQuestion: `Assess how one strategy in ${topic} can improve business performance.`
-  });
-}
-
-function englishCards(topic, timeRequired) {
-  return genericSubjectCards(topic || "English paragraph", timeRequired, {
-    subjectMove: "English paragraph = Point -> Evidence -> Technique -> Effect -> Link.",
-    mcqFocus: "thesis, technique and analysis vs retelling",
-    shortQuestion: `Write one thesis and one topic sentence for ${topic}.`,
-    weakAnswer: "Weak answer: 'The character is isolated because they are alone in the scene.' Identify why this is retelling and rewrite it with a technique and effect.",
-    finalQuestion: `Write one analytical paragraph for ${topic} using Point -> Evidence -> Technique -> Effect -> Link.`
-  });
-}
-
-function mathsCards(topic, timeRequired) {
-  return genericSubjectCards(topic || "Maths method", timeRequired, {
-    subjectMove: "Maths answer = method/formula -> substitution -> working -> final check.",
-    mcqFocus: "method choice, formula choice and common traps",
-    shortQuestion: `Complete one exam-style ${topic} question. Show the formula/method line, substitution and final answer.`,
-    weakAnswer: "Flawed working: x^2 - 7x + 10 = 0, so (x - 5)(x + 2)=0, x=5 or -2. Identify the error and correct the solutions.",
-    finalQuestion: `Solve one complete ${topic} exam-style question and include a final check line.`
-  });
-}
-
-function scienceCards(topic, timeRequired) {
-  return genericSubjectCards(topic || "Science concept", timeRequired, {
-    subjectMove: "Science answer = concept/formula/process -> evidence/working -> result -> scientific conclusion.",
-    mcqFocus: "concept recognition, variables, units and practical traps",
-    shortQuestion: `Answer one HSC-style ${topic} question using correct scientific terminology.`,
-    weakAnswer: "Weak answer: 'The result changed because the experiment was not accurate.' Identify the missing method detail and rewrite the line using validity, reliability or accuracy correctly.",
-    finalQuestion: `Complete one final ${topic} exam task. Include terminology, working/process order and a final conclusion.`
-  });
-}
-
-function generalCards(topic, timeRequired) {
-  return genericSubjectCards(topic || "your weak topic", timeRequired, {
-    subjectMove: "Answer path = key concept -> method/content -> explanation -> final link.",
-    mcqFocus: "core concept, task recognition and common traps",
-    shortQuestion: `Answer one exam-style question on ${topic}.`,
-    weakAnswer: "Weak answer: 'This topic is important and affects the result.' Identify why this is too vague and rewrite it with exact subject content.",
-    finalQuestion: `Complete one final exam-style answer on ${topic}.`
-  });
-}
-
-function genericSubjectCards(topic, timeRequired, config) {
-  return [
-    card(1, "Check the Concept", "Multiple Choice", topic, timeRequired, `Answer 5 MCQs on ${config.mcqFocus}.`, "Check understanding before writing.", "Choosing vague wording.", "Concept checks stop weak answers early.", "Do not write long notes.", "Start Concept Check", config.subjectMove, [
-      mcq("Which first move is strongest before writing?", ["Start with everything you remember", "Identify the key term, method and command word", "Skip the question wording", "Write a conclusion first"], "B", "The first move is to understand exactly what the task wants."),
-      mcq("What usually loses marks fastest?", ["Specific evidence or working", "A clear method", "A vague explanation with no link", "Answering the command term"], "C", "Vague responses are hard to mark."),
-      mcq("What should happen after a mistake?", ["Ignore it", "Write the correction rule and redo the step", "Read more notes only", "Change topic immediately"], "B", "Mistake repair improves transfer."),
-      mcq("Which answer is most likely to earn marks?", ["A broad sentence", "A memorised heading", "A precise answer linked to the question", "A long introduction"], "C", "Precise content linked to the question is easier to mark."),
-      mcq("What should you do before the written response?", ["Check why wrong options were wrong", "Rewrite all notes", "Skip feedback", "Change topics"], "A", "The MCQ feedback shows what to carry into the written answer.")
-    ], "Use the concept in a written answer."),
-    card(2, "Build the Response", "Short Response / Written Answer", topic, timeRequired, "Write one specific HSC-style answer.", "Produce a real answer, not notes.", "Writing notes instead of an answer.", "Turns knowledge into marks.", "Skip passive revision.", "Build Written Response", config.subjectMove, [
-      short(config.shortQuestion, "4 marks", config.subjectMove)
-    ], "Repair the weakest mark-losing mistake."),
-    card(3, "Fix the Mistake", "Error Repair", topic, timeRequired, "Fix a weak answer or flawed working.", "Mistake detection and correction.", "Naming the mistake without rewriting it.", "Prevents repeat errors.", "Do not restart everything.", "Fix the Mistake", "Find the first mark-losing line, then rewrite it.", [
-      repair(config.weakAnswer, "3 marks", "The answer needs exact content, not broad wording.")
-    ], "Finish with an exam-ready answer."),
-    card(4, "Prove You Can Do It", "Final Exam Task / Exit Ticket", topic, timeRequired, "Complete one final answer under exam conditions.", "Combine concept, response and fix.", "Repeating the same vague wording.", "Confirms the sprint worked.", "No extra notes.", "Complete Exit Ticket", "Use the correction from Stage 3 in the final answer.", [
-      short(config.finalQuestion, "5 marks", "Clear concept, specific steps, evidence/working, final answer.")
-    ], "Sprint Summary: skill improved = focused answering; mistake fixed = vague response; next = one timed past-paper question.")
-  ];
-}
-
-function card(stage, label, type, topic, timeRequired, task, focus, mistake, impact, ignore, buttonText, miniLesson, questions, next) {
-  const examRelevance = economicsExamRelevance(topic, stage);
-  const isEconomics = Boolean(examRelevance);
+function genericTemplate(subject, topic) {
+  const label = topic || subject || "your weak topic";
   return {
-    title: `Stage ${stage} - ${label}`,
+    title: `${subject || "HSC"} - ${label}`,
+    examPriority: "Medium: this turns the topic into one startable exam task.",
+    keyDefinitions: [`${label}: the key idea you must define before answering.`],
+    coreLogic: "Key idea -> method/content -> explanation -> final link.",
+    markingCriteria: ["Correct term", "Clear method/content", "Specific example or working", "Link to the question"],
+    commonMistakes: ["Writing notes instead of an answer.", "Being too general.", "Missing the final link."],
+    miniMasterclass: "Answer first, then fix the weakest sentence or working line.",
+    nextSteps: "Do one more timed question on the same topic.",
+    cards: [
+      templateMcq("Concept MCQ", "Which first move is strongest before writing?", ["Write everything remembered", "Identify the key term, method and command word", "Skip the question wording", "Write a conclusion first"], "B", "The first move is to understand exactly what the task wants."),
+      templateShort("Short Answer", `Answer one exam-style short response on ${label}.`, "State the key idea, explain it, add a specific example or working step, then link back."),
+      templateShort("Exam Application", `Complete one final exam-style answer on ${label}.`, "Use the correction from Card 2 and finish with a direct link to the question.", "5 marks")
+    ]
+  };
+}
+function topicTemplateCards(template, timeRequired) {
+  return template.cards.map((item, index) => {
+    const stage = index + 1;
+    const isMcq = item.type === "Multiple Choice";
+    const questions = isMcq ? [mcq(item.question, item.options, item.correct, item.reason)] : [short(item.question, item.markValue, item.sampleAnswer, template.keyDefinitions, template.markingCriteria)];
+    return card(stage, item.label, item.type, template.title, timeRequired, stage === 1 ? `Answer one concept check on ${template.title}.` : item.question, stage === 1 ? template.keyDefinitions.join(" ") : template.coreLogic, template.commonMistakes[Math.min(index, template.commonMistakes.length - 1)], template.examPriority, "Skip passive note rewriting. Complete the card first.", stage === 1 ? "Start Concept MCQ" : stage === 2 ? "Start Short Answer" : "Start Exam Application", template.miniMasterclass, questions, stage === 3 ? template.nextSteps : "Move to the next card only after feedback and one fix.");
+  });
+}
+function card(stage, label, type, topic, timeRequired, task, focus, mistake, impact, ignore, buttonText, miniLesson, questions, next) {
+  return {
+    title: `Card ${stage} - ${label}`,
     topic,
     highestRoiTask: task,
     doThisNow: task,
     questionType: type,
-    resourceName: isEconomics ? "NESA Economics HSC exam packs + internal HSC-style practice" : "Internal HSC-style practice",
-    resourceUrl: isEconomics ? "https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/economics" : "",
+    resourceName: /economics/i.test(topic) ? "NESA Economics HSC exam packs + internal HSC-style practice" : /business/i.test(topic) ? "NESA Business Studies HSC exam packs + internal HSC-style practice" : "Internal HSC-style practice",
+    resourceUrl: /economics/i.test(topic) ? "https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/economics" : /business/i.test(topic) ? "https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/business-studies" : "",
     timeRequired,
-    difficulty: stage === 1 ? "Easy" : stage === 4 ? "Challenge" : "Core",
+    difficulty: stage === 1 ? "Easy" : "Core",
     focusPoint: focus,
-    howToApproach: stage === 1
-      ? ["Read the stem.", "Choose A, B, C or D.", "Check the explanation.", "Carry the takeaway into Stage 2."]
-      : stage === 3
-        ? ["Read the weak answer.", "Find the mark-losing line.", "Explain why it loses marks.", "Rewrite only the fix."]
-        : ["Read the question.", "Use the guided path.", "Write inside the timer.", "Submit for feedback."],
+    howToApproach: stage === 1 ? ["Read the stem.", "Choose A, B, C or D.", "Check the explanation.", "Carry the takeaway into Card 2."] : ["Read the question.", "Use the guided path.", "Write inside the timer.", "Submit for feedback."],
     mostCommonMistake: mistake,
     whatNotToFocusOn: ignore,
     estimatedMarksImpact: impact,
-    examRelevance,
+    examRelevance: impact,
     buttonText,
     miniLesson,
-    workedExample: stage === 3 ? "Bad answer -> missing mechanism -> rewrite with exact subject content." : "Use the stage's guided path before answering.",
-    feedbackCriteria: stage === 1
-      ? ["selected answer", "correct answer explanation", "trap option", "takeaway"]
-      : stage === 3
-        ? ["mistake identified", "why it loses marks", "corrected line", "next move"]
-        : ["what worked", "what lost marks", "one exact fix", "next best move"],
-    fixDrill: stage === 3 ? "Rewrite the weak line correctly." : "Redo the weakest sentence or working line.",
+    workedExample: miniLesson,
+    feedbackCriteria: stage === 1 ? ["selected answer", "correct explanation", "trap avoided", "takeaway"] : ["what worked", "what lost marks", "one exact fix", "next best move"],
+    fixDrill: "Rewrite the weakest sentence using the feedback.",
     nextTargetedTask: next,
     questions
   };
 }
-
-function economicsExamRelevance(topic, stage) {
-  const text = String(topic || "").toLowerCase();
-  if (!/economics|labou?r|wage|employment|unemployment|underemployment|participation|minimum wage|productivity|aggregate|inflation|policy|market/.test(text)) return "";
-  if (/labou?r|wage|employment|unemployment|underemployment|participation|minimum wage|productivity/.test(text)) {
-    return [
-      "Exam relevance: NESA Economics Stage 6 (2009) includes Labour Markets in the Preliminary course. This stage checks definitions and labour-market concepts before written marks.",
-      "Exam relevance: Past-paper style Economics short answers often reward a clear definition, cause-effect mechanism and wage/employment impact.",
-      "Exam relevance: Error-repair matters because labour-market questions commonly lose marks through wrong measures, wrong curve shifts or missing mechanisms.",
-      "Exam relevance: This exit task connects labour-market theory to HSC-style economic issue/policy responses using definition, chain, example/data and judgement."
-    ][Math.max(0, stage - 1)] || "Exam relevance: Syllabus-grounded Economics labour-market practice shaped like NESA exam-pack tasks.";
-  }
-  return "Exam relevance: HSC Economics responses usually reward definition, cause-effect reasoning, diagram/data application and judgement. Use the linked NESA exam packs for official practice.";
-}
-
 function mcq(question, options, correct, reason) {
-  const labelled = labelMcq(question);
   return {
-    question: `${labelled}\nA. ${options[0]}\nB. ${options[1]}\nC. ${options[2]}\nD. ${options[3]}`,
+    question: `Concept check: ${question}\nA. ${options[0]}\nB. ${options[1]}\nC. ${options[2]}\nD. ${options[3]}`,
     markValue: "1 mark",
     difficulty: "Warm-up",
     estimatedTime: "2 min",
     focusPoint: "Choose the strongest exam move.",
     commonMistake: "Choosing the vague option.",
     marksImpact: "Quickly checks understanding before writing.",
-    whatToIgnore: "Do not type a written response for this stage.",
-    sampleAnswer: `Correct answer: ${correct}. ${reason} Key takeaway: use the answer that explains the exact method, concept or marking move.`,
+    whatToIgnore: "Do not type a paragraph for this stage.",
+    sampleAnswer: `Correct answer: ${correct}. ${reason}`,
     guidedAnswerPath: path(["Correct option: only one answer earns the mark.", "Trap option: sounds broad but misses the method."], "Pick the option that would earn the mark.", "Select A, B, C or D.", ["Read the command.", "Eliminate vague options.", "Choose the precise option.", "Read the takeaway."], ["Correct option", "Reason understood", "Trap avoided"], "Do not choose the option that only sounds familiar.")
   };
 }
-
-function labelMcq(question) {
-  if (/define|definition/i.test(question)) return `Define term: ${question}`;
-  if (/derived|chain|explains/i.test(question)) return `Explain chain: ${question}`;
-  if (/effect|impact|likely/i.test(question)) return `Apply concept: ${question}`;
-  if (/method|formula|first move/i.test(question)) return `Method check: ${question}`;
-  return `Concept check: ${question}`;
-}
-
-function short(question, markValue, scaffold, terms = ["Key term: define it in exam wording.", "Link: connect back to the question."], checklist = ["Key term used", "Cause/method explained", "Effect shown", "Final link"]) {
+function short(question, markValue, scaffold, terms, checklist) {
   return {
     question,
     markValue,
@@ -336,27 +231,26 @@ function short(question, markValue, scaffold, terms = ["Key term: define it in e
     marksImpact: "Builds the written answer that wins marks.",
     whatToIgnore: "Ignore polished wording until the idea is clear.",
     sampleAnswer: scaffold,
-    guidedAnswerPath: path(terms, "Produce the exact written move needed for this question.", "Start with the key definition, method or claim.", ["State the key term or method.", "Explain the cause/method.", "Show the effect or working.", "Link back to the question."], checklist, "Do not write a broad answer with no link to the question.")
+    guidedAnswerPath: path(terms || ["Key term: define it in exam wording."], "Produce the exact written move needed for this question.", terms?.[0] || "Start with the key definition, method or claim.", String(scaffold || "State -> Explain -> Link").split(" -> ").slice(0, 4), checklist || ["Key term used", "Cause/method explained", "Effect shown", "Final link"], "Do not write a broad answer with no link to the question.")
   };
 }
-
-function repair(question, markValue, scaffold) {
-  return {
-    ...short(question, markValue, scaffold, ["Error repair: identify, explain, correct.", "Fix line: improved sentence or working step."], ["Exact mistake", "Why it loses marks", "Corrected version", "Question link"]),
-    focusPoint: "Find the mistake, explain why it loses marks, then rewrite the fix.",
-    commonMistake: "Only saying it is wrong without correcting it.",
-    marksImpact: "Mistake repair prevents losing the same marks again.",
-    whatToIgnore: "Do not rewrite the whole response unless needed."
-  };
+function path(keyDefinitionsYouNeed, whatThisQuestionIsReallyAsking, firstSentenceYouCanUse, stepByStepAnswerPath, whatToIncludeForFullMarks, commonMistake) { return { keyDefinitionsYouNeed, whatThisQuestionIsReallyAsking, firstSentenceYouCanUse, stepByStepAnswerPath, whatToIncludeForFullMarks, commonMistake }; }
+function inferTopic(request, subject) {
+  const weak = request.match(/weak topic\s*:\s*([^.;\n]+)/i);
+  if (weak) return weak[1].trim();
+  const topic = request.match(/topic\s*:\s*([^.;\n]+)/i);
+  if (topic) return topic[1].trim();
+  if (/labou?r market/i.test(request)) return "labour markets";
+  if (/recruitment/i.test(request)) return "recruitment";
+  if (/unemployment/i.test(request)) return "unemployment";
+  return subject || "your weak topic";
 }
-
-function path(keyDefinitionsYouNeed, whatThisQuestionIsReallyAsking, firstSentenceYouCanUse, stepByStepAnswerPath, whatToIncludeForFullMarks, commonMistake) {
-  return {
-    keyDefinitionsYouNeed,
-    whatThisQuestionIsReallyAsking,
-    firstSentenceYouCanUse,
-    stepByStepAnswerPath,
-    whatToIncludeForFullMarks,
-    commonMistake
-  };
+function parseMinutes(text) {
+  const source = String(text || "").toLowerCase();
+  const hours = [...source.matchAll(/(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours)\b/g)].reduce((total, match) => total + Number(match[1]) * 60, 0);
+  const minutes = [...source.matchAll(/(\d+)\s*(m|min|mins|minute|minutes)\b/g)].reduce((total, match) => total + Number(match[1]), 0);
+  return Math.round(hours + minutes);
 }
+function field(text, label) { const match = String(text || "").match(new RegExp(`${escapeRegex(label)}:\\s*([\\s\\S]*?)(?=\\n[A-Z][A-Za-z ]{2,40}:|\\n\\n|$)`, "i")); return match?.[1]?.trim() || ""; }
+function cleanSentence(value) { return String(value || "").trim().replace(/[.!?]+$/, ""); }
+function escapeRegex(value) { return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
