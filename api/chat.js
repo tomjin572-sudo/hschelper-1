@@ -13,7 +13,7 @@ module.exports = async function handler(req, res) {
 };
 
 function isFeedbackRequest(body) {
-  return /Mark this HSC-style practice answer/i.test(String(body.question || ""));
+  return /Mark this HSC-style (sentence practice|practice) answer/i.test(String(body.question || ""));
 }
 
 function buildAnswerFeedback(body) {
@@ -27,13 +27,15 @@ function buildAnswerFeedback(body) {
   const words = answer.trim().split(/\s+/).filter(Boolean).length;
   const noAnswer = !answer.trim() || /no answer written/i.test(answer);
   const isEconomics = /economics|labou?r|unemployment|wage|employment|market|aggregate|inflation|policy/.test(text);
+  const isEssay = /essay|thesis|paragraph|judgement|assess|discuss|evaluate|extended/.test(text);
 
   if (noAnswer || words < 8) {
     return [
-      "What went well: You have started the task, but there is not enough written evidence to mark yet.",
-      `Mistake: ${mistake}.`,
-      `Fix: Write 2-3 direct sentences that show ${focus.toLowerCase()}.`,
-      "Next best move: Attempt the answer first, then ask for feedback again."
+      "Coach read: There is not enough written evidence to coach yet.",
+      `Lost mark: The marker cannot see ${focus.toLowerCase()} because the sentence is not complete.`,
+      `Stronger version: ${strongerSentence({ isEconomics, isEssay, focus, question })}`,
+      "Why stronger: It gives the marker a clear claim and a reason instead of a fragment.",
+      "Rewrite now: Write one complete sentence, then ask for feedback again."
     ].join("\n");
   }
 
@@ -41,20 +43,50 @@ function buildAnswerFeedback(body) {
     const hasDefinition = /is|refers to|defined|willing|able|rate|wage|employment|unemployment/.test(answer.toLowerCase());
     const hasMechanism = /because|therefore|leads to|causes|shift|demand|supply|pressure|increase|decrease|rise|fall/.test(answer.toLowerCase());
     const hasJudgement = /however|depends|extent|therefore|overall|significant|limited|short run|long run/.test(answer.toLowerCase());
+    const lostMark = !hasDefinition
+      ? "The sentence needs a clearer economics term before the explanation."
+      : !hasMechanism
+        ? "The sentence names an outcome but does not show the economic mechanism."
+        : !hasJudgement && isEssay
+          ? "The sentence explains the idea but does not make a judgement yet."
+          : "The chain is present, but it needs sharper cause-effect wording.";
     return [
-      `What went well: ${hasDefinition ? "You used relevant economic language and started with the concept." : "You attempted the economic idea, but the definition needs to be clearer."}`,
-      `Mistake: ${hasMechanism ? "The chain is present, but it needs to be more explicit for HSC marks" : mistake}.`,
-      "Fix: Use Definition -> Cause -> Mechanism -> Impact -> Example/Data -> Judgement. Add one sentence that explains the exact labour demand/supply mechanism.",
-      `Next best move: ${hasJudgement ? "Try a harder 4-6 mark labour market question using the same chain." : "Add one judgement sentence, such as 'The impact depends on the size of the demand shift and labour supply elasticity.'"}`
+      `Coach read: ${hasDefinition ? "You are using relevant Economics language." : "You are circling the idea, but the marker needs a precise Economics term first."}`,
+      `Lost mark: ${lostMark}`,
+      `Stronger version: ${strongerSentence({ isEconomics, isEssay, focus, question })}`,
+      "Why stronger: It follows Definition -> Cause -> Mechanism -> Impact, so the marker can see the reasoning step.",
+      `Rewrite now: ${hasJudgement ? "Add one example or data point to make the sentence more exam-specific." : "Add one judgement sentence beginning with 'This effect is significant because...'"}`
     ].join("\n");
   }
 
   return [
-    "What went well: You made a real attempt and gave the coach something to mark.",
-    `Mistake: ${mistake}.`,
-    `Fix: Add one sentence that directly proves ${focus.toLowerCase()}.`,
-    "Next best move: Rewrite the weakest sentence, then complete one similar question under time."
+    "Coach read: You made a real attempt and gave the coach something to improve.",
+    `Lost mark: ${mistake}.`,
+    `Stronger version: ${strongerSentence({ isEconomics, isEssay, focus, question })}`,
+    `Why stronger: It directly proves ${focus.toLowerCase()} instead of only naming the topic.`,
+    "Rewrite now: Rewrite your weakest sentence using the stronger version as the pattern."
   ].join("\n");
+}
+
+function strongerSentence({ isEconomics, isEssay, focus, question }) {
+  const target = cleanSentence(focus || question || "the question");
+  if (isEconomics && isEssay) {
+    return "Labour market conditions can significantly affect economic performance because changes in unemployment, wages and productivity influence household income, consumption and aggregate demand.";
+  }
+  if (isEconomics) {
+    return "An increase in labour demand shifts the demand curve right, placing upward pressure on equilibrium wages and increasing employment if labour supply is unchanged.";
+  }
+  if (/thesis|quote|technique|paragraph|module|english/i.test(`${focus} ${question}`)) {
+    return "The composer represents the idea as complex and contested, using evidence and technique to shape the audience's response.";
+  }
+  if (/business|operations|marketing|finance|human resources/i.test(`${focus} ${question}`)) {
+    return "This strategy improves business performance because it changes a specific business action and links that action to cost, quality, revenue or efficiency.";
+  }
+  return `This answer is stronger when it explains how ${target.toLowerCase()} directly causes the result in the question.`;
+}
+
+function cleanSentence(value) {
+  return String(value || "").trim().replace(/[.!?]+$/, "");
 }
 
 function field(text, label) {
@@ -219,14 +251,16 @@ function genericSubjectCards(topic, timeRequired, config) {
 }
 
 function card(stage, label, type, topic, timeRequired, task, focus, mistake, impact, ignore, buttonText, miniLesson, questions, next) {
+  const examRelevance = economicsExamRelevance(topic, stage);
+  const isEconomics = Boolean(examRelevance);
   return {
     title: `Stage ${stage} - ${label}`,
     topic,
     highestRoiTask: task,
     doThisNow: task,
     questionType: type,
-    resourceName: "Internal HSC-style practice",
-    resourceUrl: "",
+    resourceName: isEconomics ? "NESA Economics HSC exam packs + internal HSC-style practice" : "Internal HSC-style practice",
+    resourceUrl: isEconomics ? "https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/economics" : "",
     timeRequired,
     difficulty: stage === 1 ? "Easy" : stage === 4 ? "Challenge" : "Core",
     focusPoint: focus,
@@ -238,6 +272,7 @@ function card(stage, label, type, topic, timeRequired, task, focus, mistake, imp
     mostCommonMistake: mistake,
     whatNotToFocusOn: ignore,
     estimatedMarksImpact: impact,
+    examRelevance,
     buttonText,
     miniLesson,
     workedExample: stage === 3 ? "Bad answer -> missing mechanism -> rewrite with exact subject content." : "Use the stage's guided path before answering.",
@@ -250,6 +285,20 @@ function card(stage, label, type, topic, timeRequired, task, focus, mistake, imp
     nextTargetedTask: next,
     questions
   };
+}
+
+function economicsExamRelevance(topic, stage) {
+  const text = String(topic || "").toLowerCase();
+  if (!/economics|labou?r|wage|employment|unemployment|underemployment|participation|minimum wage|productivity|aggregate|inflation|policy|market/.test(text)) return "";
+  if (/labou?r|wage|employment|unemployment|underemployment|participation|minimum wage|productivity/.test(text)) {
+    return [
+      "Exam relevance: NESA Economics Stage 6 (2009) includes Labour Markets in the Preliminary course. This stage checks definitions and labour-market concepts before written marks.",
+      "Exam relevance: Past-paper style Economics short answers often reward a clear definition, cause-effect mechanism and wage/employment impact.",
+      "Exam relevance: Error-repair matters because labour-market questions commonly lose marks through wrong measures, wrong curve shifts or missing mechanisms.",
+      "Exam relevance: This exit task connects labour-market theory to HSC-style economic issue/policy responses using definition, chain, example/data and judgement."
+    ][Math.max(0, stage - 1)] || "Exam relevance: Syllabus-grounded Economics labour-market practice shaped like NESA exam-pack tasks.";
+  }
+  return "Exam relevance: HSC Economics responses usually reward definition, cause-effect reasoning, diagram/data application and judgement. Use the linked NESA exam packs for official practice.";
 }
 
 function mcq(question, options, correct, reason) {
