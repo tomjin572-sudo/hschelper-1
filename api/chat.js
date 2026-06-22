@@ -85,8 +85,8 @@ function strongerSentence({ isEconomics, isEssay, focus, question, answer, hasMe
 }
 
 function buildSprint(body) {
-  const subject = String(body.subject || "HSC subject");
-  const request = String(body.question || "");
+  const request = String(body.question || body.message || body.prompt || "");
+  const subject = inferSubject(body.subject, request);
   const topic = inferTopic(request, subject);
   const minutes = parseMinutes(request) || 60;
   const timeRequired = `${Math.max(6, Math.round(minutes / 5))} minutes`;
@@ -264,12 +264,28 @@ function path(keyDefinitionsYouNeed, whatThisQuestionIsReallyAsking, firstSenten
 function inferTopic(request, subject) {
   const weak = request.match(/weak topic\s*:\s*([^.;\n]+)/i);
   if (weak) return weak[1].trim();
+  const weakSentence = request.match(/weak topic\s+(?:is|=)\s*([^.;\n]+)/i);
+  if (weakSentence) return weakSentence[1].trim();
   const topic = request.match(/topic\s*:\s*([^.;\n]+)/i);
   if (topic) return topic[1].trim();
+  const topicSentence = request.match(/topic\s+(?:is|=)\s*([^.;\n]+)/i);
+  if (topicSentence) return topicSentence[1].trim();
+  const about = request.match(/\b(?:on|for|about)\s+([A-Za-z][A-Za-z ]{2,40})(?:\s+exam|\s+tomorrow|\.|,|$)/i);
+  if (about) return about[1].trim();
   if (/labou?r market/i.test(request)) return "labour markets";
   if (/recruitment/i.test(request)) return "recruitment";
   if (/unemployment/i.test(request)) return "unemployment";
   return subject || "your weak topic";
+}
+function inferSubject(explicitSubject, request) {
+  if (explicitSubject) return String(explicitSubject);
+  const text = String(request || "").toLowerCase();
+  if (/business studies|business\b|human resources|recruitment/.test(text)) return "Business Studies";
+  if (/economics|unemployment|labou?r market|wage|aggregate demand|inflation/.test(text)) return "Economics";
+  if (/english|essay|module|thesis|quote|composer/.test(text)) return "English";
+  if (/math|mathematics|calculus|quadratic|algebra|trigonometry/.test(text)) return "Mathematics";
+  if (/physics|chemistry|biology|science/.test(text)) return "Science";
+  return "HSC subject";
 }
 function parseMinutes(text) {
   const source = String(text || "").toLowerCase();
