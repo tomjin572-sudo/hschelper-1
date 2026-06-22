@@ -70,7 +70,7 @@ function buildAnswerFeedback(body) {
   ].join("\n");
 }
 
-function strongerSentence({ isEconomics, isEssay, focus, question, answer, hasMechanism, hasJudgement, hasExample }) {
+function strongerSentence({ isEconomics, isEssay, focus, question, answer, hasMechanism, hasExample }) {
   const target = cleanSentence(focus || question || "the question");
   const economicsTarget = `${question || ""} ${focus || ""} ${answer || ""}`.toLowerCase();
   if (isEconomics && /unemployment|jobless|economic growth|aggregate demand|consumption/.test(economicsTarget)) {
@@ -89,10 +89,10 @@ function buildSprint(body) {
   const request = String(body.question || "");
   const topic = inferTopic(request, subject);
   const minutes = parseMinutes(request) || 60;
-  const timeRequired = `${Math.max(6, Math.round(minutes / 4))} minutes`;
+  const timeRequired = `${Math.max(6, Math.round(minutes / 5))} minutes`;
   const template = selectTopicTemplate(subject, topic, request) || genericTemplate(subject, topic);
   return {
-    coachCall: "Use the three-card sprint: check the concept, write the short answer, then apply it under exam pressure.",
+    coachCall: "Use the topic pack: learn the sheet, catch the trap, build the chain, write the answer, then upgrade it.",
     cards: topicTemplateCards(template, timeRequired)
   };
 }
@@ -108,9 +108,11 @@ const TOPIC_TEMPLATES = {
     miniMasterclass: "Start with the side of the market: firms demand labour, workers supply labour. Then explain the shift before the result.",
     nextSteps: "After this, do one timed past-paper style labour-market response.",
     cards: [
-      templateMcq("Concept MCQ", "Which is the best definition of labour demand?", ["Workers looking for jobs", "The amount of labour firms are willing and able to hire at different wage rates", "The total labour force", "The wage workers want"], "B", "Labour demand comes from firms, not workers."),
-      templateShort("Short Answer", "Explain how an increase in labour demand may affect wages and employment.", "Labour demand rises -> demand curve shifts right -> firms compete for workers -> equilibrium wage and employment may rise."),
-      templateShort("Exam Application", "Assess one effect of a labour market change on wages, employment or economic performance in 4-6 sentences.", "Define the change, explain the demand/supply mechanism, add the wage/employment effect, then make one judgement.", "6 marks")
+      templateLecture("Last-Minute Sheet", "Learn the labour-market mini lecture: terms, diagram logic and what not to waste time on.", "Must know: firms demand labour, workers supply labour, and the wage/employment result comes from the curve shift."),
+      templateMcq("Trap Check", "Which is the best definition of labour demand?", ["Workers looking for jobs", "The amount of labour firms are willing and able to hire at different wage rates", "The total labour force", "The wage workers want"], "B", "Labour demand comes from firms, not workers."),
+      templateBuilder("Chain Builder", "Complete the chain: output demand rises -> firms need more workers -> _____ shifts right -> equilibrium wage and employment _____.", "labour demand; rise"),
+      templateShort("Exam Answer", "Explain how an increase in labour demand may affect wages and employment.", "Labour demand rises -> demand curve shifts right -> firms compete for workers -> equilibrium wage and employment may rise."),
+      templateUpgrade("Marker Upgrade", "Weak answer: 'More jobs means wages go up.' Rewrite it into a 4-mark labour-market answer.", "Define labour demand, name the rightward shift, explain firm competition for workers, then state wage and employment effects.", "4 marks")
     ]
   },
   unemployment: {
@@ -123,9 +125,11 @@ const TOPIC_TEMPLATES = {
     miniMasterclass: "Unemployment answers need an economic chain, not sympathy. Show income, consumption, AD, growth or budget effects.",
     nextSteps: "Next, practise one policy response or one unemployment-type classification.",
     cards: [
-      templateMcq("Concept MCQ", "Which statement uses unemployment correctly?", ["Anyone without a job is unemployed", "An unemployed person is willing and able to work, actively looking, but cannot find work", "Retired people are unemployed", "Underemployment means no job"], "B", "The definition requires active job search and willingness/ability to work."),
-      templateShort("Short Answer", "Explain one economic impact of rising unemployment on Australian households or the economy.", "Unemployment reduces household income, which can reduce consumption and aggregate demand, slowing economic growth."),
-      templateShort("Exam Application", "Assess how rising unemployment may affect economic growth and government budget outcomes.", "Define unemployment, explain lower income and consumption, link to AD/growth, then add welfare spending or tax revenue pressure.", "6 marks")
+      templateLecture("Last-Minute Sheet", "Learn the unemployment mini lecture: measures, types and the income -> spending -> growth chain.", "Must know: unemployed means actively seeking work; underemployed means working but wanting more hours."),
+      templateMcq("Trap Check", "Which statement uses unemployment correctly?", ["Anyone without a job is unemployed", "An unemployed person is willing and able to work, actively looking, but cannot find work", "Retired people are unemployed", "Underemployment means no job"], "B", "The definition requires active job search and willingness/ability to work."),
+      templateBuilder("Chain Builder", "Put this chain in order: aggregate demand weakens / unemployment rises / household income falls / consumption falls.", "unemployment rises -> household income falls -> consumption falls -> aggregate demand weakens"),
+      templateShort("Exam Answer", "Explain one economic impact of rising unemployment on Australian households or the economy.", "Unemployment reduces household income, which can reduce consumption and aggregate demand, slowing economic growth."),
+      templateUpgrade("Marker Upgrade", "Weak answer: 'Unemployment is bad because people have less money.' Upgrade it into an Economics answer.", "Use the chain: unemployment -> income -> consumption -> aggregate demand -> growth, then add one judgement.", "4 marks")
     ]
   },
   recruitment: {
@@ -138,15 +142,21 @@ const TOPIC_TEMPLATES = {
     miniMasterclass: "Recruitment answers should move from HR action to business performance: who is hired, why that method, and what it changes.",
     nextSteps: "Next, practise selection or training using the same HR strategy -> performance chain.",
     cards: [
-      templateMcq("Concept MCQ", "Which option best defines recruitment?", ["Choosing the final employee after interviews", "Finding and attracting suitable applicants for a vacancy", "Training workers after they are hired", "Paying employees fairly"], "B", "Recruitment is about attracting applicants before selection."),
-      templateShort("Short Answer", "Explain one advantage and one disadvantage of internal recruitment.", "Internal recruitment can reduce cost and improve morale, but may limit new skills and ideas entering the business."),
-      templateShort("Exam Application", "Recommend a recruitment method for a growing business that needs skilled employees quickly. Justify your answer.", "Define the method, explain why it fits the business need, link to skills/cost/time, then make a judgement.", "6 marks")
+      templateLecture("Last-Minute Sheet", "Learn the recruitment mini lecture: recruitment vs selection, internal/external methods and performance impact.", "Must know: recruitment attracts applicants; selection chooses the best applicant."),
+      templateMcq("Trap Check", "Which option best defines recruitment?", ["Choosing the final employee after interviews", "Finding and attracting suitable applicants for a vacancy", "Training workers after they are hired", "Paying employees fairly"], "B", "Recruitment is about attracting applicants before selection."),
+      templateBuilder("Impact Matcher", "Match the method to impact: internal recruitment -> ____; external recruitment -> ____.", "morale/lower cost; wider applicant pool/new skills"),
+      templateShort("Exam Answer", "Explain one advantage and one disadvantage of internal recruitment.", "Internal recruitment can reduce cost and improve morale, but may limit new skills and ideas entering the business."),
+      templateUpgrade("Marker Upgrade", "Weak answer: 'External recruitment is good because you get better workers.' Upgrade it with business impact.", "Name the method, explain wider applicant pool or specialist skills, then link to productivity, service quality or competitiveness.", "4 marks")
     ]
   }
 };
 
+function templateLecture(label, question, sampleAnswer) { return { label, type: "Lecture Sheet", question, sampleAnswer, markValue: "Study sheet" }; }
 function templateMcq(label, question, options, correct, reason) { return { label, type: "Multiple Choice", question, options, correct, reason }; }
-function templateShort(label, question, sampleAnswer, markValue = "4 marks") { return { label, type: label === "Short Answer" ? "Short Response / Written Answer" : "Exam Application", question, sampleAnswer, markValue }; }
+function templateBuilder(label, question, sampleAnswer) { return { label, type: "Chain Builder", question, sampleAnswer, markValue: "3 marks" }; }
+function templateShort(label, question, sampleAnswer, markValue = "4 marks") { return { label, type: "Short Response / Written Answer", question, sampleAnswer, markValue }; }
+function templateUpgrade(label, question, sampleAnswer, markValue = "4 marks") { return { label, type: "Marker Upgrade", question, sampleAnswer, markValue }; }
+
 function selectTopicTemplate(subject, topic, request) {
   const text = `${subject} ${topic} ${request}`.toLowerCase();
   if (/business|human resources|hr/.test(text) && /recruitment/.test(text)) return TOPIC_TEMPLATES.recruitment;
@@ -154,6 +164,7 @@ function selectTopicTemplate(subject, topic, request) {
   if (/economics|labou?r|wage|employment/.test(text) && /labou?r market|labou?r demand|wage|minimum wage|participation|underemployment/.test(text)) return TOPIC_TEMPLATES.labourMarket;
   return null;
 }
+
 function genericTemplate(subject, topic) {
   const label = topic || subject || "your weak topic";
   return {
@@ -166,20 +177,32 @@ function genericTemplate(subject, topic) {
     miniMasterclass: "Answer first, then fix the weakest sentence or working line.",
     nextSteps: "Do one more timed question on the same topic.",
     cards: [
-      templateMcq("Concept MCQ", "Which first move is strongest before writing?", ["Write everything remembered", "Identify the key term, method and command word", "Skip the question wording", "Write a conclusion first"], "B", "The first move is to understand exactly what the task wants."),
-      templateShort("Short Answer", `Answer one exam-style short response on ${label}.`, "State the key idea, explain it, add a specific example or working step, then link back."),
-      templateShort("Exam Application", `Complete one final exam-style answer on ${label}.`, "Use the correction from Card 2 and finish with a direct link to the question.", "5 marks")
+      templateLecture("Last-Minute Sheet", `Read the last-minute sheet for ${label}.`, "Must know: define the key idea, know the answer path, and avoid broad notes."),
+      templateMcq("Trap Check", "Which first move is strongest before writing?", ["Write everything remembered", "Identify the key term, method and command word", "Skip the question wording", "Write a conclusion first"], "B", "The first move is to understand exactly what the task wants."),
+      templateBuilder("Build Task", `Fill the missing link in the answer path for ${label}: key idea -> ____ -> final link.`, "specific method/content"),
+      templateShort("Exam Answer", `Answer one exam-style short response on ${label}.`, "State the key idea, explain it, add a specific example or working step, then link back."),
+      templateUpgrade("Marker Upgrade", `Upgrade a weak answer on ${label} by adding the missing link.`, "Add the exact term, the mechanism or method, and the final link.")
     ]
   };
 }
+
 function topicTemplateCards(template, timeRequired) {
   return template.cards.map((item, index) => {
     const stage = index + 1;
     const isMcq = item.type === "Multiple Choice";
     const questions = isMcq ? [mcq(item.question, item.options, item.correct, item.reason)] : [short(item.question, item.markValue, item.sampleAnswer, template.keyDefinitions, template.markingCriteria)];
-    return card(stage, item.label, item.type, template.title, timeRequired, stage === 1 ? `Answer one concept check on ${template.title}.` : item.question, stage === 1 ? template.keyDefinitions.join(" ") : template.coreLogic, template.commonMistakes[Math.min(index, template.commonMistakes.length - 1)], template.examPriority, "Skip passive note rewriting. Complete the card first.", stage === 1 ? "Start Concept MCQ" : stage === 2 ? "Start Short Answer" : "Start Exam Application", template.miniMasterclass, questions, stage === 3 ? template.nextSteps : "Move to the next card only after feedback and one fix.");
+    return card(stage, item.label, item.type, template.title, timeRequired, item.question, item.type === "Lecture Sheet" ? template.keyDefinitions.join(" ") : template.coreLogic, template.commonMistakes[Math.min(index, template.commonMistakes.length - 1)], template.examPriority, item.type === "Lecture Sheet" ? "Do not copy the sheet. Use it to answer the next card." : "Skip passive note rewriting. Complete the card first.", buttonTextForTemplateItem(item), template.miniMasterclass, questions, stage === template.cards.length ? template.nextSteps : "Move to the next card only after feedback and one fix.");
   });
 }
+
+function buttonTextForTemplateItem(item) {
+  if (item.type === "Lecture Sheet") return "Start Mini Lecture";
+  if (item.type === "Multiple Choice") return "Start Trap Check";
+  if (item.type === "Chain Builder") return "Start Chain Builder";
+  if (item.type === "Marker Upgrade") return "Start Marker Upgrade";
+  return "Start Exam Answer";
+}
+
 function card(stage, label, type, topic, timeRequired, task, focus, mistake, impact, ignore, buttonText, miniLesson, questions, next) {
   return {
     title: `Card ${stage} - ${label}`,
@@ -192,7 +215,7 @@ function card(stage, label, type, topic, timeRequired, task, focus, mistake, imp
     timeRequired,
     difficulty: stage === 1 ? "Easy" : "Core",
     focusPoint: focus,
-    howToApproach: stage === 1 ? ["Read the stem.", "Choose A, B, C or D.", "Check the explanation.", "Carry the takeaway into Card 2."] : ["Read the question.", "Use the guided path.", "Write inside the timer.", "Submit for feedback."],
+    howToApproach: stage === 1 ? ["Read the sheet.", "Notice the trap.", "Carry the rule into the next card."] : ["Read the task.", "Use the guided path.", "Write inside the timer.", "Submit for feedback."],
     mostCommonMistake: mistake,
     whatNotToFocusOn: ignore,
     estimatedMarksImpact: impact,
@@ -200,12 +223,13 @@ function card(stage, label, type, topic, timeRequired, task, focus, mistake, imp
     buttonText,
     miniLesson,
     workedExample: miniLesson,
-    feedbackCriteria: stage === 1 ? ["selected answer", "correct explanation", "trap avoided", "takeaway"] : ["what worked", "what lost marks", "one exact fix", "next best move"],
+    feedbackCriteria: stage === 1 ? ["key rule captured", "trap understood", "ready for next card"] : ["what worked", "what lost marks", "one exact fix", "next best move"],
     fixDrill: "Rewrite the weakest sentence using the feedback.",
     nextTargetedTask: next,
     questions
   };
 }
+
 function mcq(question, options, correct, reason) {
   return {
     question: `Concept check: ${question}\nA. ${options[0]}\nB. ${options[1]}\nC. ${options[2]}\nD. ${options[3]}`,
@@ -220,20 +244,22 @@ function mcq(question, options, correct, reason) {
     guidedAnswerPath: path(["Correct option: only one answer earns the mark.", "Trap option: sounds broad but misses the method."], "Pick the option that would earn the mark.", "Select A, B, C or D.", ["Read the command.", "Eliminate vague options.", "Choose the precise option.", "Read the takeaway."], ["Correct option", "Reason understood", "Trap avoided"], "Do not choose the option that only sounds familiar.")
   };
 }
+
 function short(question, markValue, scaffold, terms, checklist) {
   return {
     question,
     markValue,
     difficulty: "Core",
-    estimatedTime: "5 min",
-    focusPoint: "Write the exact response, not notes.",
+    estimatedTime: markValue === "Study sheet" ? "4 min" : "5 min",
+    focusPoint: "Complete this learning action, not notes.",
     commonMistake: "Being too general.",
     marksImpact: "Builds the written answer that wins marks.",
     whatToIgnore: "Ignore polished wording until the idea is clear.",
     sampleAnswer: scaffold,
-    guidedAnswerPath: path(terms || ["Key term: define it in exam wording."], "Produce the exact written move needed for this question.", terms?.[0] || "Start with the key definition, method or claim.", String(scaffold || "State -> Explain -> Link").split(" -> ").slice(0, 4), checklist || ["Key term used", "Cause/method explained", "Effect shown", "Final link"], "Do not write a broad answer with no link to the question.")
+    guidedAnswerPath: path(terms || ["Key term: define it in exam wording."], "Produce the exact move needed for this task.", terms?.[0] || "Start with the key definition, method or claim.", String(scaffold || "State -> Explain -> Link").split(" -> ").slice(0, 4), checklist || ["Key term used", "Cause/method explained", "Effect shown", "Final link"], "Do not write a broad answer with no link to the question.")
   };
 }
+
 function path(keyDefinitionsYouNeed, whatThisQuestionIsReallyAsking, firstSentenceYouCanUse, stepByStepAnswerPath, whatToIncludeForFullMarks, commonMistake) { return { keyDefinitionsYouNeed, whatThisQuestionIsReallyAsking, firstSentenceYouCanUse, stepByStepAnswerPath, whatToIncludeForFullMarks, commonMistake }; }
 function inferTopic(request, subject) {
   const weak = request.match(/weak topic\s*:\s*([^.;\n]+)/i);
