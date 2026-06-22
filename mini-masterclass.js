@@ -5,7 +5,7 @@
   var activeTopicPack=null;
   var timerId=null;
 
-  window.addEventListener("click",function(event){
+  document.addEventListener("click",function(event){
     var button=event.target.closest(".execution-card .start-session");
     if(!button)return;
     var cardEl=button.closest(".execution-card");
@@ -17,7 +17,7 @@
     openTopicPackSession(activeTopicPack);
   },true);
 
-  window.addEventListener("click",function(event){
+  document.addEventListener("click",function(event){
     var feedback=event.target.closest("[data-topic-pack-feedback]");
     if(feedback){
       event.preventDefault();
@@ -40,8 +40,7 @@
     }
   },true);
 
-  var observer=new MutationObserver(cleanTopicPackPlanner);
-  observer.observe(document.documentElement,{childList:true,subtree:true});
+  watchSprintOutput(cleanTopicPackPlanner);
   setTimeout(cleanTopicPackPlanner,250);
   setTimeout(cleanTopicPackPlanner,1200);
   injectCss();
@@ -50,14 +49,29 @@
     var output=document.querySelector("#sprintOutput");
     var stack=output&&output.querySelector(".action-card-stack");
     if(!stack||!isTopicPackStack(stack))return;
+    var alreadyClean=stack.dataset.topicPackClean==="true"&&!output.querySelector(".evening-plan");
+    if(alreadyClean)return;
     output.querySelectorAll(".evening-plan").forEach(function(node){node.remove()});
-    stack.hidden=false;
-    stack.style.display="";
-    stack.classList.remove("action-card-source");
+    if(stack.hidden)stack.hidden=false;
+    if(stack.style.display)stack.style.display="";
+    if(stack.classList.contains("action-card-source"))stack.classList.remove("action-card-source");
     Array.from(stack.querySelectorAll(".execution-card")).forEach(function(card){
-      card.hidden=false;
-      card.style.display="";
+      if(card.hidden)card.hidden=false;
+      if(card.style.display)card.style.display="";
     });
+    stack.dataset.topicPackClean="true";
+  }
+
+  function watchSprintOutput(callback){
+    var attempts=0;
+    var timer=setInterval(function(){
+      var target=document.querySelector("#sprintOutput");
+      attempts+=1;
+      if(!target&&attempts<25)return;
+      clearInterval(timer);
+      if(!target)return;
+      new MutationObserver(callback).observe(target,{childList:true,subtree:true});
+    },120);
   }
 
   function isTopicPackStack(stack){
@@ -226,6 +240,7 @@
   function text(root,selector){return root.querySelector(selector)&&root.querySelector(selector).textContent.trim()||""}
   function set(selector,value){var node=document.querySelector(selector);if(node)node.textContent=value||""}
   function esc(value){return String(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+
   function injectCss(){
     if(document.querySelector("#hsc-topic-pack-runtime-style"))return;
     var style=document.createElement("style");
