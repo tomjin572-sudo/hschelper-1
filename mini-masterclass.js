@@ -95,7 +95,7 @@
       resourceName:resourceName,
       resourceUrl:resource,
       timeRequired:minutes,
-      howToApproach:["Read the card.","Answer the exact task.","Get feedback, then fix one sentence."],
+      howToApproach:["Read the card.","Use Mini Coach before writing.","Get feedback, then fix one sentence."],
       questions:[{
         question:task,
         markValue:/multiple choice/i.test(qType)?"1 mark":/lecture sheet/i.test(qType)?"Study sheet":"4 marks",
@@ -140,11 +140,13 @@
     var stack=document.querySelector("#questionStack");
     if(!stack)return;
     stack.innerHTML=(card.questions||[]).map(function(q,index){
+      var coach=miniCoachFor(card,q);
       return '<section class="question-card topic-pack-question-card step-card-flow" data-topic-pack-index="'+index+'">'+
         '<div class="question-topline"><span>Card '+(index+1)+' of '+(card.questions.length||1)+'</span><em>'+esc(q.difficulty||"Core")+' - '+esc(q.estimatedTime||"5 min")+'</em></div>'+
-        '<ol class="session-stepper" aria-label="Learning session steps">'+["Learn","Worked Example","Your Turn","AI Feedback","Fix","Next Action"].map(function(label,i){return'<li class="'+(i===0?"is-active":"")+'" data-session-step="'+(i+1)+'"><span>'+(i+1)+'</span><b>'+esc(label)+'</b></li>'}).join("")+'</ol>'+
+        '<ol class="session-stepper" aria-label="Learning session steps">'+["Learn","Mini Coach","Your Turn","AI Feedback","Fix","Next Action"].map(function(label,i){return'<li class="'+(i===0?"is-active":"")+'" data-session-step="'+(i+1)+'"><span>'+(i+1)+'</span><b>'+esc(label)+'</b></li>'}).join("")+'</ol>'+
         '<div class="learning-section why-section"><div class="learning-section-title"><strong>Why this matters</strong><span>Exam sprint</span></div><p>'+esc(q.marksImpact||card.estimatedMarksImpact)+'</p></div>'+
         '<div class="learning-section attack-section"><div class="learning-section-title"><strong>Guided Answer Path</strong><span>How to attack it</span></div><p>'+esc(q.focusPoint||card.focusPoint)+'</p></div>'+
+        '<div class="learning-section topic-pack-mini-coach"><div class="learning-section-title"><strong>Mini Coach</strong><span>Use this before answering</span></div><div class="mini-coach-grid"><div><b>Answer move</b><p>'+esc(coach.move)+'</p></div><div><b>Example line</b><p>'+esc(coach.example)+'</p></div><div><b>Trap</b><p>'+esc(q.commonMistake||card.mostCommonMistake)+'</p></div></div></div>'+
         '<div class="learning-section short-response-section"><div class="learning-section-title"><strong>Your Turn</strong><span>Write now</span></div><p class="question-text">'+esc(q.question)+'</p><label class="question-answer">Your answer / working<textarea data-topic-pack-answer="'+index+'" placeholder="Write the answer, not notes."></textarea></label></div>'+
         '<div class="learning-section feedback-step-card"><div class="learning-section-title"><strong>AI Feedback</strong><span>Coach check</span></div><div class="question-feedback" id="topicPackFeedback'+index+'" hidden></div></div>'+
         '<div class="question-actions"><button type="button" class="secondary-action" data-topic-pack-feedback="'+index+'">Get feedback</button><button type="button" class="secondary-action" data-topic-pack-complete="'+index+'">Lock this mark</button></div>'+
@@ -152,6 +154,24 @@
       '</section>';
     }).join("");
     updateTopicPackProgress();
+  }
+
+  function miniCoachFor(card,q){
+    var raw=((card&&card.topic)||"")+" "+((card&&card.questionType)||"")+" "+((q&&q.question)||"")+" "+((q&&q.focusPoint)||"");
+    var source=raw.toLowerCase();
+    if(/unemployment|aggregate demand|consumption|household income/.test(source)){
+      return {move:"Use the Economics chain: define unemployment, then link income -> consumption -> aggregate demand -> growth.",example:"Rising unemployment reduces household income, which lowers consumption and weakens aggregate demand."};
+    }
+    if(/recruitment|internal|external|applicant/.test(source)){
+      return {move:"Use the Business chain: HR action -> applicant quality -> cost, skills or culture -> performance.",example:"Internal recruitment can reduce hiring costs and improve morale, but may limit new skills entering the business."};
+    }
+    if(/multiple choice|which statement|option|a\.|b\.|c\.|d\./.test(source)){
+      return {move:"Eliminate vague options first, then choose the option with the exact syllabus meaning.",example:"The correct option must define the term precisely, not just sound familiar."};
+    }
+    if(/upgrade|weak answer|marker/.test(source)){
+      return {move:"Find the missing mark: definition, mechanism, example, or judgement. Rewrite only that part.",example:"A stronger answer adds the mechanism before the final impact."};
+    }
+    return {move:"Answer in one clear chain: key term -> cause or action -> mechanism -> final impact.",example:"This earns marks because it shows what changes, why it changes, and why it matters."};
   }
 
   async function submitTopicPackFeedback(index,button){
@@ -169,14 +189,7 @@
     box.hidden=false;
     box.textContent="AI coach is checking your answer...";
     try{
-      var prompt=[
-        "Mark this HSC-style practice answer.",
-        "Subject: "+activeTopicPack.topic,
-        "Question: "+q.question,
-        "Focus point: "+(q.focusPoint||activeTopicPack.focusPoint),
-        "Common mistake to check: "+(q.commonMistake||activeTopicPack.mostCommonMistake),
-        "Student answer: "+answer
-      ].join("\n");
+      var prompt=["Mark this HSC-style practice answer.","Subject: "+activeTopicPack.topic,"Question: "+q.question,"Focus point: "+(q.focusPoint||activeTopicPack.focusPoint),"Common mistake to check: "+(q.commonMistake||activeTopicPack.mostCommonMistake),"Student answer: "+answer].join("\n");
       var response=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:prompt,subject:activeTopicPack.topic})});
       var data=await response.json();
       box.textContent=data.answer||"Feedback unavailable. Fix the weakest sentence and move on.";
@@ -217,7 +230,7 @@
     if(document.querySelector("#hsc-topic-pack-runtime-style"))return;
     var style=document.createElement("style");
     style.id="hsc-topic-pack-runtime-style";
-    style.textContent=".topic-pack-question-card .session-stepper{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:8px 0 10px;padding:0;list-style:none}.topic-pack-question-card .session-stepper li{display:grid;gap:4px;min-width:0;border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:8px;background:rgba(255,255,255,.045);color:rgba(247,249,255,.64)}.topic-pack-question-card .session-stepper span{display:grid;place-items:center;width:22px;height:22px;border-radius:999px;background:rgba(255,255,255,.08);font-size:.72rem;font-weight:900}.topic-pack-question-card .session-stepper b{font-size:.72rem;line-height:1.15}.topic-pack-question-card .session-stepper li.is-active{border-color:rgba(103,232,249,.44);background:rgba(103,232,249,.12);color:rgba(247,249,255,.96)}.topic-pack-question-card .learning-section{margin-top:10px}.topic-pack-question-card textarea{min-height:130px}@media(max-width:820px){.topic-pack-question-card .session-stepper{grid-template-columns:repeat(2,minmax(0,1fr))}.topic-pack-question-card .question-actions{display:grid;grid-template-columns:1fr}.topic-pack-question-card .question-actions button{min-height:46px}}";
+    style.textContent=".topic-pack-question-card .session-stepper{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:8px 0 10px;padding:0;list-style:none}.topic-pack-question-card .session-stepper li{display:grid;gap:4px;min-width:0;border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:8px;background:rgba(255,255,255,.045);color:rgba(247,249,255,.64)}.topic-pack-question-card .session-stepper span{display:grid;place-items:center;width:22px;height:22px;border-radius:999px;background:rgba(255,255,255,.08);font-size:.72rem;font-weight:900}.topic-pack-question-card .session-stepper b{font-size:.72rem;line-height:1.15}.topic-pack-question-card .session-stepper li.is-active{border-color:rgba(103,232,249,.44);background:rgba(103,232,249,.12);color:rgba(247,249,255,.96)}.topic-pack-question-card .learning-section{margin-top:10px}.topic-pack-question-card textarea{min-height:130px}.topic-pack-mini-coach{border-color:rgba(103,232,249,.24);background:rgba(103,232,249,.075)}.mini-coach-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.mini-coach-grid div{border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px;background:rgba(255,255,255,.045)}.mini-coach-grid b{display:block;margin-bottom:5px;color:rgba(247,249,255,.92);font-size:.72rem;text-transform:uppercase}.mini-coach-grid p{margin:0;color:var(--muted);font-size:.9rem;line-height:1.42}@media(max-width:820px){.topic-pack-question-card .session-stepper{grid-template-columns:repeat(2,minmax(0,1fr))}.topic-pack-question-card .question-actions{display:grid;grid-template-columns:1fr}.topic-pack-question-card .question-actions button{min-height:46px}.mini-coach-grid{grid-template-columns:1fr}}";
     document.head.appendChild(style);
   }
 })();
