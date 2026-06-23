@@ -9,19 +9,19 @@
   const practiceWorkflow = document.querySelector("#practiceWorkflow");
   const completionScreen = document.querySelector("#completionScreen");
   const timerDisplay = document.querySelector("#timerDisplay");
+  const pauseTimerButton = document.querySelector("#pauseTimerButton");
   const completeSessionButton = document.querySelector("#completeSessionButton");
   const closeFocusButton = document.querySelector("#closeFocusButton");
   const continueButton = document.querySelector("#continueButton");
-  const pauseTimerButton = document.querySelector("#pauseTimerButton");
 
   let currentCards = [];
   let activeCard = null;
   let activeQuestion = null;
-  let timer = null;
+  let timerId = null;
   let remainingSeconds = 0;
   let paused = false;
 
-  const papers = [
+  const paperLinks = [
     ["All HSC papers", "Official NESA exam packs and marking guidelines.", "https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers"],
     ["Economics", "Economics past HSC exam packs.", "https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/economics"],
     ["Business Studies", "Business Studies past HSC exam packs.", "https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/business-studies"],
@@ -30,42 +30,42 @@
   ];
 
   renderPaperLinks();
-  renderProgressStats();
+  renderProgress();
 
   if (form) form.addEventListener("submit", generatePlan);
-  if (output) output.addEventListener("click", handleCardClick);
-  if (questionStack) questionStack.addEventListener("click", handleQuestionClick);
+  if (output) output.addEventListener("click", onCardClick);
+  if (questionStack) questionStack.addEventListener("click", onQuestionClick);
+  if (pauseTimerButton) pauseTimerButton.addEventListener("click", togglePause);
+  if (completeSessionButton) completeSessionButton.addEventListener("click", completeSession);
   if (closeFocusButton) closeFocusButton.addEventListener("click", closeSession);
   if (continueButton) continueButton.addEventListener("click", closeSession);
-  if (completeSessionButton) completeSessionButton.addEventListener("click", completeSession);
-  if (pauseTimerButton) pauseTimerButton.addEventListener("click", togglePause);
-  document.addEventListener("click", handleChipClick);
+  document.addEventListener("click", onChipClick);
 
   async function generatePlan(event) {
     event.preventDefault();
-    const details = readDetails();
+    const details = getDetails();
     const submit = form.querySelector("button[type='submit']");
     setLoading(true, submit);
-
     try {
-      const answer = await fetchPlan(details);
-      const cards = parseCards(answer);
+      const answer = await requestPlan(details);
+      const cards = parsePlan(answer);
       currentCards = cards.length ? cards : fallbackCards(details);
-      renderCards(currentCards);
+      renderCards(currentCards, "Mark attack cards ready");
     } catch (error) {
-      console.warn("StudySprint fallback", error);
+      console.warn("StudySprint used fallback cards", error);
       currentCards = fallbackCards(details);
-      renderCards(currentCards, "Local fallback cards ready");
+      renderCards(currentCards, "Fallback mark attack cards ready");
     } finally {
       setLoading(false, submit);
     }
   }
 
-  function readDetails() {
+  function getDetails() {
     const subjects = split(value("#subjectsInput"));
     const topics = split(value("#weakTopicsInput"));
     return {
       subject: subjects[0] || "Economics",
+      topic: topics[0] || "Unemployment",
       topics: topics.length ? topics : ["Unemployment"],
       examTiming: value("#examDatesInput") || "tomorrow",
       studyTime: value("#studyTimeInput") || "90 minutes",
@@ -73,17 +73,16 @@
     };
   }
 
-  async function fetchPlan(details) {
+  async function requestPlan(details) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
     const question = [
-      `Subject: ${details.subject}`,
-      `Practice type: ${details.practiceMode === "essay" ? "Essay / Extended Response Sprint" : "Short Answer Sprint"}`,
-      `Weak topic: ${details.topics.join(", ")}`,
-      `Available time: ${details.studyTime}`,
-      `Exam timing: ${details.examTiming}`
+      "Subject: " + details.subject,
+      "Practice type: " + (details.practiceMode === "essay" ? "Essay / Extended Response Sprint" : "Short Answer Sprint"),
+      "Weak topic: " + details.topics.join(", "),
+      "Available time: " + details.studyTime,
+      "Exam timing: " + details.examTiming
     ].join("\n");
-
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -92,7 +91,7 @@
         body: JSON.stringify({ question, subject: details.subject })
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || "Plan request failed");
+      if (!response.ok) throw new Error(data.error || "Plan failed");
       if (!data.answer) throw new Error("Empty plan");
       return data.answer;
     } finally {
@@ -100,153 +99,147 @@
     }
   }
 
-  function parseCards(answer) {
+  function parsePlan(answer) {
     try {
       const cleaned = String(answer || "").trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```$/i, "").trim();
       const parsed = JSON.parse(cleaned);
-      return Array.isArray(parsed.cards) ? parsed.cards.slice(0, 5).map(normalizeCard) : [];
+      if (!Array.isArray(parsed.cards)) return [];
+      return parsed.cards.slice(0, 5).map(normalizeCard);
     } catch (error) {
       return [];
     }
   }
 
   function normalizeCard(card, index) {
-    const question = Array.isArray(card.questions) && card.questions[0] ? card.questions[0] : null;
+    const question = Array.isArray(card.questions) && card.questions[0] ? card.questions[0] : {};
+    const steps = Array.isArray(card.howToApproach) ? card.howToApproach : ["Read the task.", "Write an answer.", "Get feedback.", "Fix one sentence."];
     return {
-      title: card.title || `Card ${index + 1}`,
+      title: card.title || "Card " + (index + 1),
       topic: card.topic || "Priority topic",
-      doThisNow: card.doThisNow || card.highestRoiTask || "Complete this timed mark attack.",
-      questionType: card.questionType || "HSC-style practice",
-      timeRequired: card.timeRequired || question?.estimatedTime || "15 minutes",
-      difficulty: card.difficulty || question?.difficulty || "Core",
-      focusPoint: card.focusPoint || question?.focusPoint || "Answer the exact question, then fix one weak sentence.",
-      mostCommonMistake: card.mostCommonMistake || question?.commonMistake || "Writing notes instead of an answer.",
-      estimatedMarksImpact: card.estimatedMarksImpact || question?.marksImpact || "High value if corrected before the exam.",
-      whatNotToFocusOn: card.whatNotToFocusOn || question?.whatToIgnore || "Do not rewrite notes before attempting.",
+      task: card.doThisNow || card.highestRoiTask || question.question || "Complete this timed mark attack.",
+      type: card.questionType || "HSC-style practice",
+      time: card.timeRequired || question.estimatedTime || "12 minutes",
+      difficulty: card.difficulty || question.difficulty || "Core",
+      focus: card.focusPoint || question.focusPoint || "Answer the exact question, then fix one weak sentence.",
+      trap: card.mostCommonMistake || question.commonMistake || "Writing notes instead of an answer.",
+      impact: card.estimatedMarksImpact || question.marksImpact || "Targets marks you can still win today.",
+      ignore: card.whatNotToFocusOn || question.whatToIgnore || "Do not rewrite notes before attempting.",
       resourceName: card.resourceName || "Internal HSC-style practice",
       resourceUrl: safeUrl(card.resourceUrl),
-      howToApproach: Array.isArray(card.howToApproach) ? card.howToApproach : ["Read the task.", "Write an answer.", "Get feedback.", "Fix one sentence."],
-      questions: [normalizeQuestion(question, card)]
-    };
-  }
-
-  function normalizeQuestion(question, card) {
-    return {
-      question: question?.question || card.doThisNow || card.highestRoiTask || "Write one exam-style response for this card.",
-      markValue: question?.markValue || "4 marks",
-      estimatedTime: question?.estimatedTime || card.timeRequired || "8 min",
-      focusPoint: question?.focusPoint || card.focusPoint || "Use the key term, mechanism and final link.",
-      commonMistake: question?.commonMistake || card.mostCommonMistake || "Being too general.",
-      sampleAnswer: question?.sampleAnswer || card.workedExample || "",
-      guidedAnswerPath: question?.guidedAnswerPath || null
+      steps,
+      question: {
+        text: question.question || card.doThisNow || card.highestRoiTask || "Write one exam-style response for this card.",
+        marks: question.markValue || "4 marks",
+        time: question.estimatedTime || card.timeRequired || "8 min",
+        focus: question.focusPoint || card.focusPoint || "Use key term, mechanism and final link.",
+        trap: question.commonMistake || card.mostCommonMistake || "Being too general.",
+        sample: question.sampleAnswer || card.workedExample || ""
+      }
     };
   }
 
   function fallbackCards(details) {
-    const topic = details.topics[0] || "Unemployment";
-    const econ = /economics|unemployment|labou?r|wage|market/i.test(`${details.subject} ${topic}`);
-    if (econ) {
+    const economics = /economics|unemployment|labou?r|wage|market/i.test(details.subject + " " + details.topic);
+    if (economics) {
       return [
-        card("Card 1 - Must know", "Economics - " + topic, "Lock the definition and the income -> consumption -> aggregate demand chain.", "Lecture Sheet", "Define the term, then state the economic chain.", "Only saying it is bad without an economic mechanism."),
-        card("Card 2 - Trap check", "Economics - " + topic, "Answer one concept check that separates the key terms.", "Multiple Choice", "Separate similar terms before writing.", "Choosing the familiar term instead of the accurate one."),
-        card("Card 3 - Chain builder", "Economics - " + topic, "Build a cause-effect chain in the correct order.", "Chain Builder", "Cause -> mechanism -> impact -> link.", "Jumping from cause to final impact with no mechanism."),
-        card("Card 4 - Exam answer", "Economics - " + topic, "Write one timed 4-mark response.", "Short Response", "Definition -> cause -> mechanism -> impact.", "Writing a definition-only answer."),
-        card("Card 5 - Marker upgrade", "Economics - " + topic, "Upgrade one weak answer by adding mechanism and judgement.", "Marker Upgrade", "Find the missing mark and rewrite only that part.", "Making the answer longer but not more precise.")
+        fallbackCard("Card 1 - Must know", "Economics - " + details.topic, "Lock the definition and the income to consumption to aggregate demand chain.", "Lecture Sheet", "Define the term, then state the economic chain.", "Only saying it is bad without an economic mechanism."),
+        fallbackCard("Card 2 - Trap check", "Economics - " + details.topic, "Answer one concept check that separates the key terms.", "Multiple Choice", "Separate similar terms before writing.", "Choosing the familiar term instead of the accurate one."),
+        fallbackCard("Card 3 - Chain builder", "Economics - " + details.topic, "Build a cause-effect chain in the correct order.", "Chain Builder", "Cause, mechanism, impact, link.", "Jumping from cause to final impact with no mechanism."),
+        fallbackCard("Card 4 - Exam answer", "Economics - " + details.topic, "Write one timed 4-mark response.", "Short Response", "Definition, cause, mechanism, impact.", "Writing a definition-only answer."),
+        fallbackCard("Card 5 - Marker upgrade", "Economics - " + details.topic, "Upgrade one weak answer by adding mechanism and judgement.", "Marker Upgrade", "Find the missing mark and rewrite only that part.", "Making the answer longer but not more precise.")
       ];
     }
     return [
-      card("Card 1 - Start here", `${details.subject} - ${topic}`, "Learn the key move, then attempt one answer.", "Core practice", "Key term -> answer -> evidence or working -> link.", "Reading notes instead of writing."),
-      card("Card 2 - Apply it", `${details.subject} - ${topic}`, "Apply the idea to one exam-style task.", "Application", "Use the command word and subject language.", "Answering the topic, not the question."),
-      card("Card 3 - Fix it", `${details.subject} - ${topic}`, "Fix the weakest sentence or line of working.", "Error repair", "Find one lost mark and rewrite it.", "Moving on without correction.")
+      fallbackCard("Card 1 - Start here", details.subject + " - " + details.topic, "Learn the key move, then attempt one answer.", "Core practice", "Key term, answer, evidence or working, link.", "Reading notes instead of writing."),
+      fallbackCard("Card 2 - Apply it", details.subject + " - " + details.topic, "Apply the idea to one exam-style task.", "Application", "Use the command word and subject language.", "Answering the topic, not the question."),
+      fallbackCard("Card 3 - Fix it", details.subject + " - " + details.topic, "Fix the weakest sentence or line of working.", "Error repair", "Find one lost mark and rewrite it.", "Moving on without correction.")
     ];
   }
 
-  function card(title, topic, task, type, focus, mistake) {
+  function fallbackCard(title, topic, task, type, focus, trap) {
     return normalizeCard({
       title,
       topic,
       doThisNow: task,
       questionType: type,
       timeRequired: "12 minutes",
+      difficulty: "Core",
       focusPoint: focus,
-      mostCommonMistake: mistake,
+      mostCommonMistake: trap,
       estimatedMarksImpact: "Targets marks you can still win today.",
-      questions: [{ question: task, markValue: type === "Multiple Choice" ? "1 mark" : "4 marks", estimatedTime: "6 min", focusPoint: focus, commonMistake: mistake }]
+      questions: [{ question: task, markValue: type === "Multiple Choice" ? "1 mark" : "4 marks", estimatedTime: "6 min", focusPoint: focus, commonMistake: trap }]
     }, 0);
   }
 
-  function renderCards(cards, label = "Mark attack cards ready") {
+  function renderCards(cards, label) {
     outputLabel.textContent = label;
-    output.innerHTML = `<div class="action-card-stack">${cards.map(renderCard).join("")}</div>`;
+    output.innerHTML = '<div class="action-card-stack">' + cards.map(renderCard).join("") + '</div>';
   }
 
   function renderCard(card, index) {
-    return `<article class="execution-card">
-      <div class="execution-card-top"><span>Card ${index + 1}</span><em>${esc(card.timeRequired)} - ${esc(card.difficulty)}</em></div>
-      <p class="card-label">${esc(card.title)}</p>
-      <h3>${esc(card.topic)}</h3>
-      <p class="do-now">${esc(card.doThisNow)}</p>
-      <div class="card-grid essay-guidance-grid">
-        <div><strong>Mark attack</strong><span>${esc(card.questionType)}</span></div>
-        <div><strong>Guided answer path</strong><span>${esc(card.focusPoint)}</span></div>
-        <div><strong>Trap</strong><span>${esc(card.mostCommonMistake)}</span></div>
-        <div><strong>Marks impact</strong><span>${esc(card.estimatedMarksImpact)}</span></div>
-        <div><strong>Ignore</strong><span>${esc(card.whatNotToFocusOn)}</span></div>
-      </div>
-      <div class="card-action-row"><span>This is a marks task, not a note-taking task.</span><button class="action-button start-session" type="button" data-card-index="${index}">Start Practice</button></div>
-    </article>`;
+    return '<article class="execution-card">' +
+      '<div class="execution-card-top"><span>Card ' + (index + 1) + '</span><em>' + esc(card.time) + ' - ' + esc(card.difficulty) + '</em></div>' +
+      '<p class="card-label">' + esc(card.title) + '</p>' +
+      '<h3>' + esc(card.topic) + '</h3>' +
+      '<p class="do-now">' + esc(card.task) + '</p>' +
+      '<div class="card-grid essay-guidance-grid">' +
+      '<div><strong>Mark attack</strong><span>' + esc(card.type) + '</span></div>' +
+      '<div><strong>Guided answer path</strong><span>' + esc(card.focus) + '</span></div>' +
+      '<div><strong>Trap</strong><span>' + esc(card.trap) + '</span></div>' +
+      '<div><strong>Marks impact</strong><span>' + esc(card.impact) + '</span></div>' +
+      '<div><strong>Ignore</strong><span>' + esc(card.ignore) + '</span></div>' +
+      '</div>' +
+      '<div class="card-action-row"><span>This is a marks task, not a note-taking task.</span><button class="action-button start-session" type="button" data-card-index="' + index + '">Start Practice</button></div>' +
+      '</article>';
   }
 
-  function handleCardClick(event) {
+  function onCardClick(event) {
     const button = event.target.closest("[data-card-index]");
     if (!button) return;
     const card = currentCards[Number(button.dataset.cardIndex)];
-    if (!card) return;
-    openSession(card);
+    if (card) openSession(card);
   }
 
   function openSession(card) {
     activeCard = card;
-    activeQuestion = card.questions[0];
+    activeQuestion = card.question;
     setText("#focusTaskTitle", card.title);
-    setText("#focusTaskText", card.doThisNow);
-    setText("#focusQuestionType", card.questionType);
+    setText("#focusTaskText", card.task);
+    setText("#focusQuestionType", card.type);
     setText("#focusResourceName", card.resourceName);
-    setText("#focusDoNow", card.doThisNow);
-    setText("#focusMistake", card.mostCommonMistake);
+    setText("#focusDoNow", card.task);
+    setText("#focusMistake", card.trap);
     const link = document.querySelector("#focusResourceLink");
     if (link && card.resourceUrl) { link.hidden = false; link.href = card.resourceUrl; } else if (link) { link.hidden = true; }
     const approach = document.querySelector("#focusApproachList");
-    if (approach) approach.innerHTML = card.howToApproach.map((item) => `<li>${esc(item)}</li>`).join("");
+    if (approach) approach.innerHTML = card.steps.map((item) => "<li>" + esc(item) + "</li>").join("");
     if (sessionNotes) sessionNotes.value = "";
-    renderQuestion(card, activeQuestion);
+    renderQuestion(card);
     if (practiceWorkflow) practiceWorkflow.hidden = false;
     if (completionScreen) completionScreen.hidden = true;
     if (focusOverlay) focusOverlay.setAttribute("aria-hidden", "false");
     document.body.classList.add("focus-active");
-    startTimer(card.timeRequired);
+    startTimer(card.time);
   }
 
-  function renderQuestion(card, question) {
-    const path = question.guidedAnswerPath;
-    const pathItems = Array.isArray(path?.stepByStepAnswerPath) ? path.stepByStepAnswerPath : card.howToApproach;
-    questionStack.innerHTML = `<section class="question-card">
-      <div class="question-topline"><span>${esc(question.markValue)}</span><em>${esc(question.estimatedTime)}</em></div>
-      <div class="learning-section"><div class="learning-section-title"><strong>Why this matters</strong><span>Exam sprint</span></div><p>${esc(card.estimatedMarksImpact)}</p></div>
-      <div class="learning-section"><div class="learning-section-title"><strong>Guided Answer Path</strong><span>Use this</span></div><ol>${pathItems.map((item) => `<li>${esc(item)}</li>`).join("")}</ol></div>
-      ${question.sampleAnswer ? `<div class="learning-section"><div class="learning-section-title"><strong>Worked Example</strong><span>Pattern</span></div><p>${esc(question.sampleAnswer)}</p></div>` : ""}
-      <div class="learning-section short-response-section"><div class="learning-section-title"><strong>Your Turn</strong><span>Write now</span></div><p class="question-text">${esc(question.question)}</p><label class="question-answer">Your answer<textarea data-answer placeholder="Write the answer, not notes."></textarea></label></div>
-      <div class="learning-section"><div class="learning-section-title"><strong>Trap that costs marks</strong><span>Check</span></div><p>${esc(question.commonMistake)}</p></div>
-      <div class="question-feedback" id="questionFeedback" hidden></div>
-      <div class="question-actions"><button type="button" class="secondary-action" data-feedback>Get feedback</button><button type="button" class="secondary-action" data-complete>Lock this mark</button></div>
-    </section>`;
+  function renderQuestion(card) {
+    const q = card.question;
+    const sample = q.sample ? '<div class="learning-section"><div class="learning-section-title"><strong>Worked Example</strong><span>Pattern</span></div><p>' + esc(q.sample) + '</p></div>' : "";
+    questionStack.innerHTML = '<section class="question-card">' +
+      '<div class="question-topline"><span>' + esc(q.marks) + '</span><em>' + esc(q.time) + '</em></div>' +
+      '<div class="learning-section"><div class="learning-section-title"><strong>Why this matters</strong><span>Exam sprint</span></div><p>' + esc(card.impact) + '</p></div>' +
+      '<div class="learning-section"><div class="learning-section-title"><strong>Guided Answer Path</strong><span>Use this</span></div><ol>' + card.steps.map((item) => "<li>" + esc(item) + "</li>").join("") + '</ol></div>' +
+      sample +
+      '<div class="learning-section short-response-section"><div class="learning-section-title"><strong>Your Turn</strong><span>Write now</span></div><p class="question-text">' + esc(q.text) + '</p><label class="question-answer">Your answer<textarea data-answer placeholder="Write the answer, not notes."></textarea></label></div>' +
+      '<div class="learning-section"><div class="learning-section-title"><strong>Trap that costs marks</strong><span>Check</span></div><p>' + esc(q.trap) + '</p></div>' +
+      '<div class="question-feedback" id="questionFeedback" hidden></div>' +
+      '<div class="question-actions"><button type="button" class="secondary-action" data-feedback>Get feedback</button><button type="button" class="secondary-action" data-complete>Lock this mark</button></div>' +
+      '</section>';
   }
 
-  async function handleQuestionClick(event) {
-    const feedback = event.target.closest("[data-feedback]");
-    const complete = event.target.closest("[data-complete]");
-    if (feedback) return submitFeedback(feedback);
-    if (complete) return completeSession();
+  function onQuestionClick(event) {
+    if (event.target.closest("[data-feedback]")) submitFeedback(event.target.closest("[data-feedback]"));
+    if (event.target.closest("[data-complete]")) completeSession();
   }
 
   async function submitFeedback(button) {
@@ -261,14 +254,7 @@
     button.disabled = true;
     box.textContent = "AI coach is checking your answer...";
     try {
-      const prompt = [
-        "Mark this HSC-style practice answer.",
-        `Subject: ${activeCard.topic}`,
-        `Question: ${activeQuestion.question}`,
-        `Focus point: ${activeQuestion.focusPoint}`,
-        `Common mistake to check: ${activeQuestion.commonMistake}`,
-        `Student answer: ${answer}`
-      ].join("\n");
+      const prompt = ["Mark this HSC-style practice answer.", "Subject: " + activeCard.topic, "Question: " + activeQuestion.text, "Focus point: " + activeQuestion.focus, "Common mistake to check: " + activeQuestion.trap, "Student answer: " + answer].join("\n");
       const response = await fetch("/api/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question: prompt, subject: activeCard.topic }) });
       const data = await response.json().catch(() => ({}));
       box.textContent = data.answer || "Feedback unavailable. Check definition, mechanism, example and final link.";
@@ -282,15 +268,16 @@
   function completeSession() {
     if (practiceWorkflow) practiceWorkflow.hidden = true;
     if (completionScreen) completionScreen.hidden = false;
+    const minutes = Number(String(activeCard?.time || "12").match(/\d+/)?.[0] || 12);
     setText("#completionFeedback", "Good. Fix one sentence, then move to the next card.");
-    setText("#completionMinutes", String(Math.max(1, Math.round((activeCard?.timeRequired.match(/\d+/)?.[0] || 12))));
+    setText("#completionMinutes", String(minutes));
     setText("#completionImpact", "High");
     setText("#completionNext", "Next card");
-    saveProgress();
+    saveProgress(minutes);
   }
 
   function closeSession() {
-    clearInterval(timer);
+    clearInterval(timerId);
     if (focusOverlay) focusOverlay.setAttribute("aria-hidden", "true");
     document.body.classList.remove("focus-active");
     if (practiceWorkflow) practiceWorkflow.hidden = false;
@@ -298,21 +285,21 @@
   }
 
   function startTimer(raw) {
-    clearInterval(timer);
+    clearInterval(timerId);
     paused = false;
-    remainingSeconds = (Number(String(raw || "12").match(/\d+/)?.[0]) || 12) * 60;
+    remainingSeconds = Number(String(raw || "12").match(/\d+/)?.[0] || 12) * 60;
     tick();
-    timer = setInterval(() => {
+    timerId = setInterval(() => {
       if (!paused) remainingSeconds = Math.max(0, remainingSeconds - 1);
       tick();
-      if (!remainingSeconds) clearInterval(timer);
+      if (!remainingSeconds) clearInterval(timerId);
     }, 1000);
   }
 
   function tick() {
     const minutes = Math.floor(remainingSeconds / 60);
     const seconds = remainingSeconds % 60;
-    if (timerDisplay) timerDisplay.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    if (timerDisplay) timerDisplay.textContent = String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
   }
 
   function togglePause() {
@@ -327,24 +314,23 @@
     }
     if (isLoading) {
       outputLabel.textContent = "Building your mark attack cards...";
-      output.innerHTML = `<div class="empty-plan loading-plan"><span class="loader-dot" aria-hidden="true"></span><strong>Building your mark attack cards...</strong><p>Choosing the fastest revision actions for your time left.</p></div>`;
+      output.innerHTML = '<div class="empty-plan loading-plan"><span class="loader-dot" aria-hidden="true"></span><strong>Building your mark attack cards...</strong><p>Choosing the fastest revision actions for your time left.</p></div>';
     }
   }
 
-  function handleChipClick(event) {
+  function onChipClick(event) {
     const chip = event.target.closest(".input-chip");
     if (!chip) return;
     const input = document.querySelector(chip.dataset.target);
-    if (!input) return;
-    input.value = chip.dataset.value || chip.textContent.trim();
+    if (input) input.value = chip.dataset.value || chip.textContent.trim();
   }
 
   function renderPaperLinks() {
     if (!paperDirectory) return;
-    paperDirectory.innerHTML = papers.map(([name, description, url]) => `<a href="${esc(url)}" target="_blank" rel="noreferrer"><span>${esc(name)}</span><small>${esc(description)}</small><em>nesa.nsw.gov.au</em></a>`).join("");
+    paperDirectory.innerHTML = paperLinks.map((item) => '<a href="' + esc(item[2]) + '" target="_blank" rel="noreferrer"><span>' + esc(item[0]) + '</span><small>' + esc(item[1]) + '</small><em>nesa.nsw.gov.au</em></a>').join("");
   }
 
-  function renderProgressStats() {
+  function renderProgress() {
     const progress = JSON.parse(localStorage.getItem("hsc-helper-progress") || "{}");
     setText("#completedTasksStat", progress.completed || 0);
     setText("#studyStreakStat", progress.completed || 0);
@@ -352,12 +338,12 @@
     setText("#weakTopicsStat", progress.completed || 0);
   }
 
-  function saveProgress() {
+  function saveProgress(minutes) {
     const progress = JSON.parse(localStorage.getItem("hsc-helper-progress") || "{}");
     progress.completed = Number(progress.completed || 0) + 1;
-    progress.minutes = Number(progress.minutes || 0) + Math.max(1, Math.round((activeCard?.timeRequired.match(/\d+/)?.[0] || 12)));
+    progress.minutes = Number(progress.minutes || 0) + Number(minutes || 0);
     localStorage.setItem("hsc-helper-progress", JSON.stringify(progress));
-    renderProgressStats();
+    renderProgress();
   }
 
   function value(selector) { return document.querySelector(selector)?.value?.trim() || ""; }
