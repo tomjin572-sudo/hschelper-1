@@ -1,6 +1,7 @@
 (function(){
   if(window.__hscTopicPackRuntimeGuard)return;
   window.__hscTopicPackRuntimeGuard=true;
+  window.__hscExamSprintRuntimeFixes=true;
 
   var activeTopicPack=null;
   var timerId=null;
